@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Conexión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+
+        .test-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        button:active {
+            background: #4f46e5;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Test de Conexión</h1>
+
+    <div class="test-box">
+        <h3>Información del Cliente</h3>
+        <div id="clientInfo" class="result info"></div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 1: Ping al Backend</h3>
+        <button onclick="testBackend()">🔌 Probar Conexión al Backend</button>
+        <div id="backendResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 2: Login de Prueba</h3>
+        <button onclick="testLogin()">🔑 Probar Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <script>
+        // Mostrar información del cliente
+        const API_URL = 'http://192.168.18.5:3000/api';
+
+        document.getElementById('clientInfo').textContent =
+            `URL de la API: ${API_URL}\n` +
+            `User Agent: ${navigator.userAgent}\n` +
+            `Ubicación: ${window.location.href}`;
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Conectando...</div>';
+
+            try {
+                const response = await fetch('http://192.168.18.5:3000/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                const data = await response.json();
+
+                resultDiv.innerHTML = `<div class="result success">✅ Conexión exitosa!\n\nRespuesta:\n${JSON.stringify(data, null, 2)}</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Error de conexión\n\nError: ${error.message}\n\nDetalles:\n${error.stack || 'No hay stack trace'}</div>`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Intentando login...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'maria@email.com',
+                        password: 'password123'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Login exitoso!\n\nUsuario: ${data.user.nombre}\nRol: ${data.user.rol}\nToken: ${data.token.substring(0, 50)}...</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Login fallido\n\nError: ${data.error}\nStatus: ${response.status}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Error de conexión\n\nError: ${error.message}\n\nDetalles:\n${error.stack || 'No hay stack trace'}</div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
