@@ -78,6 +78,35 @@ app.use('/api/emergencias', emergenciasRoutes);
 app.use('/api/alertas', alertasRoutes);
 app.use('/api/edificios', edificiosRoutes);
 
+// Endpoint temporal para inicializar la base de datos en producción
+app.get('/api/init-db', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        const path = require('path');
+        const scriptPath = path.join(__dirname, 'scripts', 'init-production-db.js');
+
+        exec(`node ${scriptPath}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error al inicializar BD:', error);
+                return res.status(500).json({
+                    error: 'Error al inicializar base de datos',
+                    details: error.message
+                });
+            }
+
+            console.log('✅ Base de datos inicializada:', stdout);
+            res.json({
+                success: true,
+                message: 'Base de datos inicializada correctamente',
+                output: stdout
+            });
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // =====================================================
 // ERROR HANDLING
 // =====================================================
