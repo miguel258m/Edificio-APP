@@ -11,6 +11,7 @@ import { renderSolicitudes } from './views/solicitudes.js';
 import { renderDashboardLimpieza } from './views/dashboard-limpieza.js';
 import { renderChats } from './views/chats.js';
 import { renderPerfil } from './views/perfil.js';
+import { renderDashboardGerente } from './views/dashboard-gerente.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -49,6 +50,7 @@ const routes = {
     '/dashboard-residente': renderDashboardResidente,
     '/dashboard-vigilante': renderDashboardVigilante,
     '/dashboard-limpieza': renderDashboardLimpieza,
+    '/dashboard-gerente': renderDashboardGerente,
     '/chat': renderChat,
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
@@ -136,6 +138,8 @@ async function checkAuth() {
                 redirectToPath = '/dashboard-vigilante';
             } else if (user.rol === 'limpieza') {
                 redirectToPath = '/dashboard-limpieza';
+            } else if (user.rol === 'gerente') {
+                redirectToPath = '/dashboard-gerente';
             }
             window.navigateTo(redirectToPath);
         } else {
