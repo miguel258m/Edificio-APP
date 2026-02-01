@@ -6,9 +6,9 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // =====================================================
-// POST /api/alertas - Crear alerta general (solo vigilante/admin)
+// POST /api/alertas - Crear alerta general (solo vigilante/admin/gerente)
 // =====================================================
-router.post('/', requireRole('vigilante', 'admin'), async (req, res) => {
+router.post('/', requireRole('vigilante', 'admin', 'gerente'), async (req, res) => {
     try {
         const { titulo, mensaje, tipo } = req.body;
         const creada_por = req.user.id;

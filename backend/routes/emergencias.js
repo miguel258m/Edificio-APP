@@ -42,7 +42,7 @@ router.get('/activas', async (req, res) => {
         const edificio_id = req.user.edificio_id;
 
         const result = await pool.query(
-            `SELECT e.*, u.nombre as usuario_nombre, u.apartamento as usuario_apartamento
+            `SELECT e.*, u.nombre as usuario_nombre, u.apartamento as usuario_apartamento, u.telefono as usuario_telefono
        FROM emergencias e
        JOIN usuarios u ON e.usuario_id = u.id
        WHERE e.edificio_id = $1 AND e.estado = 'activa'

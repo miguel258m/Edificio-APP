@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
         const edificio_id = req.user.edificio_id;
 
         let query = `
-      SELECT s.*, u.nombre as usuario_nombre, u.apartamento as usuario_apartamento
+      SELECT s.*, u.nombre as usuario_nombre, u.apartamento as usuario_apartamento, u.telefono as usuario_telefono
       FROM solicitudes s
       JOIN usuarios u ON s.usuario_id = u.id
       WHERE s.edificio_id = $1
@@ -139,13 +139,20 @@ router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza'), async
             return res.status(400).json({ error: 'Estado no válido' });
         }
 
-        const result = await pool.query(
-            `UPDATE solicitudes 
-             SET estado = $1 
-             WHERE id = $2 
-             RETURNING *`,
-            [estado, id]
-        );
+        let query = 'UPDATE solicitudes SET estado = $1';
+        const params = [estado];
+
+        if (estado === 'en_proceso') {
+            query += ', fecha_atencion = CURRENT_TIMESTAMP, atendido_por = $2';
+            params.push(req.user.id);
+        } else if (estado === 'completada') {
+            query += ', fecha_completada = CURRENT_TIMESTAMP';
+        }
+
+        query += ` WHERE id = $${params.length + 1} RETURNING *`;
+        params.push(id);
+
+        const result = await pool.query(query, params);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Solicitud no encontrada' });
@@ -156,6 +163,43 @@ router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza'), async
     } catch (error) {
         console.error('Error al actualizar estado:', error);
         res.status(500).json({ error: 'Error al actualizar estado' });
+    }
+});
+
+// =====================================================
+// GET /api/solicitudes/metricas - Obtener métricas de rendimiento (gerente)
+// =====================================================
+router.get('/metricas', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const edificio_id = req.user.edificio_id;
+
+        const result = await pool.query(
+            `SELECT 
+                COUNT(*) as total,
+                AVG(fecha_atencion - fecha_solicitud) as tiempo_inicio_promedio,
+                AVG(fecha_completada - fecha_atencion) as tiempo_resolucion_promedio,
+                tipo,
+                COUNT(*) FILTER (WHERE estado = 'completada') as completadas
+             FROM solicitudes
+             WHERE edificio_id = $1 AND (fecha_atencion IS NOT NULL OR fecha_completada IS NOT NULL)
+             GROUP BY tipo`,
+            [edificio_id]
+        );
+
+        // Formatear intervalos para que sean legibles (convertir a minutos)
+        const metricas = result.rows.map(row => ({
+            ...row,
+            tiempo_inicio_minutos: row.tiempo_inicio_promedio ?
+                (row.tiempo_inicio_promedio.hours || 0) * 60 + (row.tiempo_inicio_promedio.minutes || 0) : 0,
+            tiempo_resolucion_minutos: row.tiempo_resolucion_promedio ?
+                (row.tiempo_resolucion_promedio.hours || 0) * 60 + (row.tiempo_resolucion_promedio.minutes || 0) : 0
+        }));
+
+        res.json(metricas);
+
+    } catch (error) {
+        console.error('Error al obtener métricas:', error);
+        res.status(500).json({ error: 'Error al obtener métricas' });
     }
 });
 

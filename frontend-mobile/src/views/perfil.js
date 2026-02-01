@@ -3,9 +3,17 @@
 // =====================================================
 
 export function renderPerfil(container) {
-    const user = window.appState.user;
+  const user = window.appState.user;
+  const baseUrl = window.API_URL.replace('/api', '');
 
-    container.innerHTML = `
+  const getFotoUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
+  };
+
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 1rem; margin-bottom: 1rem;">
@@ -25,10 +33,11 @@ export function renderPerfil(container) {
       <div class="container">
         <!-- Foto de perfil -->
         <div class="card mb-3 text-center">
-          <div style="width: 120px; height: 120px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: var(--shadow-lg);">
-            ${user.foto_perfil ? `<img src="${user.foto_perfil}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : '👤'}
+          <div id="profileImageContainer" style="width: 120px; height: 120px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: var(--shadow-lg); overflow: hidden; border: 4px solid var(--bg-secondary);">
+            ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👤'">` : '👤'}
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="cambiarFotoP erfil()">
+          <input type="file" id="fotoInput" accept="image/*" style="display: none;">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fotoInput').click()">
             📸 Cambiar foto
           </button>
         </div>
@@ -53,13 +62,10 @@ export function renderPerfil(container) {
               <input 
                 type="email" 
                 class="form-input" 
+                id="email"
                 value="${user.email}"
-                disabled
-                style="opacity: 0.6; cursor: not-allowed;"
+                required
               >
-              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                El email no se puede cambiar
-              </p>
             </div>
 
             <div class="form-group">
@@ -126,63 +132,95 @@ export function renderPerfil(container) {
     </div>
   `;
 
-    const form = document.getElementById('perfilForm');
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        await guardarPerfil();
-    };
+  const form = document.getElementById('perfilForm');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    await guardarPerfil();
+  };
 
-    async function guardarPerfil() {
-        const nombre = document.getElementById('nombre').value;
-        const telefono = document.getElementById('telefono').value;
-        const apartamento = user.rol === 'residente' ? document.getElementById('apartamento').value : null;
+  const containerImg = document.getElementById('profileImageContainer');
+  const fotoInput = document.getElementById('fotoInput');
 
-        try {
-            const response = await fetch(`${window.API_URL}/usuarios/perfil`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${window.appState.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre, telefono, apartamento })
-            });
+  fotoInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-            if (!response.ok) throw new Error('Error al guardar');
+    const formData = new FormData();
+    formData.append('foto', file);
 
-            const data = await response.json();
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/foto-perfil`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`
+        },
+        body: formData
+      });
 
-            // Actualizar estado global
-            window.appState.user = { ...window.appState.user, ...data };
-            localStorage.setItem('user', JSON.stringify(window.appState.user));
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al subir foto');
 
-            showToast('✅ Perfil actualizado');
+      // Actualizar estado
+      window.appState.user.foto_perfil = data.foto_perfil;
+      localStorage.setItem('user', JSON.stringify(window.appState.user));
 
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al actualizar perfil');
-        }
+      // Actualizar imagen en la vista
+      containerImg.innerHTML = `<img src="${getFotoUrl(data.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👤'">`;
+
+      showToast('✅ Foto actualizada');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ ' + error.message);
     }
+  };
 
-    window.cambiarFotoPerfil = () => {
-        alert('📸 Función de cambio de foto en desarrollo\n\nPróximamente podrás subir tu foto de perfil.');
-    };
+  async function guardarPerfil() {
+    const nombre = document.getElementById('nombre').value;
+    const email = document.getElementById('email').value;
+    const telefono = document.getElementById('telefono').value;
+    const apartamento = user.rol === 'residente' ? document.getElementById('apartamento').value : null;
 
-    window.goToDashboard = () => {
-        const dashboards = {
-            'residente': '/dashboard-residente',
-            'vigilante': '/dashboard-vigilante',
-            'admin': '/dashboard-vigilante',
-            'limpieza': '/dashboard-limpieza',
-            'gerente': '/dashboard-gerente'
-        };
-        window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
-    };
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/perfil`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombre, email, telefono, apartamento })
+      });
 
-    function showToast(mensaje) {
-        const toast = document.createElement('div');
-        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999;';
-        toast.textContent = mensaje;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al guardar');
+
+      // Actualizar estado global
+      window.appState.user = { ...window.appState.user, ...data };
+      localStorage.setItem('user', JSON.stringify(window.appState.user));
+
+      showToast('✅ Perfil actualizado');
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ ' + error.message);
     }
+  }
+
+  window.goToDashboard = () => {
+    const dashboards = {
+      'residente': '/dashboard-residente',
+      'vigilante': '/dashboard-vigilante',
+      'admin': '/dashboard-admin',
+      'limpieza': '/dashboard-limpieza',
+      'gerente': '/dashboard-gerente'
+    };
+    window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
+  };
+
+  function showToast(mensaje) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999;';
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
 }

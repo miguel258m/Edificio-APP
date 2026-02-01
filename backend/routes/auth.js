@@ -90,10 +90,9 @@ router.post('/register', async (req, res) => {
         // Hashear contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Determinar si el usuario debe ser aprobado automáticamente
-        // Solo residentes y admins son aprobados automáticamente
-        // Los trabajadores (trabajador_pendiente) requieren aprobación
-        const aprobado = rol === 'residente' || rol === 'admin';
+        // Solo admins son aprobados automáticamente
+        // Residentes y trabajadores requieren aprobación
+        const aprobado = rol === 'admin';
 
         // Intentar insertar con campo aprobado, si falla usar query sin ese campo
         let result;
@@ -144,7 +143,7 @@ router.post('/register', async (req, res) => {
 
     } catch (error) {
         console.error('Error en registro:', error);
-        res.status(500).json({ error: 'Error al registrar usuario' });
+        res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
     }
 });
 

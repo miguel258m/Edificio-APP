@@ -147,7 +147,13 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      data = { error: 'Error de conexión o respuesta no válida del servidor' };
+    }
 
     if (!response.ok) {
       throw new Error(data.error || 'Error al iniciar sesión');
@@ -164,9 +170,15 @@ async function handleLogin(e) {
       window.navigateTo('/dashboard-residente');
     } else if (data.user.rol === 'vigilante') {
       window.navigateTo('/dashboard-vigilante');
+    } else if (data.user.rol === 'admin') {
+      window.navigateTo('/dashboard-admin');
+    } else if (data.user.rol === 'limpieza') {
+      window.navigateTo('/dashboard-limpieza');
+    } else if (data.user.rol === 'gerente') {
+      window.navigateTo('/dashboard-gerente');
     } else {
-      // Admin va al panel web
-      window.location.href = 'http://localhost:5174';
+      // Fallback a dashboard de residente o login
+      window.navigateTo('/dashboard-residente');
     }
 
   } catch (error) {

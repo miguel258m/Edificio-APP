@@ -3,9 +3,9 @@
 // =====================================================
 
 export function renderGestionUsuarios(container) {
-    const user = window.appState.user;
+  const user = window.appState.user;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #7c3aed, #6366f1); padding: 2rem 1rem; margin-bottom: 1rem;">
@@ -80,6 +80,7 @@ export function renderGestionUsuarios(container) {
             <option value="limpieza">🧹 Personal de Limpieza</option>
             <option value="vigilante">👮 Vigilante</option>
             <option value="gerente">📊 Gerente</option>
+            <option value="residente">🏠 Residente</option>
           </select>
         </div>
 
@@ -95,51 +96,51 @@ export function renderGestionUsuarios(container) {
     </div>
   `;
 
-    let currentTab = 'pendientes';
-    let usuarioSeleccionado = null;
+  let currentTab = 'pendientes';
+  let usuarioSeleccionado = null;
 
-    // Tabs
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    tabButtons.forEach(btn => {
-        btn.onclick = () => {
-            currentTab = btn.dataset.tab;
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+  // Tabs
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  tabButtons.forEach(btn => {
+    btn.onclick = () => {
+      currentTab = btn.dataset.tab;
+      tabButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.getElementById(`tab${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}`).classList.remove('hidden');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+      document.getElementById(`tab${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}`).classList.remove('hidden');
 
-            if (currentTab === 'pendientes') {
-                loadUsuariosPendientes();
-            } else {
-                loadUsuariosAprobados();
-            }
-        };
-    });
+      if (currentTab === 'pendientes') {
+        loadUsuariosPendientes();
+      } else {
+        loadUsuariosAprobados();
+      }
+    };
+  });
 
-    loadUsuariosPendientes();
+  loadUsuariosPendientes();
 
-    async function loadUsuariosPendientes() {
-        try {
-            const response = await fetch(`${window.API_URL}/usuarios/pendientes`, {
-                headers: { 'Authorization': `Bearer ${window.appState.token}` }
-            });
+  async function loadUsuariosPendientes() {
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/pendientes`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
 
-            const usuarios = await response.json();
-            const container = document.getElementById('usuariosPendientesList');
-            document.getElementById('countPendientes').textContent = usuarios.length;
+      const usuarios = await response.json();
+      const container = document.getElementById('usuariosPendientesList');
+      document.getElementById('countPendientes').textContent = usuarios.length;
 
-            if (usuarios.length === 0) {
-                container.innerHTML = `
+      if (usuarios.length === 0) {
+        container.innerHTML = `
           <div class="card text-center" style="padding: 3rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
             <p style="color: var(--text-muted);">No hay usuarios pendientes</p>
           </div>
         `;
-                return;
-            }
+        return;
+      }
 
-            container.innerHTML = usuarios.map(u => `
+      container.innerHTML = usuarios.map(u => `
         <div class="card mb-3 fade-in">
           <div class="flex justify-between items-start mb-2">
             <div class="flex-1">
@@ -158,6 +159,11 @@ export function renderGestionUsuarios(container) {
             <button class="btn btn-primary btn-sm flex-1" onclick="abrirModalAsignar(${u.id}, '${u.nombre}')">
               ✅ Aprobar y Asignar Rol
             </button>
+            ${u.apartamento ? `
+              <button class="btn btn-success btn-sm flex-1" onclick="aprobarUsuarioDirecto(${u.id})">
+                🏠 Aprobar Residente (Dpto ${u.apartamento})
+              </button>
+            ` : ''}
             <button class="btn btn-danger btn-sm" onclick="rechazarUsuario(${u.id})">
               ❌
             </button>
@@ -165,35 +171,35 @@ export function renderGestionUsuarios(container) {
         </div>
       `).join('');
 
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('usuariosPendientesList').innerHTML = `
+    } catch (error) {
+      console.error('Error:', error);
+      document.getElementById('usuariosPendientesList').innerHTML = `
         <div class="card" style="padding: 2rem; text-align: center; color: var(--danger);">
           <p>❌ Error al cargar usuarios</p>
         </div>
       `;
-        }
     }
+  }
 
-    async function loadUsuariosAprobados() {
-        try {
-            const response = await fetch(`${window.API_URL}/usuarios/aprobados`, {
-                headers: { 'Authorization': `Bearer ${window.appState.token}` }
-            });
+  async function loadUsuariosAprobados() {
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/aprobados`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
 
-            const usuarios = await response.json();
-            const container = document.getElementById('usuariosAprobadosList');
+      const usuarios = await response.json();
+      const container = document.getElementById('usuariosAprobadosList');
 
-            if (usuarios.length === 0) {
-                container.innerHTML = `
+      if (usuarios.length === 0) {
+        container.innerHTML = `
           <div class="card text-center" style="padding: 3rem;">
             <p style="color: var(--text-muted);">No hay usuarios aprobados</p>
           </div>
         `;
-                return;
-            }
+        return;
+      }
 
-            container.innerHTML = usuarios.map(u => `
+      container.innerHTML = usuarios.map(u => `
         <div class="card mb-3">
           <div class="flex justify-between items-center">
             <div>
@@ -205,105 +211,130 @@ export function renderGestionUsuarios(container) {
         </div>
       `).join('');
 
-        } catch (error) {
-            console.error('Error:', error);
-        }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  window.abrirModalAsignar = (userId, nombre) => {
+    usuarioSeleccionado = userId;
+    document.getElementById('modalUsuarioNombre').textContent = `Usuario: ${nombre}`;
+    document.getElementById('asignarRolModal').classList.remove('hidden');
+  };
+
+  window.aprobarUsuarioDirecto = async (userId) => {
+    if (!confirm('¿Aprobar este residente?')) return;
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/${userId}/aprobar`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ aprobado: true })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al aprobar');
+
+      showToast('✅ Usuario aprobado');
+      loadUsuariosPendientes();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error: ' + error.message);
+    }
+  };
+
+  window.cerrarModalRol = () => {
+    document.getElementById('asignarRolModal').classList.add('hidden');
+    usuarioSeleccionado = null;
+  };
+
+  window.confirmarAsignacion = async () => {
+    const nuevoRol = document.getElementById('nuevoRol').value;
+    if (!nuevoRol) {
+      alert('Selecciona un rol');
+      return;
     }
 
-    window.abrirModalAsignar = (userId, nombre) => {
-        usuarioSeleccionado = userId;
-        document.getElementById('modalUsuarioNombre').textContent = `Usuario: ${nombre}`;
-        document.getElementById('asignarRolModal').classList.remove('hidden');
-    };
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/${usuarioSeleccionado}/asignar-rol`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rol: nuevoRol })
+      });
 
-    window.cerrarModalRol = () => {
-        document.getElementById('asignarRolModal').classList.add('hidden');
-        usuarioSeleccionado = null;
-    };
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al asignar rol');
 
-    window.confirmarAsignacion = async () => {
-        const nuevoRol = document.getElementById('nuevoRol').value;
-        if (!nuevoRol) {
-            alert('Selecciona un rol');
-            return;
-        }
+      showToast('✅ Rol asignado correctamente');
+      cerrarModalRol();
+      loadUsuariosPendientes();
 
-        try {
-            const response = await fetch(`${window.API_URL}/usuarios/${usuarioSeleccionado}/asignar-rol`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${window.appState.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ rol: nuevoRol })
-            });
-
-            if (!response.ok) throw new Error('Error al asignar rol');
-
-            showToast('✅ Rol asignado correctamente');
-            cerrarModalRol();
-            loadUsuariosPendientes();
-
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al asignar rol');
-        }
-    };
-
-    window.rechazarUsuario = async (userId) => {
-        if (!confirm('¿Rechazar este usuario? Esta acción eliminará su cuenta.')) return;
-
-        try {
-            const response = await fetch(`${window.API_URL}/usuarios/${userId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${window.appState.token}` }
-            });
-
-            if (!response.ok) throw new Error('Error al rechazar');
-
-            showToast('Usuario rechazado');
-            loadUsuariosPendientes();
-
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al rechazar usuario');
-        }
-    };
-
-    window.goToDashboard = () => {
-        const dashboards = {
-            'admin': '/dashboard-vigilante',
-            'gerente': '/dashboard-gerente',
-            'vigilante': '/dashboard-vigilante'
-        };
-        window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
-    };
-
-    function getRolColor(rol) {
-        const colores = {
-            limpieza: 'success',
-            vigilante: 'primary',
-            gerente: 'info',
-            residente: 'secondary'
-        };
-        return colores[rol] || 'secondary';
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error: ' + error.message);
     }
+  };
 
-    function getRolLabel(rol) {
-        const labels = {
-            limpieza: 'Personal de Limpieza',
-            vigilante: 'Vigilante',
-            gerente: 'Gerente',
-            residente: 'Residente'
-        };
-        return labels[rol] || rol;
-    }
+  window.rechazarUsuario = async (userId) => {
+    if (!confirm('¿Rechazar este usuario? Esta acción eliminará su registro permanentemente.')) return;
 
-    function showToast(mensaje) {
-        const toast = document.createElement('div');
-        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999;';
-        toast.textContent = mensaje;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+    try {
+      const response = await fetch(`${window.API_URL}/usuarios/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al rechazar');
+
+      showToast('✅ Usuario rechazado y cuenta eliminada');
+      loadUsuariosPendientes();
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error: ' + error.message);
     }
+  };
+
+  window.goToDashboard = () => {
+    const dashboards = {
+      'admin': '/dashboard-vigilante',
+      'gerente': '/dashboard-gerente',
+      'vigilante': '/dashboard-vigilante'
+    };
+    window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
+  };
+
+  function getRolColor(rol) {
+    const colores = {
+      limpieza: 'success',
+      vigilante: 'primary',
+      gerente: 'info',
+      residente: 'secondary'
+    };
+    return colores[rol] || 'secondary';
+  }
+
+  function getRolLabel(rol) {
+    const labels = {
+      limpieza: 'Personal de Limpieza',
+      vigilante: 'Vigilante',
+      gerente: 'Gerente',
+      residente: 'Residente'
+    };
+    return labels[rol] || rol;
+  }
+
+  function showToast(mensaje) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999;';
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
 }

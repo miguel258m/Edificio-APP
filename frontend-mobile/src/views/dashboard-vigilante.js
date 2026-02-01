@@ -1,9 +1,15 @@
-// =====================================================
-// DASHBOARD VIGILANTE - Vista para vigilantes
-// =====================================================
+import { initAnnouncements, renderAnnouncementsWidget } from '../utils/announcements.js';
 
 export function renderDashboardVigilante(container) {
   const user = window.appState.user;
+  const baseUrl = window.API_URL.replace('/api', '');
+
+  const getFotoUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
+  };
 
   container.innerHTML = `
     <div class="page">
@@ -11,13 +17,18 @@ export function renderDashboardVigilante(container) {
       <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 2rem 0 3rem; margin-bottom: -2rem;">
         <div class="container">
           <div class="flex justify-between items-center mb-3">
-            <div>
-              <p style="font-size: 0.875rem; opacity: 0.9;">Vigilante</p>
-              <h1 style="font-size: 1.5rem; font-weight: 700;">${user.nombre}</h1>
-              <p style="font-size: 0.875rem; opacity: 0.8;">En servicio</p>
+            <div class="flex items-center gap-3">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; color: white;">
+                ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👮'">` : '👮'}
+              </div>
+              <div>
+                <p style="font-size: 0.875rem; opacity: 0.9;">${user.rol === 'admin' ? 'Administrador' : (user.rol.charAt(0).toUpperCase() + user.rol.slice(1))}</p>
+                <h1 style="font-size: 1.25rem; font-weight: 700;">${user.nombre}</h1>
+                <p style="font-size: 0.875rem; opacity: 0.8;">En servicio</p>
+              </div>
             </div>
-            <button onclick="logout()" class="btn btn-ghost" style="padding: 0.5rem;">
-              🚪
+            <button onclick="logout()" class="btn" style="padding: 0.5rem 1rem; color: white; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); font-size: 0.875rem;">
+              🚪 Salir
             </button>
           </div>
         </div>
@@ -25,7 +36,7 @@ export function renderDashboardVigilante(container) {
 
       <div class="container">
         <!-- Alertas activas -->
-        <div class="card mt-3 fade-in" style="border: 2px solid var(--danger);">
+        <div id="emergenciasAlert" class="card mt-3 fade-in" style="border: 2px solid var(--danger); display: none;">
           <div class="flex justify-between items-center mb-2">
             <h2 class="card-title" style="margin: 0; color: var(--danger);">🚨 Emergencias Activas</h2>
             <span class="badge badge-danger" id="emergenciasCount">0</span>
@@ -35,15 +46,22 @@ export function renderDashboardVigilante(container) {
           </div>
         </div>
 
-        <!-- Enviar alerta general -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.1s;">
-          <h2 class="card-title">📢 Enviar Alerta General</h2>
-          <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
-            Envía una notificación a todos los residentes del edificio
-          </p>
-          <button class="btn btn-danger" style="width: 100%;" onclick="showAlertaModal()">
-            Crear Alerta
-          </button>
+        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch; margin-bottom: 1.5rem;">
+          <!-- Avisos Importantes Visibles -->
+          <div id="announcementsWidget"></div>
+
+          <!-- Enviar alerta general (Quick Action) -->
+          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary);">
+            <h2 class="card-title" style="font-size: 0.875rem;">Acción Rápida</h2>
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
+               <button class="btn btn-danger" style="width: 100%; padding: 1rem;" onclick="showAlertaModal()">
+                  📢 Crear Aviso
+               </button>
+               <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">
+                  Informa a todos los residentes
+               </p>
+            </div>
+          </div>
         </div>
 
         <!-- Mensajes pendientes -->
@@ -67,6 +85,7 @@ export function renderDashboardVigilante(container) {
             <div class="loading-spinner" style="margin: 2rem auto;"></div>
           </div>
         </div>
+
       </div>
 
       <!-- Bottom Navigation -->
@@ -134,6 +153,10 @@ export function renderDashboardVigilante(container) {
   loadEmergencias();
   loadMensajes();
   loadSolicitudesPendientes();
+
+  if (typeof renderAnnouncementsWidget === 'function') {
+    renderAnnouncementsWidget('announcementsWidget');
+  }
 }
 
 window.showAlertaModal = () => {
@@ -169,6 +192,10 @@ async function enviarAlerta() {
     if (response.ok) {
       alert('✅ Alerta enviada a todos los residentes');
       closeAlertaModal();
+      // Recargar el widget de avisos si existe
+      if (typeof renderAnnouncementsWidget === 'function') {
+        renderAnnouncementsWidget('announcementsWidget');
+      }
     } else {
       alert('❌ Error al enviar alerta');
     }
@@ -205,8 +232,9 @@ async function loadEmergencias() {
           </span>
         </div>
         <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">${e.descripcion}</p>
-        <p style="font-size: 0.875rem; color: var(--text-secondary);">
+        <p style="font-size: 0.875rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
           📍 ${e.ubicacion} - ${e.usuario_nombre}
+          ${e.usuario_telefono ? `<a href="tel:${e.usuario_telefono}" style="color: var(--danger); text-decoration: none;">📞</a>` : ''}
         </p>
         <button class="btn btn-success mt-2" style="width: 100%; padding: 0.5rem;" onclick="atenderEmergencia(${e.id})">
           Marcar como Atendida
@@ -291,7 +319,14 @@ async function loadSolicitudesPendientes() {
       return;
     }
 
-    container.innerHTML = solicitudes.slice(0, 5).map(s => `
+    container.innerHTML = solicitudes.slice(0, 5).map(s => {
+      // Parsear detalles si vienen como string
+      let detalles = s.detalles;
+      if (typeof detalles === 'string') {
+        try { detalles = JSON.parse(detalles); } catch (e) { detalles = {}; }
+      }
+
+      return `
       <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600;">${getTipoIcon(s.tipo)} ${getTipoNombre(s.tipo)}</span>
@@ -299,10 +334,11 @@ async function loadSolicitudesPendientes() {
         </div>
         <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${s.descripcion}</p>
         <p style="font-size: 0.75rem; color: var(--text-muted);">
-          ${s.usuario_nombre} - Apt. ${s.usuario_apartamento}
+          ${s.usuario_nombre} - Dpto. ${s.usuario_apartamento} ${s.usuario_telefono ? `| 📞 ${s.usuario_telefono}` : ''}
+          ${detalles?.area && detalles.area !== 'apartamento' ? ` | 📍 ${getAreaLabel(detalles.area)}` : ''}
         </p>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   } catch (error) {
     console.error('Error al cargar solicitudes:', error);
   }
@@ -321,6 +357,16 @@ function getTipoNombre(tipo) {
 function getPrioridadColor(prioridad) {
   const colores = { baja: 'info', media: 'warning', alta: 'danger' };
   return colores[prioridad] || 'info';
+}
+
+function getAreaLabel(area) {
+  const labels = {
+    apartamento: 'Dpto',
+    salon: 'Salón de Eventos',
+    piscina: 'Área de Piscina',
+    gimnasio: 'Gimnasio'
+  };
+  return labels[area] || area;
 }
 
 window.atenderEmergencia = async (id) => {

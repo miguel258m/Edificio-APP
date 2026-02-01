@@ -8,7 +8,16 @@ import rateLimit from 'express-rate-limit';
 import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Crear carpeta de uploads si no existe
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 import { testConnection } from './config/database.js';
 import authRoutes from './routes/auth.js';
@@ -46,8 +55,11 @@ const PORT = process.env.PORT || 3000;
 // MIDDLEWARES
 // =====================================================
 
-// Seguridad
-app.use(helmet());
+// Seguridad - Configurado para permitir cargar imágenes desde otros dominios (CORS)
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false // Deshabilitamos CSP temporalmente para facilitar desarrollo con múltiples puertos
+}));
 
 // CORS - Configuración flexible
 app.use(cors({
@@ -60,7 +72,7 @@ app.use(cors({
         }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -68,10 +80,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos estáticos (para fotos de perfil)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100 // límite de 100 requests por ventana
+    max: 500, // Aumentado para desarrollo y pruebas intensas
+    message: {
+        error: 'Demasiadas solicitudes desde esta IP, por favor intente de nuevo en 15 minutos'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
 });
 app.use('/api', limiter);
 

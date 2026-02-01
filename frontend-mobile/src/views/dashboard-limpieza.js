@@ -2,22 +2,60 @@
 // DASHBOARD LIMPIEZA - Panel del personal de limpieza
 // =====================================================
 
-export function renderDashboardLimpieza(container) {
-    const user = window.appState.user;
+import { renderAnnouncementsWidget } from '../utils/announcements.js';
 
-    container.innerHTML = `
+export function renderDashboardLimpieza(container) {
+  const user = window.appState.user;
+  const baseUrl = window.API_URL.replace('/api', '');
+
+  const getFotoUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
+  };
+
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #10b981, #14b8a6); padding: 2rem 1rem; margin-bottom: 1rem;">
         <div class="container">
-          <h1 class="greeting">🧹 Panel de Limpieza</h1>
-          <p style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.5rem;">
-            Bienvenido, ${user.nombre}
-          </p>
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; color: white;">
+                ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='🧹'">` : '🧹'}
+              </div>
+              <div>
+                <h1 class="greeting" style="margin: 0; font-size: 1.25rem;">${user.rol === 'admin' ? 'Administrador' : (user.rol.charAt(0).toUpperCase() + user.rol.slice(1))}</h1>
+                <p style="opacity: 0.9; font-size: 0.875rem;">Bienvenido, ${user.nombre}</p>
+              </div>
+            </div>
+            <button onclick="logout()" class="btn" style="padding: 0.5rem 1rem; color: white; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); font-size: 0.875rem;">
+              🚪 Salir
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="container">
+        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch; margin-bottom: 1.5rem;">
+          <!-- Avisos Importantes Visibles -->
+          <div id="announcementsWidget"></div>
+
+          <!-- Acciones Rápidas -->
+          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; justify-content: center;">
+            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); text-transform: uppercase;">Estado</h3>
+            <div class="flex flex-col gap-2">
+              <button class="btn btn-primary" onclick="window.navigateTo('/perfil')" style="padding: 1rem; font-size: 0.85rem;">
+                👤 Mi Perfil
+              </button>
+              <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">
+                Gestiona tus datos
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Filtros de estado -->
         <div class="card mb-3">
           <div class="flex gap-2" style="overflow-x: auto;">
@@ -48,66 +86,87 @@ export function renderDashboardLimpieza(container) {
     </div>
   `;
 
-    let currentFilter = 'todas';
+  let currentFilter = 'todas';
 
-    // Cargar tareas
-    loadTareas();
+  // Cargar tareas
+  loadTareas();
 
-    // Filtros
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.onclick = () => {
-            currentFilter = btn.dataset.filter;
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            loadTareas(currentFilter);
-        };
-    });
+  // Inicializar avisos
+  if (typeof renderAnnouncementsWidget === 'function') {
+    renderAnnouncementsWidget('announcementsWidget');
+  }
 
-    async function loadTareas(filter = 'todas') {
-        try {
-            const response = await fetch(`${window.API_URL}/solicitudes`, {
-                headers: { 'Authorization': `Bearer ${window.appState.token}` }
-            });
+  // Filtros
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  filterButtons.forEach(btn => {
+    btn.onclick = () => {
+      currentFilter = btn.dataset.filter;
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadTareas(currentFilter);
+    };
+  });
 
-            let solicitudes = await response.json();
+  async function loadTareas(filter = 'todas') {
+    try {
+      const response = await fetch(`${window.API_URL}/solicitudes`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
 
-            // Filtrar solo limpieza
-            solicitudes = solicitudes.filter(s => s.tipo === 'limpieza');
+      let solicitudes = await response.json();
 
-            // Aplicar filtro de estado
-            if (filter !== 'todas') {
-                solicitudes = solicitudes.filter(s => s.estado === filter);
-            }
+      // Filtrar solo limpieza
+      solicitudes = solicitudes.filter(s => s.tipo === 'limpieza');
 
-            const container = document.getElementById('tareasLimpiezaList');
+      // Aplicar filtro de estado
+      if (filter !== 'todas') {
+        solicitudes = solicitudes.filter(s => s.estado === filter);
+      }
 
-            if (solicitudes.length === 0) {
-                container.innerHTML = `
+      const container = document.getElementById('tareasLimpiezaList');
+
+      if (solicitudes.length === 0) {
+        container.innerHTML = `
           <div class="card text-center" style="padding: 3rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🧹</div>
             <p style="color: var(--text-muted);">No hay tareas de limpieza</p>
           </div>
         `;
-                return;
-            }
+        return;
+      }
 
-            container.innerHTML = solicitudes.map(s => `
+      container.innerHTML = solicitudes.map(s => {
+        // Parsear detalles si vienen como string
+        let detalles = s.detalles;
+        if (typeof detalles === 'string') {
+          try { detalles = JSON.parse(detalles); } catch (e) { detalles = {}; }
+        }
+
+        return `
         <div class="card mb-3 fade-in">
           <div class="flex justify-between items-start mb-3">
             <div>
               <h3 style="font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem;">
-                🧹 Limpieza - Apto ${s.apartamento || 'N/A'}
+                🧹 ${detalles?.area === 'apartamento' || !detalles?.area
+            ? `Limpieza - Dpto ${s.usuario_apartamento || 'N/A'}`
+            : `Limpieza - ${getAreaLabel(detalles.area)}`}
               </h3>
-              <p style="font-size: 0.875rem; color: var(--text-muted);">
-                👤 ${s.nombre_usuario}
+              <p style="font-size: 0.875rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                👤 <strong>${s.usuario_nombre}</strong> ${detalles?.area && detalles.area !== 'apartamento' ? `(Dpto ${s.usuario_apartamento})` : ''}
               </p>
-              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+              ${s.usuario_telefono ? `
+                <p style="font-size: 0.875rem; margin-bottom: 0.25rem;">
+                  <a href="tel:${s.usuario_telefono}" style="color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                    📞 ${s.usuario_telefono}
+                  </a>
+                </p>
+              ` : ''}
+              <p style="font-size: 0.75rem; color: var(--text-muted);">
                 📅 ${new Date(s.fecha_solicitud).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit'
+              day: '2-digit',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit'
             })}
               </p>
             </div>
@@ -145,68 +204,79 @@ export function renderDashboardLimpieza(container) {
             ` : ''}
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
-        } catch (error) {
-            console.error('Error al cargar tareas:', error);
-            document.getElementById('tareasLimpiezaList').innerHTML = `
+    } catch (error) {
+      console.error('Error al cargar tareas:', error);
+      document.getElementById('tareasLimpiezaList').innerHTML = `
         <div class="card" style="padding: 2rem; text-align: center; color: var(--danger);">
           <p>❌ Error al cargar tareas</p>
         </div>
       `;
-        }
     }
+  }
 
-    // Función global para cambiar estado
-    window.cambiarEstado = async (solicitudId, nuevoEstado) => {
-        try {
-            const response = await fetch(`${window.API_URL}/solicitudes/${solicitudId}/estado`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${window.appState.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ estado: nuevoEstado })
-            });
+  // Función global para cambiar estado
+  window.cambiarEstado = async (solicitudId, nuevoEstado) => {
+    try {
+      const response = await fetch(`${window.API_URL}/solicitudes/${solicitudId}/estado`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
 
-            if (!response.ok) throw new Error('Error al actualizar estado');
+      if (!response.ok) throw new Error('Error al actualizar estado');
 
-            // Recargar lista
-            loadTareas(currentFilter);
+      // Recargar lista
+      loadTareas(currentFilter);
 
-            // Notificación
-            const mensaje = nuevoEstado === 'en_proceso' ? '▶️ Tarea iniciada' : '✅ Tarea completada';
-            showToast(mensaje);
+      // Notificación
+      const mensaje = nuevoEstado === 'en_proceso' ? '▶️ Tarea iniciada' : '✅ Tarea completada';
+      showToast(mensaje);
 
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al actualizar estado');
-        }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al actualizar estado');
+    }
+  };
+
+  function showToast(mensaje) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999; animation: slideInRight 0.3s ease;';
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function getEstadoColor(estado) {
+    const colores = {
+      pendiente: 'warning',
+      en_proceso: 'info',
+      completada: 'success'
     };
+    return colores[estado] || 'info';
+  }
 
-    function showToast(mensaje) {
-        const toast = document.createElement('div');
-        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999; animation: slideInRight 0.3s ease;';
-        toast.textContent = mensaje;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
+  function getEstadoLabel(estado) {
+    const labels = {
+      pendiente: 'Pendiente',
+      en_proceso: 'En Proceso',
+      completada: 'Completada'
+    };
+    return labels[estado] || estado;
+  }
 
-    function getEstadoColor(estado) {
-        const colores = {
-            pendiente: 'warning',
-            en_proceso: 'info',
-            completada: 'success'
-        };
-        return colores[estado] || 'info';
-    }
-
-    function getEstadoLabel(estado) {
-        const labels = {
-            pendiente: 'Pendiente',
-            en_proceso: 'En Proceso',
-            completada: 'Completada'
-        };
-        return labels[estado] || estado;
-    }
+  function getAreaLabel(area) {
+    const labels = {
+      apartamento: 'Dpto',
+      salon: 'Salón de Eventos',
+      piscina: 'Área de Piscina',
+      gimnasio: 'Gimnasio'
+    };
+    return labels[area] || area;
+  }
 }

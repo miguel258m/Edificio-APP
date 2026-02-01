@@ -1,6 +1,7 @@
 // =====================================================
 // MAIN.JS - Punto de entrada de la aplicación
 // =====================================================
+import './styles/main.css';
 
 import { renderLogin } from './views/login.js';
 import { renderRegister } from './views/register.js';
@@ -12,6 +13,7 @@ import { renderDashboardLimpieza } from './views/dashboard-limpieza.js';
 import { renderChats } from './views/chats.js';
 import { renderPerfil } from './views/perfil.js';
 import { renderDashboardGerente } from './views/dashboard-gerente.js';
+import { renderDashboardAdmin } from './views/dashboard-admin.js';
 import { renderGestionUsuarios } from './views/gestion-usuarios.js';
 import { initSocket } from './socket/client.js';
 
@@ -52,6 +54,7 @@ const routes = {
     '/dashboard-vigilante': renderDashboardVigilante,
     '/dashboard-limpieza': renderDashboardLimpieza,
     '/dashboard-gerente': renderDashboardGerente,
+    '/dashboard-admin': renderDashboardAdmin,
     '/chat': renderChat,
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
@@ -136,8 +139,10 @@ async function checkAuth() {
             let redirectToPath = '/'; // Default to login page
             if (user.rol === 'residente') {
                 redirectToPath = '/dashboard-residente';
-            } else if (user.rol === 'vigilante' || user.rol === 'admin') {
+            } else if (user.rol === 'vigilante') {
                 redirectToPath = '/dashboard-vigilante';
+            } else if (user.rol === 'admin') {
+                redirectToPath = '/dashboard-admin';
             } else if (user.rol === 'limpieza') {
                 redirectToPath = '/dashboard-limpieza';
             } else if (user.rol === 'gerente') {
