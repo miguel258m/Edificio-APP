@@ -231,7 +231,7 @@ async function handleRegister(e) {
         email,
         password,
         rol,
-        apartamento: rol === 'residente' ? apartamento : 'Caseta',
+        apartamento: rol === 'residente' ? apartamento : null,
         telefono
       })
     });

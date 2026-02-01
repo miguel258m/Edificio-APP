@@ -90,8 +90,10 @@ router.post('/register', async (req, res) => {
         // Hashear contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insertar usuario (por defecto no aprobado, excepto vigilantes y admins)
-        const aprobado = ['vigilante', 'admin'].includes(rol);
+        // Determinar si el usuario debe ser aprobado automáticamente
+        // Solo residentes y admins son aprobados automáticamente
+        // Los trabajadores (trabajador_pendiente) requieren aprobación
+        const aprobado = rol === 'residente' || rol === 'admin';
 
         // Intentar insertar con campo aprobado, si falla usar query sin ese campo
         let result;
