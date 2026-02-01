@@ -67,7 +67,7 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
     max: 100 // límite de 100 requests por ventana
 });
-app.use('/api/', limiter);
+app.use('/api', limiter);
 
 // =====================================================
 // ROUTES

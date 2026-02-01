@@ -26,8 +26,14 @@ const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname.startsWith('192.168.');
 
-// Determinamos la URL final
-window.API_URL = VITE_API_URL || (isLocal ? LOCAL_API_URL : PRODUCTION_API_URL);
+// Determinamos la URL inicial y la normalizamos
+let baseApiUrl = VITE_API_URL || (isLocal ? LOCAL_API_URL : PRODUCTION_API_URL);
+
+// Aseguramos que termine en /api y no tenga barras dobles al final
+if (baseApiUrl.endsWith('/')) baseApiUrl = baseApiUrl.slice(0, -1);
+if (!baseApiUrl.endsWith('/api')) baseApiUrl += '/api';
+
+window.API_URL = baseApiUrl;
 
 console.log('🔌 Conectando a API:', window.API_URL);
 
