@@ -235,9 +235,16 @@ async function handleRegister(e) {
       throw new Error(data.error || 'Error al registrar usuario');
     }
 
-    // Guardar token y usuario
+    if (data.needsApproval) {
+      alert('✅ Registro exitoso\n\n' + data.message + '\n\nSerás redirigido al inicio de sesión.');
+      window.navigateTo('/');
+      return;
+    }
+
+    // Usuario aprobado automáticamente (vigilante/admin)
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
+
     window.appState.token = data.token;
     window.appState.user = data.user;
 

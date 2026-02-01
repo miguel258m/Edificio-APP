@@ -28,6 +28,11 @@ router.post('/login', async (req, res) => {
 
         const user = result.rows[0];
 
+        // Verificar si el usuario está aprobado
+        if (user.aprobado === false) {
+            return res.status(403).json({ error: 'Tu cuenta está pendiente de aprobación por el vigilante' });
+        }
+
         // Verificar contraseña
         const validPassword = await bcrypt.compare(password, user.password);
 
@@ -85,17 +90,28 @@ router.post('/register', async (req, res) => {
         // Hashear contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insertar usuario
+        // Insertar usuario (por defecto no aprobado, excepto vigilantes y admins)
+        const aprobado = ['vigilante', 'admin'].includes(rol);
+
         const result = await pool.query(
-            `INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, edificio_id, nombre, email, rol, apartamento, telefono, activo, created_at`,
-            [edificio_id, nombre, email, hashedPassword, rol, apartamento, telefono]
+            `INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono, aprobado)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, edificio_id, nombre, email, rol, apartamento, telefono, activo, aprobado, created_at`,
+            [edificio_id, nombre, email, hashedPassword, rol, apartamento, telefono, aprobado]
         );
 
         const newUser = result.rows[0];
 
-        // Generar token
+        // Si el usuario no est\u00e1 aprobado, no generar token
+        if (!newUser.aprobado) {
+            return res.status(201).json({
+                message: 'Registro exitoso. Tu cuenta est\u00e1 pendiente de aprobaci\u00f3n por el vigilante.',
+                user: newUser,
+                needsApproval: true
+            });
+        }
+
+        // Generar token solo para usuarios aprobados
         const token = jwt.sign(
             {
                 id: newUser.id,

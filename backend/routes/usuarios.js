@@ -61,4 +61,36 @@ router.get('/vigilantes', async (req, res) => {
     }
 });
 
+// =====================================================
+// PATCH /api/usuarios/:id/aprobar - Aprobar/Rechazar usuario
+// =====================================================
+router.patch('/:id/aprobar', requireRole('admin', 'vigilante'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { aprobado } = req.body; // true = aprobar, false = rechazar
+
+        if (typeof aprobado !== 'boolean') {
+            return res.status(400).json({ error: 'El campo aprobado debe ser true o false' });
+        }
+
+        const result = await pool.query(
+            `UPDATE usuarios 
+             SET aprobado = $1 
+             WHERE id = $2 
+             RETURNING id, nombre, email, rol, aprobado`,
+            [aprobado, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al aprobar usuario:', error);
+        res.status(500).json({ error: 'Error al aprobar usuario' });
+    }
+});
+
 export default router;

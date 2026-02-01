@@ -61,24 +61,12 @@ export function renderLogin(container) {
           <div class="mt-3 text-center">
             <p style="font-size: 0.875rem; color: var(--text-muted);">
               ¿Olvidaste tu contraseña? 
-              <a href="#" style="color: var(--primary); text-decoration: none;">Recuperar</a>
+              <a href="#" id="recoverPassword" style="color: var(--primary); text-decoration: none;">Recuperar</a>
             </p>
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
               ¿No tienes cuenta? 
               <a href="#" id="goToRegister" style="color: var(--secondary); text-decoration: none; font-weight: 600;">Crear cuenta</a>
             </p>
-          </div>
-        </div>
-
-        <!-- Credenciales de prueba -->
-        <div class="card mt-3" style="background: rgba(99, 102, 241, 0.05); border-color: var(--primary);">
-          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">
-            🔑 Credenciales de prueba:
-          </p>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.8;">
-            <div><strong>Residente:</strong> maria@email.com / password123</div>
-            <div><strong>Vigilante:</strong> vigilante@edificio.com / password123</div>
-            <div><strong>Admin:</strong> admin@edificio.com / password123</div>
           </div>
         </div>
 
@@ -90,11 +78,50 @@ export function renderLogin(container) {
   const form = document.getElementById('loginForm');
   form.addEventListener('submit', handleLogin);
 
-  // Botón ir a registro
-  document.getElementById('goToRegister').addEventListener('click', (e) => {
+  // Manejar navegación a registro
+  document.getElementById('goToRegister').onclick = (e) => {
     e.preventDefault();
     window.navigateTo('/register');
-  });
+  };
+
+  // Manejar recuperación de contraseña
+  document.getElementById('recoverPassword').onclick = (e) => {
+    e.preventDefault();
+    showRecoveryModal();
+  };
+}
+
+// Modal de recuperación de contraseña
+function showRecoveryModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;';
+
+  modal.innerHTML = `
+    <div class="card" style="max-width: 400px; width: 100%;">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="card-title" style="margin: 0;">🔑 Recuperar Contraseña</h2>
+        <button id="closeRecoveryModal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+        Para resetear tu contraseña, por favor contacta al <strong>administrador del edificio</strong>.
+      </p>
+      <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">
+        📞 El administrador podrá ayudarte a recuperar el acceso a tu cuenta.
+      </p>
+      <button id="closeRecoveryBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+        Entendido
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  document.getElementById('closeRecoveryModal').onclick = closeModal;
+  document.getElementById('closeRecoveryBtn').onclick = closeModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
 }
 
 async function handleLogin(e) {
