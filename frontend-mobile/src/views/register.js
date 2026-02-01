@@ -146,7 +146,6 @@ export function renderRegister(container) {
   const apartamentoGroup = document.getElementById('apartamentoGroup');
   const apartamentoInput = document.getElementById('apartamento');
 
-  // Función para actualizar visibilidad del apartamento
   function updateApartamentoVisibility() {
     if (tipoSelect.value === 'trabajador') {
       apartamentoGroup.style.display = 'none';
@@ -155,17 +154,13 @@ export function renderRegister(container) {
     } else if (tipoSelect.value === 'cliente') {
       apartamentoGroup.style.display = 'block';
       apartamentoInput.required = true;
-    } else {
-      // Si no hay selección, ocultar por defecto
-      apartamentoGroup.style.display = 'none';
-      apartamentoInput.required = false;
     }
   }
 
-  // Inicializar estado correcto al cargar la página
+  // Inicializar estado
   updateApartamentoVisibility();
 
-  // Actualizar cuando cambie la selección
+  // Actualizar al cambiar
   tipoSelect.addEventListener('change', updateApartamentoVisibility);
 
   // Manejar envío del formulario
@@ -203,9 +198,6 @@ async function loadEdificios() {
 async function handleRegister(e) {
   e.preventDefault();
 
-  alert('🔍 handleRegister fue llamado - el JavaScript SI funciona!');
-  console.log('🔍 handleRegister iniciado');
-
   const nombre = document.getElementById('nombre').value;
   const email = document.getElementById('email').value;
   const telefono = document.getElementById('telefono').value;
@@ -234,35 +226,24 @@ async function handleRegister(e) {
   registerSpinner.classList.remove('hidden');
   errorMessage.classList.add('hidden');
 
-  console.log('🔍 Iniciando registro...');
-  console.log('API_URL:', window.API_URL);
-  console.log('Rol determinado:', rol);
-
   try {
-    const requestBody = {
-      edificio_id: parseInt(edificio_id),
-      nombre,
-      email,
-      password,
-      rol,
-      apartamento: rol === 'residente' ? apartamento : null,
-      telefono
-    };
-
-    console.log('📤 Enviando:', requestBody);
-
     const response = await fetch(`${window.API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        edificio_id: parseInt(edificio_id),
+        nombre,
+        email,
+        password,
+        rol,
+        apartamento: rol === 'residente' ? apartamento : null,
+        telefono
+      })
     });
 
-    console.log('📥 Respuesta recibida:', response.status);
-
     const data = await response.json();
-    console.log('📄 Data:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Error al registrar usuario');
@@ -289,7 +270,6 @@ async function handleRegister(e) {
     }
 
   } catch (error) {
-    console.error('❌ Error en registro:', error);
     errorMessage.textContent = error.message;
     errorMessage.classList.remove('hidden');
     registerBtnText.classList.remove('hidden');
