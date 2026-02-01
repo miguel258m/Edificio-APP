@@ -203,6 +203,9 @@ async function loadEdificios() {
 async function handleRegister(e) {
   e.preventDefault();
 
+  alert('🔍 handleRegister fue llamado - el JavaScript SI funciona!');
+  console.log('🔍 handleRegister iniciado');
+
   const nombre = document.getElementById('nombre').value;
   const email = document.getElementById('email').value;
   const telefono = document.getElementById('telefono').value;
