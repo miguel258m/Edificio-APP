@@ -16,8 +16,16 @@ window.appState = {
 };
 
 // Configuración de la API
-// En producción usa la variable de entorno, en desarrollo usa la IP local
-window.API_URL = import.meta.env.VITE_API_URL || 'http://192.168.18.5:3000/api';
+// Forzamos la URL de producción para asegurar la conexión
+const PRODUCTION_API_URL = 'https://edificio-backend.onrender.com/api';
+const LOCAL_API_URL = 'http://192.168.18.5:3000/api';
+
+// Detectamos si estamos en localhost
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.');
+
+window.API_URL = isLocal ? LOCAL_API_URL : PRODUCTION_API_URL;
+
+console.log('🔌 Conectando a API:', window.API_URL);
 
 // Router simple
 const routes = {
