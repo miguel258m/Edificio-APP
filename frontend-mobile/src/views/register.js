@@ -219,24 +219,35 @@ async function handleRegister(e) {
   registerSpinner.classList.remove('hidden');
   errorMessage.classList.add('hidden');
 
+  console.log('🔍 Iniciando registro...');
+  console.log('API_URL:', window.API_URL);
+  console.log('Rol determinado:', rol);
+
   try {
+    const requestBody = {
+      edificio_id: parseInt(edificio_id),
+      nombre,
+      email,
+      password,
+      rol,
+      apartamento: rol === 'residente' ? apartamento : null,
+      telefono
+    };
+
+    console.log('📤 Enviando:', requestBody);
+
     const response = await fetch(`${window.API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        edificio_id: parseInt(edificio_id),
-        nombre,
-        email,
-        password,
-        rol,
-        apartamento: rol === 'residente' ? apartamento : null,
-        telefono
-      })
+      body: JSON.stringify(requestBody)
     });
 
+    console.log('📥 Respuesta recibida:', response.status);
+
     const data = await response.json();
+    console.log('📄 Data:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Error al registrar usuario');
@@ -263,6 +274,7 @@ async function handleRegister(e) {
     }
 
   } catch (error) {
+    console.error('❌ Error en registro:', error);
     errorMessage.textContent = error.message;
     errorMessage.classList.remove('hidden');
     registerBtnText.classList.remove('hidden');
