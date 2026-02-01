@@ -3,9 +3,9 @@
 // =====================================================
 
 export function renderDashboardVigilante(container) {
-    const user = window.appState.user;
+  const user = window.appState.user;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 2rem 0 3rem; margin-bottom: -2rem;">
@@ -130,73 +130,73 @@ export function renderDashboardVigilante(container) {
     </div>
   `;
 
-    // Cargar datos
-    loadEmergencias();
-    loadMensajes();
-    loadSolicitudesPendientes();
+  // Cargar datos
+  loadEmergencias();
+  loadMensajes();
+  loadSolicitudesPendientes();
 }
 
 window.showAlertaModal = () => {
-    document.getElementById('alertaModal').classList.remove('hidden');
+  document.getElementById('alertaModal').classList.remove('hidden');
 
-    const form = document.getElementById('alertaForm');
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        await enviarAlerta();
-    };
+  const form = document.getElementById('alertaForm');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    await enviarAlerta();
+  };
 };
 
 window.closeAlertaModal = () => {
-    document.getElementById('alertaModal').classList.add('hidden');
-    document.getElementById('alertaForm').reset();
+  document.getElementById('alertaModal').classList.add('hidden');
+  document.getElementById('alertaForm').reset();
 };
 
 async function enviarAlerta() {
-    const tipo = document.getElementById('tipoAlerta').value;
-    const titulo = document.getElementById('tituloAlerta').value;
-    const mensaje = document.getElementById('mensajeAlerta').value;
+  const tipo = document.getElementById('tipoAlerta').value;
+  const titulo = document.getElementById('tituloAlerta').value;
+  const mensaje = document.getElementById('mensajeAlerta').value;
 
-    try {
-        const response = await fetch(`${window.API_URL}/alertas`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${window.appState.token}`
-            },
-            body: JSON.stringify({ tipo, titulo, mensaje })
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/alertas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.appState.token}`
+      },
+      body: JSON.stringify({ tipo, titulo, mensaje })
+    });
 
-        if (response.ok) {
-            alert('✅ Alerta enviada a todos los residentes');
-            closeAlertaModal();
-        } else {
-            alert('❌ Error al enviar alerta');
-        }
-    } catch (error) {
-        alert('❌ Error de conexión');
+    if (response.ok) {
+      alert('✅ Alerta enviada a todos los residentes');
+      closeAlertaModal();
+    } else {
+      alert('❌ Error al enviar alerta');
     }
+  } catch (error) {
+    alert('❌ Error de conexión');
+  }
 }
 
 async function loadEmergencias() {
-    try {
-        const response = await fetch(`${window.API_URL}/emergencias/activas`, {
-            headers: {
-                'Authorization': `Bearer ${window.appState.token}`
-            }
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/emergencias/activas`, {
+      headers: {
+        'Authorization': `Bearer ${window.appState.token}`
+      }
+    });
 
-        const emergencias = await response.json();
-        const container = document.getElementById('emergenciasList');
-        const count = document.getElementById('emergenciasCount');
+    const emergencias = await response.json();
+    const container = document.getElementById('emergenciasList');
+    const count = document.getElementById('emergenciasCount');
 
-        count.textContent = emergencias.length;
+    count.textContent = emergencias.length;
 
-        if (emergencias.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay emergencias activas</p>';
-            return;
-        }
+    if (emergencias.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay emergencias activas</p>';
+      return;
+    }
 
-        container.innerHTML = emergencias.map(e => `
+    container.innerHTML = emergencias.map(e => `
       <div style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600; color: var(--danger);">🚨 ${e.tipo || 'Emergencia'}</span>
@@ -213,31 +213,31 @@ async function loadEmergencias() {
         </button>
       </div>
     `).join('');
-    } catch (error) {
-        console.error('Error al cargar emergencias:', error);
-    }
+  } catch (error) {
+    console.error('Error al cargar emergencias:', error);
+  }
 }
 
 async function loadMensajes() {
-    try {
-        const response = await fetch(`${window.API_URL}/mensajes/no-leidos`, {
-            headers: {
-                'Authorization': `Bearer ${window.appState.token}`
-            }
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/mensajes/no-leidos`, {
+      headers: {
+        'Authorization': `Bearer ${window.appState.token}`
+      }
+    });
 
-        const mensajes = await response.json();
-        const container = document.getElementById('mensajesList');
-        const count = document.getElementById('mensajesCount');
+    const mensajes = await response.json();
+    const container = document.getElementById('mensajesList');
+    const count = document.getElementById('mensajesCount');
 
-        count.textContent = mensajes.length;
+    count.textContent = mensajes.length;
 
-        if (mensajes.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay mensajes nuevos</p>';
-            return;
-        }
+    if (mensajes.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay mensajes nuevos</p>';
+      return;
+    }
 
-        container.innerHTML = mensajes.slice(0, 5).map(m => `
+    container.innerHTML = mensajes.slice(0, 5).map(m => `
       <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem; cursor: pointer;" onclick="abrirChat(${m.remitente_id})">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600;">${m.remitente_nombre}</span>
@@ -248,31 +248,31 @@ async function loadMensajes() {
         <p style="font-size: 0.875rem; color: var(--text-secondary);">${m.contenido}</p>
       </div>
     `).join('');
-    } catch (error) {
-        console.error('Error al cargar mensajes:', error);
-    }
+  } catch (error) {
+    console.error('Error al cargar mensajes:', error);
+  }
 }
 
 async function loadSolicitudesPendientes() {
-    try {
-        const response = await fetch(`${window.API_URL}/solicitudes?estado=pendiente`, {
-            headers: {
-                'Authorization': `Bearer ${window.appState.token}`
-            }
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/solicitudes?estado=pendiente`, {
+      headers: {
+        'Authorization': `Bearer ${window.appState.token}`
+      }
+    });
 
-        const solicitudes = await response.json();
-        const container = document.getElementById('solicitudesList');
-        const count = document.getElementById('solicitudesCount');
+    const solicitudes = await response.json();
+    const container = document.getElementById('solicitudesList');
+    const count = document.getElementById('solicitudesCount');
 
-        count.textContent = solicitudes.length;
+    count.textContent = solicitudes.length;
 
-        if (solicitudes.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay solicitudes pendientes</p>';
-            return;
-        }
+    if (solicitudes.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay solicitudes pendientes</p>';
+      return;
+    }
 
-        container.innerHTML = solicitudes.slice(0, 5).map(s => `
+    container.innerHTML = solicitudes.slice(0, 5).map(s => `
       <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600;">${getTipoIcon(s.tipo)} ${getTipoNombre(s.tipo)}</span>
@@ -284,46 +284,46 @@ async function loadSolicitudesPendientes() {
         </p>
       </div>
     `).join('');
-    } catch (error) {
-        console.error('Error al cargar solicitudes:', error);
-    }
+  } catch (error) {
+    console.error('Error al cargar solicitudes:', error);
+  }
 }
 
 function getTipoIcon(tipo) {
-    const icons = { medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' };
-    return icons[tipo] || '📋';
+  const icons = { medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' };
+  return icons[tipo] || '📋';
 }
 
 function getTipoNombre(tipo) {
-    const nombres = { medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Entretenimiento' };
-    return nombres[tipo] || tipo;
+  const nombres = { medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Entretenimiento' };
+  return nombres[tipo] || tipo;
 }
 
 function getPrioridadColor(prioridad) {
-    const colores = { baja: 'info', media: 'warning', alta: 'danger' };
-    return colores[prioridad] || 'info';
+  const colores = { baja: 'info', media: 'warning', alta: 'danger' };
+  return colores[prioridad] || 'info';
 }
 
 window.atenderEmergencia = async (id) => {
-    if (confirm('¿Marcar esta emergencia como atendida?')) {
-        try {
-            const response = await fetch(`${window.API_URL}/emergencias/${id}/atender`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${window.appState.token}`
-                }
-            });
-
-            if (response.ok) {
-                alert('✅ Emergencia marcada como atendida');
-                loadEmergencias();
-            }
-        } catch (error) {
-            alert('❌ Error al actualizar emergencia');
+  if (confirm('¿Marcar esta emergencia como atendida?')) {
+    try {
+      const response = await fetch(`${window.API_URL}/emergencias/${id}/atender`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`
         }
+      });
+
+      if (response.ok) {
+        alert('✅ Emergencia marcada como atendida');
+        loadEmergencias();
+      }
+    } catch (error) {
+      alert('❌ Error al actualizar emergencia');
     }
+  }
 };
 
-window.abrirChat = (userId) => {
-    alert(`💬 Abrir chat con usuario ${userId}`);
+window.abrirChat = (userId, userName = 'Residente') => {
+  window.navigateTo('/chat', { userId, userName });
 };

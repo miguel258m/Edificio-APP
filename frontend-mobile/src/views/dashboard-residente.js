@@ -3,9 +3,9 @@
 // =====================================================
 
 export function renderDashboardResidente(container) {
-    const user = window.appState.user;
+  const user = window.appState.user;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 0 3rem; margin-bottom: -2rem;">
@@ -131,31 +131,31 @@ export function renderDashboardResidente(container) {
     </div>
   `;
 
-    // Cargar datos
-    loadSolicitudes();
-    loadPagos();
+  // Cargar datos
+  loadSolicitudes();
+  loadPagos();
 }
 
 // Funciones auxiliares
 window.showSolicitudModal = (tipo) => {
-    const modal = document.getElementById('solicitudModal');
-    const title = document.getElementById('modalTitle');
-    const tipoInput = document.getElementById('tipoSolicitud');
-    const camposAdicionales = document.getElementById('camposAdicionales');
+  const modal = document.getElementById('solicitudModal');
+  const title = document.getElementById('modalTitle');
+  const tipoInput = document.getElementById('tipoSolicitud');
+  const camposAdicionales = document.getElementById('camposAdicionales');
 
-    tipoInput.value = tipo;
+  tipoInput.value = tipo;
 
-    const titulos = {
-        'medica': '🏥 Atención Médica',
-        'limpieza': '🧹 Solicitud de Limpieza',
-        'entretenimiento': '🎉 Agendar Entretenimiento'
-    };
+  const titulos = {
+    'medica': '🏥 Atención Médica',
+    'limpieza': '🧹 Solicitud de Limpieza',
+    'entretenimiento': '🎉 Agendar Entretenimiento'
+  };
 
-    title.textContent = titulos[tipo];
+  title.textContent = titulos[tipo];
 
-    // Campos adicionales según tipo
-    if (tipo === 'entretenimiento') {
-        camposAdicionales.innerHTML = `
+  // Campos adicionales según tipo
+  if (tipo === 'entretenimiento') {
+    camposAdicionales.innerHTML = `
       <div class="form-group">
         <label class="form-label">Fecha del evento</label>
         <input type="date" class="form-input" id="fecha" required>
@@ -175,8 +175,8 @@ window.showSolicitudModal = (tipo) => {
         </label>
       </div>
     `;
-    } else if (tipo === 'limpieza') {
-        camposAdicionales.innerHTML = `
+  } else if (tipo === 'limpieza') {
+    camposAdicionales.innerHTML = `
       <div class="form-group">
         <label class="form-label">Área a limpiar</label>
         <select class="form-select" id="area" required>
@@ -192,8 +192,8 @@ window.showSolicitudModal = (tipo) => {
         <input type="date" class="form-input" id="fechaPreferida">
       </div>
     `;
-    } else {
-        camposAdicionales.innerHTML = `
+  } else {
+    camposAdicionales.innerHTML = `
       <div class="form-group">
         <label class="form-label">Nivel de urgencia</label>
         <select class="form-select" id="urgencia" required>
@@ -203,82 +203,82 @@ window.showSolicitudModal = (tipo) => {
         </select>
       </div>
     `;
-    }
+  }
 
-    modal.classList.remove('hidden');
+  modal.classList.remove('hidden');
 
-    // Manejar envío
-    const form = document.getElementById('solicitudForm');
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        await enviarSolicitud();
-    };
+  // Manejar envío
+  const form = document.getElementById('solicitudForm');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    await enviarSolicitud();
+  };
 };
 
 window.closeSolicitudModal = () => {
-    document.getElementById('solicitudModal').classList.add('hidden');
-    document.getElementById('solicitudForm').reset();
+  document.getElementById('solicitudModal').classList.add('hidden');
+  document.getElementById('solicitudForm').reset();
 };
 
 async function enviarSolicitud() {
-    const tipo = document.getElementById('tipoSolicitud').value;
-    const descripcion = document.getElementById('descripcion').value;
+  const tipo = document.getElementById('tipoSolicitud').value;
+  const descripcion = document.getElementById('descripcion').value;
 
-    const detalles = {};
+  const detalles = {};
 
-    if (tipo === 'entretenimiento') {
-        detalles.fecha = document.getElementById('fecha').value;
-        detalles.hora = document.getElementById('hora').value;
-        detalles.invitados = document.getElementById('invitados').value;
-        detalles.con_alcohol = document.getElementById('conAlcohol').checked;
-    } else if (tipo === 'limpieza') {
-        detalles.area = document.getElementById('area').value;
-        detalles.fecha_preferida = document.getElementById('fechaPreferida')?.value;
+  if (tipo === 'entretenimiento') {
+    detalles.fecha = document.getElementById('fecha').value;
+    detalles.hora = document.getElementById('hora').value;
+    detalles.invitados = document.getElementById('invitados').value;
+    detalles.con_alcohol = document.getElementById('conAlcohol').checked;
+  } else if (tipo === 'limpieza') {
+    detalles.area = document.getElementById('area').value;
+    detalles.fecha_preferida = document.getElementById('fechaPreferida')?.value;
+  }
+
+  try {
+    const response = await fetch(`${window.API_URL}/solicitudes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.appState.token}`
+      },
+      body: JSON.stringify({
+        tipo,
+        descripcion,
+        detalles
+      })
+    });
+
+    if (response.ok) {
+      alert('✅ Solicitud enviada correctamente');
+      closeSolicitudModal();
+      loadSolicitudes();
+    } else {
+      alert('❌ Error al enviar solicitud');
     }
-
-    try {
-        const response = await fetch(`${window.API_URL}/solicitudes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${window.appState.token}`
-            },
-            body: JSON.stringify({
-                tipo,
-                descripcion,
-                detalles
-            })
-        });
-
-        if (response.ok) {
-            alert('✅ Solicitud enviada correctamente');
-            closeSolicitudModal();
-            loadSolicitudes();
-        } else {
-            alert('❌ Error al enviar solicitud');
-        }
-    } catch (error) {
-        alert('❌ Error de conexión');
-    }
+  } catch (error) {
+    alert('❌ Error de conexión');
+  }
 }
 
 async function loadSolicitudes() {
-    try {
-        const response = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, {
-            headers: {
-                'Authorization': `Bearer ${window.appState.token}`
-            }
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, {
+      headers: {
+        'Authorization': `Bearer ${window.appState.token}`
+      }
+    });
 
-        const solicitudes = await response.json();
-        const container = document.getElementById('solicitudesList');
+    const solicitudes = await response.json();
+    const container = document.getElementById('solicitudesList');
 
-        if (solicitudes.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes solicitudes</p>';
-            return;
-        }
+    if (solicitudes.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes solicitudes</p>';
+      return;
+    }
 
-        container.innerHTML = solicitudes.slice(0, 3).map(s => `
+    container.innerHTML = solicitudes.slice(0, 3).map(s => `
       <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600;">${getTipoIcon(s.tipo)} ${getTipoNombre(s.tipo)}</span>
@@ -290,28 +290,28 @@ async function loadSolicitudes() {
         </p>
       </div>
     `).join('');
-    } catch (error) {
-        console.error('Error al cargar solicitudes:', error);
-    }
+  } catch (error) {
+    console.error('Error al cargar solicitudes:', error);
+  }
 }
 
 async function loadPagos() {
-    try {
-        const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, {
-            headers: {
-                'Authorization': `Bearer ${window.appState.token}`
-            }
-        });
+  try {
+    const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, {
+      headers: {
+        'Authorization': `Bearer ${window.appState.token}`
+      }
+    });
 
-        const pagos = await response.json();
-        const container = document.getElementById('pagosList');
+    const pagos = await response.json();
+    const container = document.getElementById('pagosList');
 
-        if (pagos.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes pagos registrados</p>';
-            return;
-        }
+    if (pagos.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes pagos registrados</p>';
+      return;
+    }
 
-        container.innerHTML = pagos.slice(0, 3).map(p => `
+    container.innerHTML = pagos.slice(0, 3).map(p => `
       <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
         <div class="flex justify-between items-center mb-1">
           <span style="font-weight: 600;">${p.concepto}</span>
@@ -323,51 +323,71 @@ async function loadPagos() {
         </div>
       </div>
     `).join('');
-    } catch (error) {
-        console.error('Error al cargar pagos:', error);
-    }
+  } catch (error) {
+    console.error('Error al cargar pagos:', error);
+  }
 }
 
 function getTipoIcon(tipo) {
-    const icons = { medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' };
-    return icons[tipo] || '📋';
+  const icons = { medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' };
+  return icons[tipo] || '📋';
 }
 
 function getTipoNombre(tipo) {
-    const nombres = { medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Entretenimiento' };
-    return nombres[tipo] || tipo;
+  const nombres = { medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Entretenimiento' };
+  return nombres[tipo] || tipo;
 }
 
 function getEstadoColor(estado) {
-    const colores = {
-        pendiente: 'warning',
-        en_proceso: 'info',
-        completada: 'success',
-        pagado: 'success',
-        vencido: 'danger'
-    };
-    return colores[estado] || 'info';
+  const colores = {
+    pendiente: 'warning',
+    en_proceso: 'info',
+    completada: 'success',
+    pagado: 'success',
+    vencido: 'danger'
+  };
+  return colores[estado] || 'info';
 }
 
 window.activarEmergencia = () => {
-    if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA? Se notificará al vigilante inmediatamente.')) {
-        // Aquí se enviaría la emergencia
-        alert('✅ Emergencia activada. El vigilante ha sido notificado.');
-    }
+  if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA? Se notificará al vigilante inmediatamente.')) {
+    // Aquí se enviaría la emergencia
+    alert('✅ Emergencia activada. El vigilante ha sido notificado.');
+  }
 };
 
-window.openChat = () => {
-    alert('💬 Función de chat en desarrollo');
+window.openChat = async () => {
+  try {
+    // Buscar al vigilante del edificio
+    const response = await fetch(`${window.API_URL}/usuarios/vigilantes`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const vigilantes = await response.json();
+
+    if (vigilantes.length > 0) {
+      const v = vigilantes[0]; // Tomamos el primero por ahora
+      window.navigateTo('/chat', { userId: v.id, userName: v.nombre });
+    } else {
+      alert('⚠️ No hay vigilantes disponibles en este momento');
+    }
+  } catch (error) {
+    console.error('Error al abrir chat:', error);
+    alert('❌ Error al conectar con el servicio de chat');
+  }
+};
+
+window.logout = () => {
+  alert('💬 Función de chat en desarrollo');
 };
 
 window.showSolicitudes = () => {
-    alert('📋 Vista de solicitudes en desarrollo');
+  alert('📋 Vista de solicitudes en desarrollo');
 };
 
 window.showPerfil = () => {
-    alert('👤 Perfil en desarrollo');
+  alert('👤 Perfil en desarrollo');
 };
 
 window.showPagosModal = () => {
-    alert('💰 Registro de pagos en desarrollo');
+  alert('💰 Registro de pagos en desarrollo');
 };

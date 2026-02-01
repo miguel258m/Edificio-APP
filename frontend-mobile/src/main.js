@@ -6,6 +6,7 @@ import { renderLogin } from './views/login.js';
 import { renderRegister } from './views/register.js';
 import { renderDashboardResidente } from './views/dashboard-residente.js';
 import { renderDashboardVigilante } from './views/dashboard-vigilante.js';
+import { renderChat } from './views/chat.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -42,12 +43,13 @@ const routes = {
     '/': renderLogin,
     '/register': renderRegister,
     '/dashboard-residente': renderDashboardResidente,
-    '/dashboard-vigilante': renderDashboardVigilante
+    '/dashboard-vigilante': renderDashboardVigilante,
+    '/chat': renderChat
 };
 
 // Función para navegar
-window.navigateTo = (path) => {
-    window.history.pushState({}, '', path);
+window.navigateTo = (path, params = {}) => {
+    window.history.pushState(params, '', path);
     router();
 };
 
@@ -64,7 +66,18 @@ function router() {
         }
 
         app.innerHTML = '';
-        render(app);
+
+        if (path === '/chat') {
+            const state = window.history.state || {};
+            if (!state.userId) {
+                console.warn('⚠️ No hay userId para el chat, volviendo al inicio');
+                window.navigateTo('/');
+                return;
+            }
+            renderChat(app, state.userId, state.userName);
+        } else {
+            render(app);
+        }
     } catch (error) {
         console.error('❌ Error en el router:', error);
         mostrarErrorCarga('Error al renderizar la página: ' + error.message);
