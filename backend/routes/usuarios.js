@@ -123,8 +123,6 @@ router.patch('/:id/aprobar', requireRole('admin', 'vigilante'), async (req, res)
     }
 });
 
-});
-
 // =====================================================
 // GET /api/usuarios/pendientes - Usuarios pendientes de aprobación
 // =====================================================
