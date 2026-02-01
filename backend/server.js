@@ -5,6 +5,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import { exec } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 import { testConnection } from './config/database.js';
 import authRoutes from './routes/auth.js';
@@ -81,16 +85,19 @@ app.use('/api/edificios', edificiosRoutes);
 // Endpoint temporal para inicializar la base de datos en producción
 app.get('/api/init-db', async (req, res) => {
     try {
-        const { exec } = require('child_process');
-        const path = require('path');
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
         const scriptPath = path.join(__dirname, 'scripts', 'init-production-db.js');
+
+        console.log('Ejecutando script de inicialización:', scriptPath);
 
         exec(`node ${scriptPath}`, (error, stdout, stderr) => {
             if (error) {
                 console.error('Error al inicializar BD:', error);
                 return res.status(500).json({
                     error: 'Error al inicializar base de datos',
-                    details: error.message
+                    details: error.message,
+                    stderr: stderr
                 });
             }
 
