@@ -144,17 +144,29 @@ export function renderRegister(container) {
   // Manejar cambio de tipo de usuario
   const tipoSelect = document.getElementById('tipo_usuario');
   const apartamentoGroup = document.getElementById('apartamentoGroup');
+  const apartamentoInput = document.getElementById('apartamento');
 
-  tipoSelect.addEventListener('change', (e) => {
-    if (e.target.value === 'trabajador') {
+  // Función para actualizar visibilidad del apartamento
+  function updateApartamentoVisibility() {
+    if (tipoSelect.value === 'trabajador') {
       apartamentoGroup.style.display = 'none';
-      document.getElementById('apartamento').required = false;
-      document.getElementById('apartamento').value = '';
-    } else {
+      apartamentoInput.required = false;
+      apartamentoInput.value = '';
+    } else if (tipoSelect.value === 'cliente') {
       apartamentoGroup.style.display = 'block';
-      document.getElementById('apartamento').required = true;
+      apartamentoInput.required = true;
+    } else {
+      // Si no hay selección, ocultar por defecto
+      apartamentoGroup.style.display = 'none';
+      apartamentoInput.required = false;
     }
-  });
+  }
+
+  // Inicializar estado correcto al cargar la página
+  updateApartamentoVisibility();
+
+  // Actualizar cuando cambie la selección
+  tipoSelect.addEventListener('change', updateApartamentoVisibility);
 
   // Manejar envío del formulario
   const form = document.getElementById('registerForm');
