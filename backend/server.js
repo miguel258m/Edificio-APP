@@ -26,10 +26,17 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://edificio-app.onrender.com'
+];
+
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
-        credentials: true
+        origin: allowedOrigins,
+        credentials: true,
+        methods: ['GET', 'POST']
     }
 });
 
@@ -43,7 +50,6 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // CORS - Configuración flexible
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'https://edificio-app.onrender.com'];
 app.use(cors({
     origin: (origin, callback) => {
         // Permitir requests sin origin (como apps móviles o curl) o si está en la lista blanca
