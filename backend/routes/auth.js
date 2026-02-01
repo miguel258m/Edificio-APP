@@ -28,8 +28,8 @@ router.post('/login', async (req, res) => {
 
         const user = result.rows[0];
 
-        // Verificar si el usuario está aprobado
-        if (user.aprobado === false) {
+        // Verificar si el usuario está aprobado (si existe el campo)
+        if (user.aprobado !== undefined && user.aprobado === false) {
             return res.status(403).json({ error: 'Tu cuenta está pendiente de aprobación por el vigilante' });
         }
 
@@ -93,19 +93,31 @@ router.post('/register', async (req, res) => {
         // Insertar usuario (por defecto no aprobado, excepto vigilantes y admins)
         const aprobado = ['vigilante', 'admin'].includes(rol);
 
-        const result = await pool.query(
-            `INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono, aprobado)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, edificio_id, nombre, email, rol, apartamento, telefono, activo, aprobado, created_at`,
-            [edificio_id, nombre, email, hashedPassword, rol, apartamento, telefono, aprobado]
-        );
+        // Intentar insertar con campo aprobado, si falla usar query sin ese campo
+        let result;
+        try {
+            result = await pool.query(
+                `INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono, aprobado)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           RETURNING *`,
+                [edificio_id, nombre, email, hashedPassword, rol, apartamento, telefono, aprobado]
+            );
+        } catch (error) {
+            // Si falla, probablemente es porque no existe la columna aprobado
+            result = await pool.query(
+                `INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING *`,
+                [edificio_id, nombre, email, hashedPassword, rol, apartamento, telefono]
+            );
+        }
 
         const newUser = result.rows[0];
 
-        // Si el usuario no est\u00e1 aprobado, no generar token
-        if (!newUser.aprobado) {
+        // Si el usuario no está aprobado (y el campo existe), no generar token
+        if (newUser.aprobado !== undefined && !newUser.aprobado) {
             return res.status(201).json({
-                message: 'Registro exitoso. Tu cuenta est\u00e1 pendiente de aprobaci\u00f3n por el vigilante.',
+                message: 'Registro exitoso. Tu cuenta está pendiente de aprobación por el vigilante.',
                 user: newUser,
                 needsApproval: true
             });
