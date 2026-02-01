@@ -376,18 +376,18 @@ window.openChat = async () => {
   }
 };
 
-window.logout = () => {
-  alert('💬 Función de chat en desarrollo');
-};
-
 window.showSolicitudes = () => {
-  alert('📋 Vista de solicitudes en desarrollo');
+  // Ir a la pestaña de solicitudes
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => item.classList.remove('active'));
+  navItems[2].classList.add('active');
+  alert('📋 Pestaña de solicitudes seleccionada');
 };
 
 window.showPerfil = () => {
-  alert('👤 Perfil en desarrollo');
+  alert('👤 Perfil del usuario');
 };
 
 window.showPagosModal = () => {
-  alert('💰 Registro de pagos en desarrollo');
+  alert('💰 Registro de pagos - Pronto disponible');
 };
