@@ -16,14 +16,18 @@ window.appState = {
 };
 
 // Configuración de la API
-// Forzamos la URL de producción para asegurar la conexión
+// Priorizamos la variable de entorno de Vite si existe
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 const PRODUCTION_API_URL = 'https://edificio-backend.onrender.com/api';
-const LOCAL_API_URL = 'http://192.168.18.5:3000/api';
+const LOCAL_API_URL = `http://${window.location.hostname}:3000/api`;
 
-// Detectamos si estamos en localhost
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.');
+// Detectamos si estamos en un entorno local
+const isLocal = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.startsWith('192.168.');
 
-window.API_URL = isLocal ? LOCAL_API_URL : PRODUCTION_API_URL;
+// Determinamos la URL final
+window.API_URL = VITE_API_URL || (isLocal ? LOCAL_API_URL : PRODUCTION_API_URL);
 
 console.log('🔌 Conectando a API:', window.API_URL);
 
@@ -41,38 +45,77 @@ window.navigateTo = (path) => {
     router();
 };
 
-// Router
+// Router con manejo de errores
 function router() {
-    const path = window.location.pathname;
-    const render = routes[path] || routes['/'];
+    try {
+        const path = window.location.pathname;
+        const render = routes[path] || routes['/'];
 
+        const app = document.getElementById('app');
+        if (!app) {
+            console.error('❌ No se encontró el elemento #app');
+            return;
+        }
+
+        app.innerHTML = '';
+        render(app);
+    } catch (error) {
+        console.error('❌ Error en el router:', error);
+        mostrarErrorCarga('Error al renderizar la página: ' + error.message);
+    }
+}
+
+// Función para mostrar error si la app no carga
+function mostrarErrorCarga(mensaje) {
     const app = document.getElementById('app');
-    app.innerHTML = '';
-    render(app);
+    if (app) {
+        app.innerHTML = `
+            <div class="loading-screen" style="padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h2 style="color: var(--danger); margin-bottom: 1rem;">No se pudo cargar la aplicación</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">${mensaje}</p>
+                <button onclick="window.location.reload()" class="btn btn-primary">Reintentar</button>
+            </div>
+        `;
+    }
 }
 
 // Manejar navegación del navegador
 window.addEventListener('popstate', router);
 
 // Verificar si hay sesión guardada
-function checkAuth() {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+async function checkAuth() {
+    try {
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
 
-    if (token && user) {
-        window.appState.token = token;
-        window.appState.user = JSON.parse(user);
+        if (token && userStr) {
+            const user = JSON.parse(userStr);
+            window.appState.token = token;
+            window.appState.user = user;
 
-        // Inicializar socket
-        initSocket(token);
+            // Inicializar socket (no bloqueante)
+            try {
+                initSocket(token);
+            } catch (e) {
+                console.warn('⚠️ Error al inicializar socket:', e);
+            }
 
-        // Redirigir al dashboard correspondiente
-        if (window.appState.user.rol === 'residente') {
-            window.navigateTo('/dashboard-residente');
-        } else if (window.appState.user.rol === 'vigilante') {
-            window.navigateTo('/dashboard-vigilante');
+            // Redirigir al dashboard correspondiente
+            if (user.rol === 'residente') {
+                window.navigateTo('/dashboard-residente');
+            } else if (user.rol === 'vigilante') {
+                window.navigateTo('/dashboard-vigilante');
+            } else {
+                router();
+            }
+        } else {
+            router();
         }
-    } else {
+    } catch (error) {
+        console.error('❌ Error en checkAuth:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         router();
     }
 }
@@ -92,7 +135,14 @@ window.logout = () => {
 };
 
 // Iniciar aplicación
-checkAuth();
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        checkAuth();
+    } catch (error) {
+        console.error('❌ Error crítico al iniciar:', error);
+        mostrarErrorCarga('Error crítico al iniciar la aplicación.');
+    }
+});
 
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {

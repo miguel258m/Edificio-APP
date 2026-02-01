@@ -42,9 +42,17 @@ const PORT = process.env.PORT || 3000;
 // Seguridad
 app.use(helmet());
 
-// CORS - Permitir acceso desde cualquier origen en desarrollo
+// CORS - Configuración flexible
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'https://edificio-app.onrender.com'];
 app.use(cors({
-    origin: true, // Permite cualquier origen en desarrollo
+    origin: (origin, callback) => {
+        // Permitir requests sin origin (como apps móviles o curl) o si está en la lista blanca
+        if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

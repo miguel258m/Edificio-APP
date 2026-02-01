@@ -11,9 +11,12 @@ export function initSocket(token) {
         socket.disconnect();
     }
 
-    const socketUrl = import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace('/api', '')
-        : 'http://192.168.18.5:3000';
+    // Derivar la URL del socket de la API_URL global
+    const socketUrl = window.API_URL
+        ? window.API_URL.replace('/api', '')
+        : (import.meta.env.VITE_API_URL
+            ? import.meta.env.VITE_API_URL.replace('/api', '')
+            : `http://${window.location.hostname}:3000`);
 
     socket = io(socketUrl, {
         auth: {

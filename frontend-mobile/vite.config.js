@@ -29,7 +29,7 @@ export default defineConfig({
             workbox: {
                 runtimeCaching: [
                     {
-                        urlPattern: /^https:\/\/api\./,
+                        urlPattern: ({ url }) => url.pathname.startsWith('/api') || url.href.includes('onrender.com/api'),
                         handler: 'NetworkFirst',
                         options: {
                             cacheName: 'api-cache',
