@@ -377,11 +377,7 @@ window.openChat = async () => {
 };
 
 window.showSolicitudes = () => {
-  // Ir a la pestaña de solicitudes
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => item.classList.remove('active'));
-  navItems[2].classList.add('active');
-  alert('📋 Pestaña de solicitudes seleccionada');
+  window.navigateTo('/solicitudes');
 };
 
 window.showPerfil = () => {

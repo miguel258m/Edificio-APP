@@ -7,6 +7,7 @@ import { renderRegister } from './views/register.js';
 import { renderDashboardResidente } from './views/dashboard-residente.js';
 import { renderDashboardVigilante } from './views/dashboard-vigilante.js';
 import { renderChat } from './views/chat.js';
+import { renderSolicitudes } from './views/solicitudes.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -44,7 +45,8 @@ const routes = {
     '/register': renderRegister,
     '/dashboard-residente': renderDashboardResidente,
     '/dashboard-vigilante': renderDashboardVigilante,
-    '/chat': renderChat
+    '/chat': renderChat,
+    '/solicitudes': renderSolicitudes
 };
 
 // Función para navegar
