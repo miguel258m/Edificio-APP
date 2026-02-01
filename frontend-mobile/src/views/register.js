@@ -3,7 +3,7 @@
 // =====================================================
 
 export function renderRegister(container) {
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem;">
       <div class="container" style="max-width: 400px;">
         
@@ -133,119 +133,125 @@ export function renderRegister(container) {
     </div>
   `;
 
-    // Cargar edificios
+  // Cargar edificios con un pequeño delay para asegurar que API_URL esté listo
+  setTimeout(() => {
     loadEdificios();
+  }, 100);
 
-    // Manejar cambio de rol
-    const rolSelect = document.getElementById('rol');
-    const apartamentoGroup = document.getElementById('apartamentoGroup');
+  // Manejar cambio de rol
+  const rolSelect = document.getElementById('rol');
+  const apartamentoGroup = document.getElementById('apartamentoGroup');
 
-    rolSelect.addEventListener('change', (e) => {
-        if (e.target.value === 'vigilante') {
-            apartamentoGroup.style.display = 'none';
-            document.getElementById('apartamento').required = false;
-        } else {
-            apartamentoGroup.style.display = 'block';
-            document.getElementById('apartamento').required = true;
-        }
-    });
+  rolSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'vigilante') {
+      apartamentoGroup.style.display = 'none';
+      document.getElementById('apartamento').required = false;
+    } else {
+      apartamentoGroup.style.display = 'block';
+      document.getElementById('apartamento').required = true;
+    }
+  });
 
-    // Manejar envío del formulario
-    const form = document.getElementById('registerForm');
-    form.addEventListener('submit', handleRegister);
+  // Manejar envío del formulario
+  const form = document.getElementById('registerForm');
+  form.addEventListener('submit', handleRegister);
 
-    // Botón volver al login
-    document.getElementById('backToLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        window.navigateTo('/');
-    });
+  // Botón volver al login
+  document.getElementById('backToLogin').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.navigateTo('/');
+  });
 }
 
 async function loadEdificios() {
-    try {
-        const response = await fetch(`${window.API_URL}/edificios/public`);
-        const edificios = await response.json();
+  try {
+    const response = await fetch(`${window.API_URL}/edificios/public`);
+    const edificios = await response.json();
 
-        const select = document.getElementById('edificio_id');
-        edificios.forEach(edificio => {
-            const option = document.createElement('option');
-            option.value = edificio.id;
-            option.textContent = edificio.nombre;
-            select.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error al cargar edificios:', error);
+    const select = document.getElementById('edificio_id');
+    edificios.forEach(edificio => {
+      const option = document.createElement('option');
+      option.value = edificio.id;
+      option.textContent = edificio.nombre;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error al cargar edificios:', error);
+    const select = document.getElementById('edificio_id');
+    if (select) {
+      select.innerHTML = '<option value="">❌ Error al cargar edificios</option>';
     }
+  }
 }
 
 async function handleRegister(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const telefono = document.getElementById('telefono').value;
-    const edificio_id = document.getElementById('edificio_id').value;
-    const rol = document.getElementById('rol').value;
-    const apartamento = document.getElementById('apartamento').value;
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
+  const nombre = document.getElementById('nombre').value;
+  const email = document.getElementById('email').value;
+  const telefono = document.getElementById('telefono').value;
+  const edificio_id = document.getElementById('edificio_id').value;
+  const rol = document.getElementById('rol').value;
+  const apartamento = document.getElementById('apartamento').value;
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
 
-    const errorMessage = document.getElementById('errorMessage');
-    const registerBtnText = document.getElementById('registerBtnText');
-    const registerSpinner = document.getElementById('registerSpinner');
+  const errorMessage = document.getElementById('errorMessage');
+  const registerBtnText = document.getElementById('registerBtnText');
+  const registerSpinner = document.getElementById('registerSpinner');
 
-    // Validar contraseñas
-    if (password !== confirmPassword) {
-        errorMessage.textContent = 'Las contraseñas no coinciden';
-        errorMessage.classList.remove('hidden');
-        return;
+  // Validar contraseñas
+  if (password !== confirmPassword) {
+    errorMessage.textContent = 'Las contraseñas no coinciden';
+    errorMessage.classList.remove('hidden');
+    return;
+  }
+
+  // Mostrar loading
+  registerBtnText.classList.add('hidden');
+  registerSpinner.classList.remove('hidden');
+  errorMessage.classList.add('hidden');
+
+  try {
+    const response = await fetch(`${window.API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        edificio_id: parseInt(edificio_id),
+        nombre,
+        email,
+        password,
+        rol,
+        apartamento: rol === 'residente' ? apartamento : 'Caseta',
+        telefono
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al registrar usuario');
     }
 
-    // Mostrar loading
-    registerBtnText.classList.add('hidden');
-    registerSpinner.classList.remove('hidden');
-    errorMessage.classList.add('hidden');
+    // Guardar token y usuario
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    window.appState.token = data.token;
+    window.appState.user = data.user;
 
-    try {
-        const response = await fetch(`${window.API_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                edificio_id: parseInt(edificio_id),
-                nombre,
-                email,
-                password,
-                rol,
-                apartamento: rol === 'residente' ? apartamento : 'Caseta',
-                telefono
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Error al registrar usuario');
-        }
-
-        // Guardar token y usuario
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.appState.token = data.token;
-        window.appState.user = data.user;
-
-        // Redirigir según el rol
-        if (data.user.rol === 'residente') {
-            window.navigateTo('/dashboard-residente');
-        } else if (data.user.rol === 'vigilante') {
-            window.navigateTo('/dashboard-vigilante');
-        }
-
-    } catch (error) {
-        errorMessage.textContent = error.message;
-        errorMessage.classList.remove('hidden');
-        registerBtnText.classList.remove('hidden');
-        registerSpinner.classList.add('hidden');
+    // Redirigir según el rol
+    if (data.user.rol === 'residente') {
+      window.navigateTo('/dashboard-residente');
+    } else if (data.user.rol === 'vigilante') {
+      window.navigateTo('/dashboard-vigilante');
     }
+
+  } catch (error) {
+    errorMessage.textContent = error.message;
+    errorMessage.classList.remove('hidden');
+    registerBtnText.classList.remove('hidden');
+    registerSpinner.classList.add('hidden');
+  }
 }
