@@ -8,6 +8,7 @@ import { renderDashboardResidente } from './views/dashboard-residente.js';
 import { renderDashboardVigilante } from './views/dashboard-vigilante.js';
 import { renderChat } from './views/chat.js';
 import { renderSolicitudes } from './views/solicitudes.js';
+import { renderDashboardLimpieza } from './views/dashboard-limpieza.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -45,6 +46,7 @@ const routes = {
     '/register': renderRegister,
     '/dashboard-residente': renderDashboardResidente,
     '/dashboard-vigilante': renderDashboardVigilante,
+    '/dashboard-limpieza': renderDashboardLimpieza,
     '/chat': renderChat,
     '/solicitudes': renderSolicitudes
 };
@@ -123,13 +125,15 @@ async function checkAuth() {
             }
 
             // Redirigir al dashboard correspondiente
+            let redirectToPath = '/'; // Default to login page
             if (user.rol === 'residente') {
-                window.navigateTo('/dashboard-residente');
-            } else if (user.rol === 'vigilante') {
-                window.navigateTo('/dashboard-vigilante');
-            } else {
-                router();
+                redirectToPath = '/dashboard-residente';
+            } else if (user.rol === 'vigilante' || user.rol === 'admin') {
+                redirectToPath = '/dashboard-vigilante';
+            } else if (user.rol === 'limpieza') {
+                redirectToPath = '/dashboard-limpieza';
             }
+            window.navigateTo(redirectToPath);
         } else {
             router();
         }

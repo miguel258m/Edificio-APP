@@ -126,4 +126,37 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
+// =====================================================
+// PATCH /api/solicitudes/:id/estado - Actualizar estado de solicitud
+// =====================================================
+router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado } = req.body;
+
+        const validEstados = ['pendiente', 'en_proceso', 'completada', 'rechazada'];
+        if (!validEstados.includes(estado)) {
+            return res.status(400).json({ error: 'Estado no válido' });
+        }
+
+        const result = await pool.query(
+            `UPDATE solicitudes 
+             SET estado = $1 
+             WHERE id = $2 
+             RETURNING *`,
+            [estado, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al actualizar estado:', error);
+        res.status(500).json({ error: 'Error al actualizar estado' });
+    }
+});
+
 export default router;
