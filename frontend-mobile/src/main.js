@@ -12,6 +12,7 @@ import { renderDashboardLimpieza } from './views/dashboard-limpieza.js';
 import { renderChats } from './views/chats.js';
 import { renderPerfil } from './views/perfil.js';
 import { renderDashboardGerente } from './views/dashboard-gerente.js';
+import { renderGestionUsuarios } from './views/gestion-usuarios.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -54,7 +55,8 @@ const routes = {
     '/chat': renderChat,
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
-    '/perfil': renderPerfil
+    '/perfil': renderPerfil,
+    '/gestion-usuarios': renderGestionUsuarios
 };
 
 // Función para navegar

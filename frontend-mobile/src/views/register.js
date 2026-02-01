@@ -67,12 +67,14 @@ export function renderRegister(container) {
             </div>
 
               <label class="form-label">Tipo de usuario</label>
-              <select class="form-input" id="rol" required>
-                <option value="residente">Residente</option>
-                <option value="vigilante">Vigilante</option>
-                <option value="limpieza">Personal de Limpieza</option>
-                <option value="gerente">Gerente</option>
+              <select class="form-input" id="tipo_usuario" required>
+                <option value="">Selecciona tipo</option>
+                <option value="cliente">🏠 Cliente/Residente</option>
+                <option value="trabajador">👷 Trabajador del Edificio</option>
               </select>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">
+                Los trabajadores requieren aprobación del administrador
+              </small>
             </div>
 
             <div class="form-group" id="apartamentoGroup">
@@ -139,16 +141,15 @@ export function renderRegister(container) {
     loadEdificios();
   }, 100);
 
-  // Manejar cambio de rol
-  const rolSelect = document.getElementById('rol');
+  // Manejar cambio de tipo de usuario
+  const tipoSelect = document.getElementById('tipo_usuario');
   const apartamentoGroup = document.getElementById('apartamentoGroup');
 
-  rolSelect.addEventListener('change', (e) => {
-    const rolesWithoutApartment = ['vigilante', 'limpieza', 'gerente'];
-    if (rolesWithoutApartment.includes(e.target.value)) {
+  tipoSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'trabajador') {
       apartamentoGroup.style.display = 'none';
       document.getElementById('apartamento').required = false;
-      document.getElementById('apartamento').value = ''; // Limpiar valor
+      document.getElementById('apartamento').value = '';
     } else {
       apartamentoGroup.style.display = 'block';
       document.getElementById('apartamento').required = true;
@@ -194,10 +195,13 @@ async function handleRegister(e) {
   const email = document.getElementById('email').value;
   const telefono = document.getElementById('telefono').value;
   const edificio_id = document.getElementById('edificio_id').value;
-  const rol = document.getElementById('rol').value;
+  const tipo_usuario = document.getElementById('tipo_usuario').value;
   const apartamento = document.getElementById('apartamento').value;
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
+
+  // Mapear tipo_usuario a rol
+  const rol = tipo_usuario === 'cliente' ? 'residente' : 'trabajador_pendiente';
 
   const errorMessage = document.getElementById('errorMessage');
   const registerBtnText = document.getElementById('registerBtnText');
