@@ -66,11 +66,12 @@ export function renderRegister(container) {
               </select>
             </div>
 
-            <div class="form-group">
               <label class="form-label">Tipo de usuario</label>
               <select class="form-input" id="rol" required>
                 <option value="residente">Residente</option>
                 <option value="vigilante">Vigilante</option>
+                <option value="limpieza">Personal de Limpieza</option>
+                <option value="gerente">Gerente</option>
               </select>
             </div>
 
