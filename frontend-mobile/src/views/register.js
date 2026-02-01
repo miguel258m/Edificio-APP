@@ -144,9 +144,11 @@ export function renderRegister(container) {
   const apartamentoGroup = document.getElementById('apartamentoGroup');
 
   rolSelect.addEventListener('change', (e) => {
-    if (e.target.value === 'vigilante') {
+    const rolesWithoutApartment = ['vigilante', 'limpieza', 'gerente'];
+    if (rolesWithoutApartment.includes(e.target.value)) {
       apartamentoGroup.style.display = 'none';
       document.getElementById('apartamento').required = false;
+      document.getElementById('apartamento').value = ''; // Limpiar valor
     } else {
       apartamentoGroup.style.display = 'block';
       document.getElementById('apartamento').required = true;
