@@ -85,4 +85,26 @@ router.patch('/:id/leer', async (req, res) => {
     }
 });
 
+// =====================================================
+// PATCH /api/mensajes/conversacion/:userId/leer - Leer toda la conversación
+// =====================================================
+router.patch('/conversacion/:userId/leer', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const currentUserId = req.user.id;
+
+        await pool.query(
+            `UPDATE mensajes 
+             SET leido = true 
+             WHERE remitente_id = $1 AND destinatario_id = $2 AND leido = false`,
+            [userId, currentUserId]
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al marcar conversación como leída:', error);
+        res.status(500).json({ error: 'Error al marcar conversación como leída' });
+    }
+});
+
 export default router;

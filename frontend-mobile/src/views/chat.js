@@ -3,10 +3,10 @@
 // =====================================================
 
 export function renderChat(container, targetUserId, targetUserName) {
-    const user = window.appState.user;
-    const token = window.appState.token;
+  const user = window.appState.user;
+  const token = window.appState.token;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page" style="display: flex; flex-direction: column; height: 100vh; background: var(--bg-primary);">
       <!-- Chat Header -->
       <div style="background: var(--bg-secondary); padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem;">
@@ -41,99 +41,107 @@ export function renderChat(container, targetUserId, targetUserName) {
     </div>
   `;
 
-    const messagesArea = document.getElementById('messagesArea');
-    const chatForm = document.getElementById('chatForm');
-    const messageInput = document.getElementById('messageInput');
-    const typingIndicator = document.getElementById('typingIndicator');
+  const messagesArea = document.getElementById('messagesArea');
+  const chatForm = document.getElementById('chatForm');
+  const messageInput = document.getElementById('messageInput');
+  const typingIndicator = document.getElementById('typingIndicator');
 
-    // Cargar historial
-    loadHistory();
+  // Cargar historial
+  loadHistory();
 
-    // Manejar envío de mensaje
-    chatForm.onsubmit = (e) => {
-        e.preventDefault();
-        const content = messageInput.value.trim();
-        if (!content) return;
+  // Manejar envío de mensaje
+  chatForm.onsubmit = (e) => {
+    e.preventDefault();
+    const content = messageInput.value.trim();
+    if (!content) return;
 
-        if (window.appState.socket && window.appState.socket.connected) {
-            window.appState.socket.emit('enviar_mensaje', {
-                destinatario_id: targetUserId,
-                contenido: content
-            });
-            messageInput.value = '';
-        } else {
-            alert('⚠️ No hay conexión con el servidor. Reintentando...');
-        }
-    };
+    if (window.appState.socket && window.appState.socket.connected) {
+      window.appState.socket.emit('enviar_mensaje', {
+        destinatario_id: targetUserId,
+        contenido: content
+      });
+      messageInput.value = '';
+    } else {
+      alert('⚠️ No hay conexión con el servidor. Reintentando...');
+    }
+  };
 
-    // Typing indicator delay
-    let typingTimer;
-    messageInput.oninput = () => {
-        if (window.appState.socket) {
-            window.appState.socket.emit('typing', { targetUserId });
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(() => {
-                // stop typing event could be added here
-            }, 2000);
-        }
-    };
-
-    // Escuchar nuevos mensajes
-    const onNuevoMensaje = (mensaje) => {
-        if (
-            (mensaje.remitente_id === targetUserId && mensaje.destinatario_id === user.id) ||
-            (mensaje.remitente_id === user.id && mensaje.destinatario_id === targetUserId)
-        ) {
-            appendMessage(mensaje);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-        }
-    };
-
-    // Limpiar listener anterior si existe y registrar nuevo
+  // Typing indicator delay
+  let typingTimer;
+  messageInput.oninput = () => {
     if (window.appState.socket) {
-        window.appState.socket.off('nuevo_mensaje');
-        window.appState.socket.on('nuevo_mensaje', onNuevoMensaje);
-
-        window.appState.socket.on('user_typing', (data) => {
-            if (data.userId === targetUserId) {
-                typingIndicator.textContent = `${targetUserName} está escribiendo...`;
-                setTimeout(() => typingIndicator.textContent = '', 3000);
-            }
-        });
+      window.appState.socket.emit('typing', { targetUserId });
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        // stop typing event could be added here
+      }, 2000);
     }
+  };
 
-    async function loadHistory() {
-        try {
-            const response = await fetch(`${window.API_URL}/mensajes/conversacion/${targetUserId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            messagesArea.innerHTML = '';
-            data.forEach(appendMessage);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-        } catch (error) {
-            messagesArea.innerHTML = '<p style="color: var(--danger); text-align: center;">Error al cargar mensajes</p>';
-        }
+  // Escuchar nuevos mensajes
+  const onNuevoMensaje = (mensaje) => {
+    if (
+      (mensaje.remitente_id === targetUserId && mensaje.destinatario_id === user.id) ||
+      (mensaje.remitente_id === user.id && mensaje.destinatario_id === targetUserId)
+    ) {
+      appendMessage(mensaje);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
     }
+  };
 
-    function appendMessage(msg) {
-        const isMine = msg.remitente_id === user.id;
-        const msgDiv = document.createElement('div');
-        msgDiv.style.alignSelf = isMine ? 'flex-end' : 'flex-start';
-        msgDiv.style.maxWidth = '80%';
-        msgDiv.style.padding = '0.75rem 1rem';
-        msgDiv.style.borderRadius = isMine ? '1rem 1rem 0 1rem' : '1rem 1rem 1rem 0';
-        msgDiv.style.background = isMine ? 'var(--primary)' : 'var(--bg-secondary)';
-        msgDiv.style.color = isMine ? 'white' : 'var(--text-primary)';
-        msgDiv.style.fontSize = '0.875rem';
-        msgDiv.style.boxShadow = 'var(--shadow-sm)';
+  // Limpiar listener anterior si existe y registrar nuevo
+  if (window.appState.socket) {
+    window.appState.socket.off('nuevo_mensaje');
+    window.appState.socket.on('nuevo_mensaje', onNuevoMensaje);
 
-        msgDiv.innerHTML = `
+    window.appState.socket.on('user_typing', (data) => {
+      if (data.userId === targetUserId) {
+        typingIndicator.textContent = `${targetUserName} está escribiendo...`;
+        setTimeout(() => typingIndicator.textContent = '', 3000);
+      }
+    });
+  }
+
+  async function loadHistory() {
+    try {
+      // Cargar historial
+      const response = await fetch(`${window.API_URL}/mensajes/conversacion/${targetUserId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      messagesArea.innerHTML = '';
+      data.forEach(appendMessage);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+
+      // Marcar como leídos
+      fetch(`${window.API_URL}/mensajes/conversacion/${targetUserId}/leer`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(console.error);
+
+    } catch (error) {
+      messagesArea.innerHTML = '<p style="color: var(--danger); text-align: center;">Error al cargar mensajes</p>';
+    }
+  }
+
+  function appendMessage(msg) {
+    const isMine = msg.remitente_id === user.id;
+    const msgDiv = document.createElement('div');
+    msgDiv.style.alignSelf = isMine ? 'flex-end' : 'flex-start';
+    msgDiv.style.maxWidth = '80%';
+    msgDiv.style.padding = '0.75rem 1rem';
+    msgDiv.style.borderRadius = isMine ? '1rem 1rem 0 1rem' : '1rem 1rem 1rem 0';
+    msgDiv.style.background = isMine ? 'var(--primary)' : 'var(--bg-secondary)';
+    msgDiv.style.color = isMine ? 'white' : 'var(--text-primary)';
+    msgDiv.style.fontSize = '0.875rem';
+    msgDiv.style.boxShadow = 'var(--shadow-sm)';
+
+    msgDiv.innerHTML = `
       <div>${msg.contenido}</div>
       <div style="font-size: 0.7rem; opacity: 0.7; text-align: right; margin-top: 0.25rem;">
         ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </div>
     `;
-        messagesArea.appendChild(msgDiv);
-    }
+    messagesArea.appendChild(msgDiv);
+  }
 }

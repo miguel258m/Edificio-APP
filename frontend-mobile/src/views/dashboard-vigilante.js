@@ -237,15 +237,34 @@ async function loadMensajes() {
       return;
     }
 
-    container.innerHTML = mensajes.slice(0, 5).map(m => `
-      <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem; cursor: pointer;" onclick="abrirChat(${m.remitente_id})">
+    // Agrupar mensajes por remitente
+    const grouped = mensajes.reduce((acc, current) => {
+      if (!acc[current.remitente_id]) {
+        acc[current.remitente_id] = {
+          ...current,
+          count: 0
+        };
+      }
+      acc[current.remitente_id].count++;
+      return acc;
+    }, {});
+
+    const chatList = Object.values(grouped);
+
+    container.innerHTML = chatList.slice(0, 5).map(m => `
+      <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem; cursor: pointer; position: relative;" onclick="abrirChat(${m.remitente_id}, '${m.remitente_nombre}')">
         <div class="flex justify-between items-center mb-1">
-          <span style="font-weight: 600;">${m.remitente_nombre}</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 600;">${m.remitente_nombre}</span>
+            <span class="badge badge-warning" style="font-size: 0.7rem; padding: 0.1rem 0.4rem;">${m.count}</span>
+          </div>
           <span style="font-size: 0.75rem; color: var(--text-muted);">
             ${new Date(m.created_at).toLocaleTimeString()}
           </span>
         </div>
-        <p style="font-size: 0.875rem; color: var(--text-secondary);">${m.contenido}</p>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${m.contenido}
+        </p>
       </div>
     `).join('');
   } catch (error) {
