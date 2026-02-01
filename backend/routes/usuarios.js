@@ -62,6 +62,36 @@ router.get('/vigilantes', async (req, res) => {
 });
 
 // =====================================================
+// PATCH /api/usuarios/perfil - Actualizar perfil del usuario
+// =====================================================
+router.patch('/perfil', async (req, res) => {
+    try {
+        const { nombre, telefono, apartamento } = req.body;
+        const userId = req.user.id;
+
+        const result = await pool.query(
+            `UPDATE usuarios 
+             SET nombre = COALESCE($1, nombre),
+                 telefono = COALESCE($2, telefono),
+                 apartamento = COALESCE($3, apartamento)
+             WHERE id = $4
+             RETURNING id, nombre, email, telefono, apartamento, rol`,
+            [nombre, telefono, apartamento, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        res.status(500).json({ error: 'Error al actualizar perfil' });
+    }
+});
+
+// =====================================================
 // PATCH /api/usuarios/:id/aprobar - Aprobar/Rechazar usuario
 // =====================================================
 router.patch('/:id/aprobar', requireRole('admin', 'vigilante'), async (req, res) => {

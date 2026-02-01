@@ -9,6 +9,8 @@ import { renderDashboardVigilante } from './views/dashboard-vigilante.js';
 import { renderChat } from './views/chat.js';
 import { renderSolicitudes } from './views/solicitudes.js';
 import { renderDashboardLimpieza } from './views/dashboard-limpieza.js';
+import { renderChats } from './views/chats.js';
+import { renderPerfil } from './views/perfil.js';
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -48,7 +50,9 @@ const routes = {
     '/dashboard-vigilante': renderDashboardVigilante,
     '/dashboard-limpieza': renderDashboardLimpieza,
     '/chat': renderChat,
-    '/solicitudes': renderSolicitudes
+    '/chats': renderChats,
+    '/solicitudes': renderSolicitudes,
+    '/perfil': renderPerfil
 };
 
 // Función para navegar

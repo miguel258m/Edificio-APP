@@ -107,4 +107,59 @@ router.patch('/conversacion/:userId/leer', async (req, res) => {
     }
 });
 
+// =====================================================
+// GET /api/mensajes/conversaciones - Obtener lista de conversaciones
+// =====================================================
+router.get('/conversaciones', async (req, res) => {
+    try {
+        const currentUserId = req.user.id;
+
+        const result = await pool.query(
+            `SELECT DISTINCT
+                CASE 
+                    WHEN remitente_id = $1 THEN destinatario_id
+                    ELSE remitente_id
+                END AS usuario_id,
+                u.nombre,
+                (
+                    SELECT contenido 
+                    FROM mensajes 
+                    WHERE (remitente_id = currentUserId AND destinatario_id = usuario_id) 
+                       OR (remitente_id = usuario_id AND destinatario_id = currentUserId)
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                ) AS ultimo_mensaje,
+                (
+                    SELECT created_at 
+                    FROM mensajes 
+                    WHERE (remitente_id = $1 AND destinatario_id = usuario_id) 
+                       OR (remitente_id = usuario_id AND destinatario_id = $1)
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                ) AS ultima_fecha,
+                (
+                    SELECT COUNT(*) 
+                    FROM mensajes 
+                    WHERE remitente_id = usuario_id 
+                      AND destinatario_id = $1 
+                      AND leido = false
+                ) AS no_leidos
+            FROM mensajes m
+            JOIN usuarios u ON u.id = CASE 
+                WHEN m.remitente_id = $1 THEN m.destinatario_id
+                ELSE m.remitente_id
+            END
+            WHERE remitente_id = $1 OR destinatario_id = $1
+            ORDER BY ultima_fecha DESC`,
+            [currentUserId]
+        );
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('Error al obtener conversaciones:', error);
+        res.status(500).json({ error: 'Error al obtener conversaciones' });
+    }
+});
+
 export default router;

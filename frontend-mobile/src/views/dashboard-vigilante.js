@@ -75,11 +75,11 @@ export function renderDashboardVigilante(container) {
           <span class="nav-icon">🏠</span>
           <span>Inicio</span>
         </a>
-        <a href="#" class="nav-item">
+        <a href="#" class="nav-item" onclick="window.navigateTo('/chats'); return false;">
           <span class="nav-icon">💬</span>
           <span>Chats</span>
         </a>
-        <a href="#" class="nav-item">
+        <a href="#" class="nav-item" onclick="window.navigateTo('/solicitudes'); return false;">
           <span class="nav-icon">📋</span>
           <span>Solicitudes</span>
         </a>
