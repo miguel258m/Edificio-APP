@@ -13,7 +13,7 @@ export async function initDatabase() {
 
         // Leer y ejecutar init.sql
         const initSQL = fs.readFileSync(
-            path.join(__dirname, '../../database/init.sql'),
+            path.join(__dirname, '../database/init.sql'),
             'utf8'
         );
 
