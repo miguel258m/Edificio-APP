@@ -80,6 +80,7 @@ export function renderGestionUsuarios(container) {
             <option value="limpieza">🧹 Personal de Limpieza</option>
             <option value="vigilante">👮 Vigilante</option>
             <option value="gerente">📊 Gerente</option>
+            <option value="medico">👨‍⚕️ Personal Médico</option>
             <option value="residente">🏠 Residente</option>
           </select>
         </div>
@@ -122,13 +123,24 @@ export function renderGestionUsuarios(container) {
 
   async function loadUsuariosPendientes() {
     try {
+      console.log('Fetching pending users from:', `${window.API_URL}/usuarios/pendientes`);
       const response = await fetch(`${window.API_URL}/usuarios/pendientes`, {
         headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
 
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response NOT OK:', errorText);
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
+      }
+
       const usuarios = await response.json();
+      console.log('Pending users received:', usuarios);
       const container = document.getElementById('usuariosPendientesList');
-      document.getElementById('countPendientes').textContent = usuarios.length;
+      if (document.getElementById('countPendientes')) {
+        document.getElementById('countPendientes').textContent = usuarios.length;
+      }
 
       if (usuarios.length === 0) {
         container.innerHTML = `
@@ -176,6 +188,7 @@ export function renderGestionUsuarios(container) {
       document.getElementById('usuariosPendientesList').innerHTML = `
         <div class="card" style="padding: 2rem; text-align: center; color: var(--danger);">
           <p>❌ Error al cargar usuarios</p>
+          <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.8;">${error.message}</p>
         </div>
       `;
     }
@@ -183,11 +196,20 @@ export function renderGestionUsuarios(container) {
 
   async function loadUsuariosAprobados() {
     try {
+      console.log('Fetching approved users...');
       const response = await fetch(`${window.API_URL}/usuarios/aprobados`, {
         headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
 
+      console.log('Aprobados status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Aprobados error text:', errorText);
+        throw new Error(errorText);
+      }
+
       const usuarios = await response.json();
+      console.log('Aprobados received:', usuarios);
       const container = document.getElementById('usuariosAprobadosList');
 
       if (usuarios.length === 0) {
@@ -315,6 +337,7 @@ export function renderGestionUsuarios(container) {
       limpieza: 'success',
       vigilante: 'primary',
       gerente: 'info',
+      medico: 'danger',
       residente: 'secondary'
     };
     return colores[rol] || 'secondary';
@@ -325,6 +348,7 @@ export function renderGestionUsuarios(container) {
       limpieza: 'Personal de Limpieza',
       vigilante: 'Vigilante',
       gerente: 'Gerente',
+      medico: 'Personal Médico',
       residente: 'Residente'
     };
     return labels[rol] || rol;

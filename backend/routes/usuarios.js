@@ -91,6 +91,29 @@ router.get('/vigilantes', async (req, res) => {
 });
 
 // =====================================================
+// GET /api/usuarios/medicos - Obtener médicos del edificio (para residentes)
+// =====================================================
+router.get('/medicos', async (req, res) => {
+    try {
+        const edificio_id = req.user.edificio_id;
+
+        const result = await pool.query(
+            `SELECT id, nombre, email, rol, activo, created_at
+             FROM usuarios
+             WHERE edificio_id = $1 AND rol = 'medico' AND activo = true
+             ORDER BY nombre ASC`,
+            [edificio_id]
+        );
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('Error al obtener médicos:', error);
+        res.status(500).json({ error: 'Error al obtener médicos' });
+    }
+});
+
+// =====================================================
 // PATCH /api/usuarios/perfil - Actualizar perfil del usuario
 // =====================================================
 router.patch('/perfil', async (req, res) => {
@@ -229,7 +252,7 @@ router.get('/pendientes', requireRole('admin', 'gerente', 'vigilante'), async (r
 
     } catch (error) {
         console.error('Error al obtener usuarios pendientes:', error);
-        res.status(500).json({ error: 'Error al obtener usuarios pendientes' });
+        res.status(500).json({ error: 'Error al obtener usuarios pendientes: ' + error.message });
     }
 });
 
@@ -264,7 +287,7 @@ router.get('/aprobados', requireRole('admin', 'gerente', 'vigilante'), async (re
 
     } catch (error) {
         console.error('Error al obtener usuarios aprobados:', error);
-        res.status(500).json({ error: 'Error al obtener usuarios aprobados' });
+        res.status(500).json({ error: 'Error al obtener usuarios aprobados: ' + error.message });
     }
 });
 
@@ -276,7 +299,7 @@ router.patch('/:id/asignar-rol', requireRole('admin', 'gerente'), async (req, re
         const { id } = req.params;
         const { rol } = req.body;
 
-        const validRoles = ['limpieza', 'vigilante', 'gerente', 'residente'];
+        const validRoles = ['limpieza', 'vigilante', 'gerente', 'residente', 'medico'];
         if (!validRoles.includes(rol)) {
             console.error('Intento de asignar rol no válido:', rol);
             return res.status(400).json({ error: 'Rol no válido: ' + rol });

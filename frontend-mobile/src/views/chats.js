@@ -3,9 +3,9 @@
 // =====================================================
 
 export function renderChats(container) {
-    const user = window.appState.user;
+  const user = window.appState.user;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="page">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 1rem; margin-bottom: 1rem;">
@@ -30,7 +30,7 @@ export function renderChats(container) {
 
       <!-- Bottom Navigation -->
       <nav class="bottom-nav">
-        <a href="#" class="nav-item" onclick="window.navigateTo('/dashboard-vigilante'); return false;">
+        <a href="#" class="nav-item" onclick="window.navigateTo('/dashboard-${user.rol}'); return false;">
           <span class="nav-icon">🏠</span>
           <span>Inicio</span>
         </a>
@@ -46,28 +46,28 @@ export function renderChats(container) {
     </div>
   `;
 
-    loadConversaciones();
+  loadConversaciones();
 
-    async function loadConversaciones() {
-        try {
-            const response = await fetch(`${window.API_URL}/mensajes/conversaciones`, {
-                headers: { 'Authorization': `Bearer ${window.appState.token}` }
-            });
+  async function loadConversaciones() {
+    try {
+      const response = await fetch(`${window.API_URL}/mensajes/conversaciones`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
 
-            const conversaciones = await response.json();
-            const container = document.getElementById('chatsList');
+      const conversaciones = await response.json();
+      const container = document.getElementById('chatsList');
 
-            if (conversaciones.length === 0) {
-                container.innerHTML = `
+      if (conversaciones.length === 0) {
+        container.innerHTML = `
           <div class="card text-center" style="padding: 3rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
             <p style="color: var(--text-muted);">No tienes conversaciones</p>
           </div>
         `;
-                return;
-            }
+        return;
+      }
 
-            container.innerHTML = conversaciones.map(c => `
+      container.innerHTML = conversaciones.map(c => `
         <div 
           class="card mb-3 fade-in" 
           style="cursor: pointer; transition: transform 0.2s;"
@@ -96,30 +96,30 @@ export function renderChats(container) {
         </div>
       `).join('');
 
-        } catch (error) {
-            console.error('Error al cargar conversaciones:', error);
-            document.getElementById('chatsList').innerHTML = `
+    } catch (error) {
+      console.error('Error al cargar conversaciones:', error);
+      document.getElementById('chatsList').innerHTML = `
         <div class="card" style="padding: 2rem; text-align: center; color: var(--danger);">
           <p>❌ Error al cargar conversaciones</p>
         </div>
       `;
-        }
     }
+  }
 
-    function formatearFecha(fecha) {
-        const date = new Date(fecha);
-        const ahora = new Date();
-        const diff = ahora - date;
-        const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+  function formatearFecha(fecha) {
+    const date = new Date(fecha);
+    const ahora = new Date();
+    const diff = ahora - date;
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-        if (dias === 0) {
-            return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        } else if (dias === 1) {
-            return 'Ayer';
-        } else if (dias < 7) {
-            return `${dias}d`;
-        } else {
-            return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        }
+    if (dias === 0) {
+      return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    } else if (dias === 1) {
+      return 'Ayer';
+    } else if (dias < 7) {
+      return `${dias}d`;
+    } else {
+      return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
     }
+  }
 }

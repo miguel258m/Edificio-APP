@@ -26,10 +26,15 @@ export function initSocket(token) {
 
     socket.on('connect', () => {
         console.log('✅ Conectado al servidor WebSocket');
+        window.appState.socket = socket;
     });
 
-    socket.on('disconnect', () => {
-        console.log('❌ Desconectado del servidor WebSocket');
+    socket.on('connect_error', (error) => {
+        console.error('❌ Error de conexión WebSocket:', error.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log('❌ Desconectado del servidor WebSocket:', reason);
     });
 
     // Eventos de chat

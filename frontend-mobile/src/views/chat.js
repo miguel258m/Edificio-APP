@@ -100,6 +100,10 @@ export function renderChat(container, targetUserId, targetUserName) {
         setTimeout(() => typingIndicator.textContent = '', 3000);
       }
     });
+
+    window.appState.socket.on('error_mensaje', (data) => {
+      alert(data.message);
+    });
   }
 
   async function loadHistory() {

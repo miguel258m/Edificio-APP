@@ -21,7 +21,7 @@ DROP TYPE IF EXISTS estado_emergencia CASCADE;
 DROP TYPE IF EXISTS tipo_alerta CASCADE;
 DROP TYPE IF EXISTS estado_pago CASCADE;
 
-CREATE TYPE rol_usuario AS ENUM ('admin', 'vigilante', 'residente');
+CREATE TYPE rol_usuario AS ENUM ('admin', 'vigilante', 'residente', 'medico');
 CREATE TYPE tipo_solicitud AS ENUM ('medica', 'limpieza', 'entretenimiento');
 CREATE TYPE estado_solicitud AS ENUM ('pendiente', 'en_proceso', 'completada', 'cancelada');
 CREATE TYPE prioridad_solicitud AS ENUM ('baja', 'media', 'alta');

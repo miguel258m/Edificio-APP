@@ -58,23 +58,24 @@ export function renderDashboardResidente(container) {
                 <span style="font-size: 1.5rem;">🎉</span>
                 <span>Eventos</span>
               </button>
-              <button class="btn btn-secondary" onclick="showPagosModal()" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem;">
-                <span style="font-size: 1.5rem;">💰</span>
-                <span>Pagos</span>
+              <button class="btn btn-secondary" onclick="window.location.href='tel:911'" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem; background: var(--danger);">
+                <span style="font-size: 1.5rem;">🚑</span>
+                <span>Emergencia</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Chat con vigilante -->
+        <!-- Centro de Mensajes -->
         <div class="card mt-3 fade-in" style="animation-delay: 0.1s;">
-          <div class="flex justify-between items-center mb-2">
-            <h2 class="card-title" style="margin: 0;">Chat con Vigilante</h2>
-            <span class="badge badge-success">En línea</span>
+          <h2 class="card-title">Comunicación</h2>
+          <div class="grid grid-1 gap-2" id="messageCenter">
+            <button class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center;" onclick="openChatVigilante()">
+              <span>💬 Chat con Vigilancia</span>
+              <span class="badge badge-success" style="font-size: 0.6rem;">En línea</span>
+            </button>
+            <div id="medicChatContainer"></div>
           </div>
-          <button class="btn btn-outline" style="width: 100%;" onclick="openChat()">
-            💬 Abrir Chat
-          </button>
         </div>
 
         <!-- Mis solicitudes recientes -->
@@ -85,114 +86,39 @@ export function renderDashboardResidente(container) {
           </div>
         </div>
 
-        <!-- Mis pagos -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.3s;">
-          <h2 class="card-title">Mis Pagos</h2>
-          <div id="pagosList">
-            <div class="loading-spinner" style="margin: 2rem auto;"></div>
+        <!-- Delivery y Restaurantes -->
+        <div class="card mt-3 fade-in" style="animation-delay: 0.3s; background: #fffaf0; border: 1px solid #fbd38d;">
+          <h2 class="card-title" style="color: #c05621;">🍕 Delivery y Restaurantes</h2>
+          <div id="deliveryList" class="grid grid-1 gap-2">
+            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="font-weight: 600; font-size: 0.9rem;">🍕 Pizza Express</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Entrega en 30 min</p>
+              </div>
+              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+            </div>
+            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="font-weight: 600; font-size: 0.9rem;">🍱 Chifa Central</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Comida oriental</p>
+              </div>
+              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+            </div>
+            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="font-weight: 600; font-size: 0.9rem;">🍗 Pollería El Sabor</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Pollo a la brasa</p>
+              </div>
+              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Botón de emergencia flotante -->
-      <button class="emergency-btn" onclick="activarEmergencia()">
-        🚨
-      </button>
-
-      <!-- Bottom Navigation -->
-      <nav class="bottom-nav">
-        <a href="#" class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span>Inicio</span>
-        </a>
-        <a href="#" class="nav-item" onclick="openChat(); return false;">
-          <span class="nav-icon">💬</span>
-          <span>Chat</span>
-        </a>
-        <a href="#" class="nav-item" onclick="showSolicitudes(); return false;">
-          <span class="nav-icon">📋</span>
-          <span>Solicitudes</span>
-        </a>
-        <a href="#" class="nav-item" onclick="showPerfil(); return false;">
-          <span class="nav-icon">👤</span>
-          <span>Perfil</span>
-        </a>
-      </nav>
-    </div>
-
-    <!-- Modal para solicitudes -->
-    <div id="solicitudModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div class="card" style="max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="card-title" style="margin: 0;" id="modalTitle">Nueva Solicitud</h2>
-          <button onclick="closeSolicitudModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
-        </div>
-        <form id="solicitudForm">
-          <input type="hidden" id="tipoSolicitud">
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-textarea" id="descripcion" required placeholder="Describe tu solicitud..."></textarea>
-          </div>
-          <div id="camposAdicionales"></div>
-          <div class="flex gap-2">
-            <button type="button" class="btn btn-ghost" onclick="closeSolicitudModal()" style="flex: 1;">
-              Cancelar
-            </button>
-            <button type="submit" class="btn btn-primary" style="flex: 1;">
-              Enviar Solicitud
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal para Pagos -->
-    <div id="pagosModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div class="card" style="max-width: 450px; width: 100%; animation: slideUp 0.3s ease;">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="card-title" style="margin: 0;">💰 Cuentas de Pago</h2>
-          <button onclick="closePagosModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
-        </div>
-        
-        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius-lg); border-left: 4px solid var(--primary); margin-bottom: 1.5rem;">
-          <p style="font-size: 0.95rem; line-height: 1.5; color: var(--text-primary);">
-            <strong>Estimados usuarios:</strong><br>
-            A continuación, se detallan las cuentas para realizar sus pagos correspondientes del mes:
-          </p>
-        </div>
-
-        <div class="space-y-3 mb-4">
-          <div class="flex justify-between items-center p-3" style="background: var(--bg-secondary); border-radius: var(--radius-md);">
-            <span style="font-weight: 600;">📱 Yape:</span>
-            <span style="color: var(--primary); font-family: monospace;">987 654 321</span>
-          </div>
-          <div class="flex justify-between items-center p-3" style="background: var(--bg-secondary); border-radius: var(--radius-md);">
-            <span style="font-weight: 600;">🏦 BBVA:</span>
-            <span style="color: var(--primary); font-family: monospace;">0011-0123-4567890123</span>
-          </div>
-          <div class="flex justify-between items-center p-3" style="background: var(--bg-secondary); border-radius: var(--radius-md);">
-            <span style="font-weight: 600;">🏦 BCP:</span>
-            <span style="color: var(--primary); font-family: monospace;">191-12345678-0-91</span>
-          </div>
-        </div>
-
-        <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: var(--radius-md); text-align: center; border: 1px dashed var(--success);">
-          <p style="font-size: 0.875rem; color: var(--text-primary);">
-            📸 Tomar captura a su pago y envíalo al número:<br>
-            <strong style="font-size: 1.125rem; color: var(--success);">+51 987 654 321</strong>
-          </p>
-        </div>
-
-        <button class="btn btn-primary mt-4" style="width: 100%;" onclick="closePagosModal()">
-          Entendido
-        </button>
-      </div>
-    </div>
   `;
 
   // Cargar datos
   loadSolicitudes();
-  loadPagos();
+  checkMedicalChatContext();
 
   // Inicializar avisos
   if (typeof renderAnnouncementsWidget === 'function') {
@@ -299,24 +225,36 @@ async function enviarSolicitud() {
   }
 
   try {
+    const prioridad = document.getElementById('urgencia')?.value || 'media';
+    const body = { tipo, descripcion, detalles, prioridad };
+
+    console.log('Enviando solicitud:', body);
+    // Alert temporal para debug
+    alert('DEBUG: Enviando ' + tipo + ' con descripcion: ' + descripcion);
+
     const response = await fetch(`${window.API_URL}/solicitudes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${window.appState.token}`
       },
-      body: JSON.stringify({ tipo, descripcion, detalles })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
-      alert('✅ Solicitud enviada correctamente');
+      const data = await response.json();
+      console.log('Respuesta del servidor (éxito):', data);
+      alert('✅ Solicitud enviada correctamente. ID: ' + data.id);
       closeSolicitudModal();
-      loadSolicitudes();
+      if (typeof loadSolicitudes === 'function') loadSolicitudes();
     } else {
-      alert('❌ Error al enviar solicitud');
+      const errorData = await response.json();
+      console.error('Error del servidor:', errorData);
+      alert('❌ Error del servidor: ' + (errorData.error || 'Desconocido'));
     }
   } catch (error) {
-    alert('❌ Error de conexión');
+    console.error('Error de conexión:', error);
+    alert('❌ Error de conexión: ' + error.message);
   }
 }
 
@@ -402,12 +340,21 @@ function getEstadoColor(estado) {
 }
 
 window.activarEmergencia = () => {
-  if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA? Se notificará al vigilante inmediatamente.')) {
-    alert('✅ Emergencia activada. El vigilante ha sido notificado.');
+  if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA MÉDICA? Se notificará al personal médico inmediatamente.')) {
+    if (window.appState.socket && window.appState.socket.connected) {
+      window.appState.socket.emit('nueva_emergencia', {
+        tipo: 'medica',
+        descripcion: 'Solicitud de emergencia médica desde botón flotante',
+        ubicacion: `Dpto ${user.apartamento || 'Desconocida'}`
+      });
+      alert('✅ Emergencia médica activada. El personal médico ha sido notificado.');
+    } else {
+      alert('⚠️ No hay conexión con el servidor. Por favor, intenta de nuevo.');
+    }
   }
 };
 
-window.openChat = async () => {
+window.openChatVigilante = async () => {
   try {
     const response = await fetch(`${window.API_URL}/usuarios/vigilantes`, {
       headers: { 'Authorization': `Bearer ${window.appState.token}` }
@@ -426,18 +373,55 @@ window.openChat = async () => {
   }
 };
 
+window.openChatMedico = (userId, userName) => {
+  window.navigateTo('/chat', { userId, userName });
+};
+
+async function checkMedicalChatContext() {
+  const medicContainer = document.getElementById('medicChatContainer');
+  if (!medicContainer) return;
+
+  try {
+    // 1. Buscar si hay una emergencia médica activa del usuario
+    const resEmergencias = await fetch(`${window.API_URL}/emergencias/activas`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const emergencias = await resEmergencias.json();
+    const miEmergencia = emergencias.find(e => e.usuario_id === window.appState.user.id && e.tipo === 'medica');
+
+    // 2. Buscar si hay una solicitud médica pendiente o en proceso
+    const resSolicitudes = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const solicitudes = await resSolicitudes.json();
+    const miSolicitud = solicitudes.find(s => s.tipo === 'medica' && (s.estado === 'pendiente' || s.estado === 'en_proceso'));
+
+    if (miEmergencia || miSolicitud) {
+      // Buscar al médico del edificio
+      const resMedicos = await fetch(`${window.API_URL}/usuarios/medicos`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+      const medicos = await resMedicos.json();
+
+      if (medicos && medicos.length > 0) {
+        const medico = medicos[0];
+        medicContainer.innerHTML = `
+          <button class="btn btn-primary mt-2" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #6366f1;" onclick="openChatMedico(${medico.id}, '${medico.nombre}')">
+            <span>👨‍⚕️ Chat con Médico (${medico.nombre})</span>
+            <span class="badge badge-success" style="font-size: 0.6rem; background: rgba(255,255,255,0.2);">ACTIVO</span>
+          </button>
+        `;
+      }
+    }
+  } catch (error) {
+    console.error('Error al verificar contexto médico:', error);
+  }
+}
+
 window.showSolicitudes = () => {
   window.navigateTo('/solicitudes');
 };
 
 window.showPerfil = () => {
   window.navigateTo('/perfil');
-};
-
-window.showPagosModal = () => {
-  document.getElementById('pagosModal').classList.remove('hidden');
-};
-
-window.closePagosModal = () => {
-  document.getElementById('pagosModal').classList.add('hidden');
 };

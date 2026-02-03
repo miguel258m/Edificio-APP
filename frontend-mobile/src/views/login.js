@@ -165,6 +165,13 @@ async function handleLogin(e) {
     window.appState.token = data.token;
     window.appState.user = data.user;
 
+    // Inicializar socket con el nuevo token
+    try {
+      initSocket(data.token);
+    } catch (e) {
+      console.warn('⚠️ Error al inicializar socket tras login:', e);
+    }
+
     // Redirigir según el rol
     if (data.user.rol === 'residente') {
       window.navigateTo('/dashboard-residente');
@@ -176,6 +183,8 @@ async function handleLogin(e) {
       window.navigateTo('/dashboard-limpieza');
     } else if (data.user.rol === 'gerente') {
       window.navigateTo('/dashboard-gerente');
+    } else if (data.user.rol === 'medico') {
+      window.navigateTo('/dashboard-medico');
     } else {
       // Fallback a dashboard de residente o login
       window.navigateTo('/dashboard-residente');

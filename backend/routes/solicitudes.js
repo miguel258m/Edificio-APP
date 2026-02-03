@@ -129,7 +129,7 @@ router.patch('/:id', async (req, res) => {
 // =====================================================
 // PATCH /api/solicitudes/:id/estado - Actualizar estado de solicitud
 // =====================================================
-router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza'), async (req, res) => {
+router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza', 'medico'), async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body;
@@ -200,6 +200,30 @@ router.get('/metricas', requireRole('gerente', 'admin'), async (req, res) => {
     } catch (error) {
         console.error('Error al obtener métricas:', error);
         res.status(500).json({ error: 'Error al obtener métricas' });
+    }
+});
+
+// =====================================================
+// GET /api/solicitudes/medico/historial - Historial personal del médico
+// =====================================================
+router.get('/medico/historial', async (req, res) => {
+    try {
+        const medico_id = req.user.id;
+
+        const result = await pool.query(
+            `SELECT s.*, u.nombre as usuario_nombre, u.apartamento as usuario_apartamento
+             FROM solicitudes s
+             JOIN usuarios u ON s.usuario_id = u.id
+             WHERE s.atendido_por = $1 AND s.estado = 'completada' AND s.tipo = 'medica'
+             ORDER BY s.fecha_solicitud DESC`,
+            [medico_id]
+        );
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('Error al obtener historial de solicitudes:', error);
+        res.status(500).json({ error: 'Error al obtener historial' });
     }
 });
 

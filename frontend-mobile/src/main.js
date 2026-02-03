@@ -14,6 +14,7 @@ import { renderChats } from './views/chats.js';
 import { renderPerfil } from './views/perfil.js';
 import { renderDashboardGerente } from './views/dashboard-gerente.js';
 import { renderDashboardAdmin } from './views/dashboard-admin.js';
+import { renderDashboardMedico } from './views/dashboard-medico.js';
 import { renderGestionUsuarios } from './views/gestion-usuarios.js';
 import { initSocket } from './socket/client.js';
 
@@ -33,10 +34,18 @@ const LOCAL_API_URL = `http://${window.location.hostname}:3000/api`;
 // Detectamos si estamos en un entorno local
 const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
-    window.location.hostname.startsWith('192.168.');
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.endsWith('.local');
 
-// Determinamos la URL inicial y la normalizamos
+// Determinamos la URL inicial
 let baseApiUrl = VITE_API_URL || (isLocal ? LOCAL_API_URL : PRODUCTION_API_URL);
+
+// [ADVERTENCIA] Si estamos en localhost pero hitting render, avisar
+if (isLocal && baseApiUrl.includes('onrender.com')) {
+    console.warn('⚠️ ATENCIÓN: Estás en localhost pero usando el BACKEND de PRODUCCIÓN (Render).');
+    console.warn('Para usar el backend local, asegúrate de que VITE_API_URL no esté definida o apunta a localhost:3000');
+}
 
 // Aseguramos que termine en /api y no tenga barras dobles al final
 if (baseApiUrl.endsWith('/')) baseApiUrl = baseApiUrl.slice(0, -1);
@@ -55,6 +64,7 @@ const routes = {
     '/dashboard-limpieza': renderDashboardLimpieza,
     '/dashboard-gerente': renderDashboardGerente,
     '/dashboard-admin': renderDashboardAdmin,
+    '/dashboard-medico': renderDashboardMedico,
     '/chat': renderChat,
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
@@ -147,6 +157,8 @@ async function checkAuth() {
                 redirectToPath = '/dashboard-limpieza';
             } else if (user.rol === 'gerente') {
                 redirectToPath = '/dashboard-gerente';
+            } else if (user.rol === 'medico') {
+                redirectToPath = '/dashboard-medico';
             }
             window.navigateTo(redirectToPath);
         } else {
