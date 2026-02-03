@@ -38,7 +38,10 @@ export function renderDashboardResidente(container) {
       </div>
 
       <div class="container">
-        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch;">
+        <!-- Widget de Estado de Pago -->
+        <div id="paymentStatusWidget" class="mt-4 mb-2 fade-in"></div>
+
+        <div class="grid grid-2 gap-3" style="margin-top: 0.5rem; align-items: stretch;">
           <!-- Avisos Importantes -->
           <div id="announcementsWidget"></div>
 
@@ -146,6 +149,7 @@ export function renderDashboardResidente(container) {
 
   // Cargar datos
   loadSolicitudes();
+  loadPaymentStatus(); // <-- NUEVO
   checkMedicalChatContext();
 
   // Inicializar avisos
@@ -423,5 +427,55 @@ async function checkMedicalChatContext() {
     }
   } catch (error) {
     console.error('Error al verificar contexto médico:', error);
+  }
+}
+
+async function loadPaymentStatus() {
+  const widget = document.getElementById('paymentStatusWidget');
+  if (!widget) return;
+
+  try {
+    // Reutilizamos el endpoint que ya tenemos, pero solo para el usuario actual
+    const response = await fetch(`${window.API_URL}/pagos/historial`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const pagos = await response.json();
+
+    const mesActual = new Date().getMonth();
+    const anioActual = new Date().getFullYear();
+
+    const pagadoEsteMes = pagos.some(p => {
+      const fecha = new Date(p.fecha_pago);
+      return fecha.getMonth() === mesActual &&
+        fecha.getFullYear() === anioActual &&
+        p.estado === 'pagado';
+    });
+
+    if (pagadoEsteMes) {
+      widget.innerHTML = `
+        <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid var(--success); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="font-size: 2rem;">🌟</div>
+            <div>
+              <h3 style="color: var(--success); font-weight: 700; margin-bottom: 0.25rem;">¡Estás al día!</h3>
+              <p style="font-size: 0.875rem; color: var(--text-secondary);">Usted está al día en sus pagos del mes de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong>, ¡felicidades! 🎉</p>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      widget.innerHTML = `
+        <div class="card" style="background: rgba(245, 158, 11, 0.05); border: 1px solid var(--warning); padding: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="font-size: 1.5rem;">💳</div>
+            <div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Recuerda regularizar tu pago de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong> para mantener el edificio en óptimas condiciones.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error al cargar estado de pago:', error);
   }
 }

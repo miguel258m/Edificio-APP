@@ -432,16 +432,22 @@ export function renderDashboardGerente(container) {
       content.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
           ${residents.map(r => `
-            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border: 1px solid ${r.esta_pagado ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};">
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border: 1px solid ${r.esta_pagado ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'};">
               <div style="flex: 1;">
                 <div style="font-weight: 600; font-size: 0.95rem;">${r.usuario_nombre}</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">📍 Dpto ${r.usuario_apartamento || 'N/A'} | ${r.email}</div>
               </div>
-              <div style="text-align: right;">
-                <span class="badge ${r.esta_pagado ? 'badge-success' : 'badge-danger'}" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 20px;">
+              <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                <span 
+                  class="badge ${r.esta_pagado ? 'badge-success' : 'badge-danger'}" 
+                  style="font-size: 0.7rem; padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; transition: transform 0.1s;"
+                  onclick="togglePagoResidente(${r.id}, ${r.esta_pagado})"
+                  onmouseover="this.style.transform='scale(1.05)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                >
                   ${r.esta_pagado ? '✅ PAGADO' : '❌ NO PAGO'}
                 </span>
-                <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem;">${new Date().toLocaleString('es-ES', { month: 'long' })}</p>
+                <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">${new Date().toLocaleString('es-ES', { month: 'long' })}</p>
               </div>
             </div>
           `).join('')}
@@ -450,6 +456,32 @@ export function renderDashboardGerente(container) {
     } catch (error) {
       console.error('Error al cargar residentes:', error);
       content.innerHTML = '<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ Error al cargar la lista</p>';
+    }
+  };
+
+  window.togglePagoResidente = async (userId, currentlyPaid) => {
+    try {
+      const response = await fetch(`${window.API_URL}/pagos/toggle-estado`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${window.appState.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          usuario_id: userId,
+          esta_pagado: !currentlyPaid
+        })
+      });
+
+      if (response.ok) {
+        // Recargar la lista para mostrar el cambio
+        verResidentes();
+      } else {
+        alert('❌ Error al actualizar el estado de pago');
+      }
+    } catch (error) {
+      console.error('Error al toggle pago:', error);
+      alert('❌ Error de conexión al actualizar pago');
     }
   };
 

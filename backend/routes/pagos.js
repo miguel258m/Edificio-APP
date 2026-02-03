@@ -126,4 +126,48 @@ router.get('/estado-residentes', requireRole('gerente', 'admin'), async (req, re
     }
 });
 
+// =====================================================
+// PATCH /api/pagos/toggle-estado - Alternar estado de pago manual (Gerente/Admin)
+// =====================================================
+router.patch('/toggle-estado', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const { usuario_id, esta_pagado } = req.body;
+        const edificio_id = req.user.edificio_id;
+
+        if (!usuario_id) {
+            return res.status(400).json({ error: 'ID de usuario es requerido' });
+        }
+
+        const mesActual = new Date().getMonth() + 1;
+        const anioActual = new Date().getFullYear();
+
+        if (esta_pagado) {
+            // Registrar como pagado: Insertar registro en la tabla pagos
+            await pool.query(
+                `INSERT INTO pagos (usuario_id, edificio_id, concepto, monto, fecha_pago, estado, metodo_pago)
+                 VALUES ($1, $2, $3, $4, CURRENT_DATE, 'pagado', 'manual')
+                 ON CONFLICT DO NOTHING`,
+                [usuario_id, edificio_id, `Mantenimiento ${mesActual}/${anioActual}`, 0]
+            );
+        } else {
+            // Quitar pago: Eliminar registros de este mes de la tabla pagos
+            await pool.query(
+                `DELETE FROM pagos 
+                 WHERE usuario_id = $1 
+                 AND edificio_id = $2 
+                 AND estado = 'pagado'
+                 AND EXTRACT(MONTH FROM fecha_pago) = $3
+                 AND EXTRACT(YEAR FROM fecha_pago) = $4`,
+                [usuario_id, edificio_id, mesActual, anioActual]
+            );
+        }
+
+        res.json({ success: true, message: 'Estado de pago actualizado correctamente' });
+
+    } catch (error) {
+        console.error('Error al alternar estado de pago:', error);
+        res.status(500).json({ error: 'Error al actualizar estado de pago' });
+    }
+});
+
 export default router;
