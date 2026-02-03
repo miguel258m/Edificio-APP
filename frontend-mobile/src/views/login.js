@@ -112,8 +112,9 @@ async function handleLogin(e) {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const errorMessage = document.getElementById('errorMessage');
-  const loginBtnText = document.getElementById('loginBtnText');
-  const loginSpinner = document.getElementById('loginSpinner');
+  // Se actualizaron los IDs en el HTML, debemos reflejarlo aquí
+  const loginBtnText = document.getElementById('btnText');
+  const loginSpinner = document.getElementById('spinner');
 
   // Mostrar loading
   loginBtnText.classList.add('hidden');
