@@ -53,6 +53,11 @@ export function renderLogin(container) {
           <div class="mt-5 text-center">
             <p style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">
               ¿No tienes una cuenta? 
+              <a href="#" id="goToRegister" style="color: var(--role-residente); text-decoration: none; font-weight: 700; margin-left: 0.5rem; border-bottom: 2px solid rgba(59, 130, 246, 0.3);">Regístrate</a>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
