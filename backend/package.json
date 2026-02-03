@@ -7,7 +7,7 @@
     "scripts": {
         "start": "node server.js",
         "dev": "node --watch server.js",
-        "init-db": "node scripts/init-database.js"
+        "init-db": "node scripts/init-production-db.js"
     },
     "keywords": [
         "edificio",
