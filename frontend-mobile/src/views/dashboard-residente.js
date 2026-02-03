@@ -468,23 +468,24 @@ async function loadPaymentStatus() {
 
     if (pagadoEsteMes) {
       widget.innerHTML = `
-        <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid var(--success); padding: 1.25rem;">
+        <div class="card fade-in" style="background: var(--bg-secondary); border: 1px solid var(--success); padding: 1.25rem; box-shadow: var(--shadow-lg); border-left: 5px solid var(--success);">
           <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">🌟</div>
+            <div style="font-size: 2rem; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4));">🌟</div>
             <div>
-              <h3 style="color: var(--success); font-weight: 700; margin-bottom: 0.25rem;">¡Estás al día!</h3>
-              <p style="font-size: 0.875rem; color: var(--text-secondary);">Usted está al día en sus pagos del mes de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong>, ¡felicidades! 🎉</p>
+              <h3 style="color: var(--success); font-weight: 700; margin-bottom: 0.25rem; font-size: 1.1rem;">¡Estás al día!</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Usted está al día con sus pagos de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong>. ¡Gracias por su puntualidad! 🎉</p>
             </div>
           </div>
         </div>
       `;
     } else {
       widget.innerHTML = `
-        <div class="card" style="background: rgba(245, 158, 11, 0.05); border: 1px solid var(--warning); padding: 1rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="font-size: 1.5rem;">💳</div>
+        <div class="card fade-in" style="background: var(--bg-secondary); border: 1px solid var(--warning); padding: 1.25rem; box-shadow: var(--shadow-lg); border-left: 5px solid var(--warning);">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="font-size: 2rem; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));">💳</div>
             <div>
-              <p style="font-size: 0.85rem; color: var(--text-secondary);">Recuerda regularizar tu pago de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong> para mantener el edificio en óptimas condiciones.</p>
+              <h3 style="color: var(--warning); font-weight: 700; margin-bottom: 0.25rem; font-size: 1.1rem;">Aviso de Pago</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Recuerda regularizar tu pago de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong> para mantener el edificio en óptimas condiciones. 😊</p>
             </div>
           </div>
         </div>
