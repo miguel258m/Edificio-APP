@@ -71,10 +71,9 @@ app.use(cors({
             return callback(null, true);
         }
 
-        const isAllowed = allowedOrigins.indexOf(origin) !== -1 ||
-            origin.endsWith('.railway.app') ||
-            origin.endsWith('.up.railway.app') ||
-            process.env.NODE_ENV !== 'production';
+        // Permitir cualquier subdominio de railway.app o up.railway.app
+        const isRailway = origin.endsWith('.railway.app') || origin.endsWith('.up.railway.app');
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1 || isRailway || process.env.NODE_ENV !== 'production';
 
         if (isAllowed) {
             callback(null, true);
@@ -85,7 +84,7 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Body parser

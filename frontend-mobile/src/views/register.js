@@ -233,7 +233,7 @@ async function loadEdificios(selectId) {
     console.error('Error al cargar edificios:', error);
     const select = document.getElementById(selectId);
     if (select) {
-      select.innerHTML = '<option value="">❌ Error al cargar edificios</option>';
+      select.innerHTML = `<option value="">❌ Error: ${error.message} (URL: ${window.API_URL})</option>`;
     }
   }
 }

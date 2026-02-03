@@ -3,37 +3,19 @@
 -- Script de inicialización de base de datos
 -- =====================================================
 
--- Eliminar tablas si existen (para desarrollo)
-DROP TABLE IF EXISTS alertas CASCADE;
-DROP TABLE IF EXISTS emergencias CASCADE;
-DROP TABLE IF EXISTS pagos CASCADE;
-DROP TABLE IF EXISTS mensajes CASCADE;
-DROP TABLE IF EXISTS solicitudes CASCADE;
-DROP TABLE IF EXISTS usuarios CASCADE;
-DROP TABLE IF EXISTS edificios CASCADE;
-
--- Tipos ENUM
-DROP TYPE IF EXISTS rol_usuario CASCADE;
-DROP TYPE IF EXISTS tipo_solicitud CASCADE;
-DROP TYPE IF EXISTS estado_solicitud CASCADE;
-DROP TYPE IF EXISTS prioridad_solicitud CASCADE;
-DROP TYPE IF EXISTS estado_emergencia CASCADE;
-DROP TYPE IF EXISTS tipo_alerta CASCADE;
-DROP TYPE IF EXISTS estado_pago CASCADE;
-
--- Roles actualizados: admin, vigilante, residente, medico, gerente, limpieza
-CREATE TYPE rol_usuario AS ENUM ('admin', 'vigilante', 'residente', 'medico', 'gerente', 'limpieza');
-CREATE TYPE tipo_solicitud AS ENUM ('medica', 'limpieza', 'entretenimiento');
-CREATE TYPE estado_solicitud AS ENUM ('pendiente', 'en_proceso', 'completada', 'cancelada');
-CREATE TYPE prioridad_solicitud AS ENUM ('baja', 'media', 'alta');
-CREATE TYPE estado_emergencia AS ENUM ('activa', 'atendida', 'resuelta');
-CREATE TYPE tipo_alerta AS ENUM ('emergencia', 'informativa', 'mantenimiento');
-CREATE TYPE estado_pago AS ENUM ('pendiente', 'pagado', 'vencido');
+-- Tipos ENUM (Se manejan con bloques DO en init-production-db para evitar errores)
+-- CREATE TYPE rol_usuario ... (comentado porque se maneja en el script seguro)
+-- CREATE TYPE tipo_solicitud ...
+-- CREATE TYPE estado_solicitud ...
+-- CREATE TYPE prioridad_solicitud ...
+-- CREATE TYPE estado_emergencia ...
+-- CREATE TYPE tipo_alerta ...
+-- CREATE TYPE estado_pago ...
 
 -- =====================================================
 -- TABLA: edificios
 -- =====================================================
-CREATE TABLE edificios (
+CREATE TABLE IF NOT EXISTS edificios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
     direccion TEXT NOT NULL,
@@ -46,7 +28,7 @@ CREATE TABLE edificios (
 -- =====================================================
 -- TABLA: usuarios
 -- =====================================================
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
     nombre VARCHAR(200) NOT NULL,
@@ -64,7 +46,7 @@ CREATE TABLE usuarios (
 -- =====================================================
 -- TABLA: solicitudes
 -- =====================================================
-CREATE TABLE solicitudes (
+CREATE TABLE IF NOT EXISTS solicitudes (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
@@ -81,7 +63,7 @@ CREATE TABLE solicitudes (
 -- =====================================================
 -- TABLA: mensajes
 -- =====================================================
-CREATE TABLE mensajes (
+CREATE TABLE IF NOT EXISTS mensajes (
     id SERIAL PRIMARY KEY,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
     remitente_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -94,7 +76,7 @@ CREATE TABLE mensajes (
 -- =====================================================
 -- TABLA: pagos
 -- =====================================================
-CREATE TABLE pagos (
+CREATE TABLE IF NOT EXISTS pagos (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
@@ -110,7 +92,7 @@ CREATE TABLE pagos (
 -- =====================================================
 -- TABLA: emergencias
 -- =====================================================
-CREATE TABLE emergencias (
+CREATE TABLE IF NOT EXISTS emergencias (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
@@ -125,7 +107,7 @@ CREATE TABLE emergencias (
 -- =====================================================
 -- TABLA: alertas
 -- =====================================================
-CREATE TABLE alertas (
+CREATE TABLE IF NOT EXISTS alertas (
     id SERIAL PRIMARY KEY,
     edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
     creada_por INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
