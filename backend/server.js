@@ -30,6 +30,7 @@ import alertasRoutes from './routes/alertas.js';
 import edificiosRoutes from './routes/edificios.js';
 
 import { setupSocketHandlers } from './sockets/index.js';
+import { initDatabase } from './scripts/init-production-db.js';
 
 dotenv.config();
 
@@ -182,6 +183,9 @@ async function startServer() {
         console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada (OK)' : 'NO CONFIGURADA (Error)');
         console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Configurada (OK)' : 'NO CONFIGURADA (Error)');
         console.log('--------------------------------');
+
+        // Inicializar/Verificar base de datos
+        await initDatabase();
 
         // Verificar conexión a base de datos
         const dbConnected = await testConnection();

@@ -7,9 +7,9 @@ import bcrypt from 'bcrypt';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function initDatabase() {
+export async function initDatabase() {
     try {
-        console.log('🔧 Inicializando base de datos...');
+        console.log('🔧 Verificando/Inicializando base de datos...');
 
         // Leer y ejecutar init.sql
         const initSQL = fs.readFileSync(
@@ -17,7 +17,7 @@ async function initDatabase() {
             'utf8'
         );
 
-        console.log('📋 Creando tablas...');
+        console.log('📋 Creando tablas si no existen...');
         await pool.query(initSQL);
 
         // Insertar datos iniciales
@@ -50,19 +50,10 @@ async function initDatabase() {
             ON CONFLICT (email) DO NOTHING
         `, [hashedPassword]);
 
-        console.log('✅ Base de datos inicializada correctamente');
-        console.log('');
-        console.log('📝 Credenciales de prueba:');
-        console.log('   Admin: admin@edificio.com / password123');
-        console.log('   Vigilante: vigilante@edificio.com / password123');
-        console.log('   Residente: maria@email.com / password123');
-        console.log('');
-
-        process.exit(0);
+        console.log('✅ Verificación de base de datos completada');
+        return true;
     } catch (error) {
         console.error('❌ Error al inicializar base de datos:', error);
-        process.exit(1);
+        return false;
     }
 }
-
-initDatabase();
