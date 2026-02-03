@@ -82,16 +82,21 @@ export function renderRegister(container) {
               </div>
             </div>
 
-            <div class="form-group mb-5">
-              <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Contraseña</label>
-              <input type="password" class="form-input" id="passwordResidente" placeholder="••••••••" minlength="6" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
-              <small style="color: rgba(255,255,255,0.4); font-size: 0.7rem; display: block; margin-top: 0.25rem;">Mínimo 6 caracteres</small>
+            <div class="grid grid-2 gap-3 mb-5">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Contraseña</label>
+                <input type="password" class="form-input" id="passwordResidente" placeholder="••••••••" minlength="6" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Confirmar</label>
+                <input type="password" class="form-input" id="confirmPasswordResidente" placeholder="••••••••" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              </div>
             </div>
 
             <div id="errorMessageResidente" class="hidden" style="padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-md); color: var(--danger); font-size: 0.8rem; margin-bottom: 1rem; text-align: center;">
             </div>
 
-            <button type="submit" id="btnSubmitResidente" class="btn btn-primary" style="width: 100%; padding: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-radius: var(--radius-lg);">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-radius: var(--radius-lg);">
               <span id="btnTextResidente">Finalizar Registro</span>
               <span id="spinnerResidente" class="hidden">
                 <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
@@ -135,15 +140,21 @@ export function renderRegister(container) {
               </div>
             </div>
 
-            <div class="form-group mb-5">
-              <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Contraseña</label>
-              <input type="password" class="form-input" id="passwordTrabajador" placeholder="••••••••" minlength="6" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <div class="grid grid-2 gap-3 mb-5">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Contraseña</label>
+                <input type="password" class="form-input" id="passwordTrabajador" placeholder="••••••••" minlength="6" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); text-transform: uppercase;">Confirmar</label>
+                <input type="password" class="form-input" id="confirmPasswordTrabajador" placeholder="••••••••" required style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              </div>
             </div>
 
             <div id="errorMessageTrabajador" class="hidden" style="padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-md); color: var(--danger); font-size: 0.8rem; margin-bottom: 1rem; text-align: center;">
             </div>
 
-            <button type="submit" id="btnSubmitTrabajador" class="btn btn-primary" style="width: 100%; padding: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-radius: var(--radius-lg);">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-radius: var(--radius-lg);">
               <span id="btnTextTrabajador">Finalizar Registro</span>
               <span id="spinnerTrabajador" class="hidden">
                 <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
@@ -194,13 +205,13 @@ export function renderRegister(container) {
   });
 
   // Manejar formulario de Residente
-  document.getElementById('btnSubmitResidente').addEventListener('click', (e) => {
+  document.getElementById('registerFormResidente').addEventListener('submit', (e) => {
     e.preventDefault();
     handleRegisterResidente();
   });
 
   // Manejar formulario de Trabajador
-  document.getElementById('btnSubmitTrabajador').addEventListener('click', (e) => {
+  document.getElementById('registerFormTrabajador').addEventListener('submit', (e) => {
     e.preventDefault();
     handleRegisterTrabajador();
   });
