@@ -6,10 +6,6 @@
         "backend",
         "frontend-mobile"
     ],
-    "scripts": {
-        "start": "node backend/server.js",
-        "build": "cd frontend-mobile && npm install && npm run build"
-    },
     "engines": {
         "node": ">=18.0.0"
     }
