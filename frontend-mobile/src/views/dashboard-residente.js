@@ -91,29 +91,37 @@ export function renderDashboardResidente(container) {
         </div>
 
         <!-- Delivery y Restaurantes -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.3s; background: #fffaf0; border: 1px solid #fbd38d;">
-          <h2 class="card-title" style="color: #c05621;">🍕 Delivery y Restaurantes</h2>
+        <div class="card mt-3 fade-in" style="animation-delay: 0.3s; background: rgba(255, 138, 0, 0.05); border: 1px solid rgba(255, 138, 0, 0.2);">
+          <h2 class="card-title" style="color: #ff8a00; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🍕</span> Delivery y Restaurantes
+          </h2>
           <div id="deliveryList" class="grid grid-1 gap-2">
-            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
               <div>
-                <p style="font-weight: 600; font-size: 0.9rem;">🍕 Pizza Express</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Entrega en 30 min</p>
+                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍕 Pizza Express</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Entrega en 30 min • Especialistas en artesanal</p>
               </div>
-              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
+                📞 Llamar
+              </a>
             </div>
-            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
               <div>
-                <p style="font-weight: 600; font-size: 0.9rem;">🍱 Chifa Central</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Comida oriental</p>
+                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍱 Chifa Central</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Comida oriental • Menú del día disponible</p>
               </div>
-              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
+                📞 Llamar
+              </a>
             </div>
-            <div style="padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #feebc8; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
               <div>
-                <p style="font-weight: 600; font-size: 0.9rem;">🍗 Pollería El Sabor</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Pollo a la brasa</p>
+                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍗 Pollería El Sabor</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Pollo a la brasa • Sabor tradicional</p>
               </div>
-              <a href="tel:xxxxxxx" style="color: var(--primary); font-weight: 700; text-decoration: none; font-family: monospace;">xxxxxxx</a>
+              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
+                📞 Llamar
+              </a>
             </div>
           </div>
         </div>
