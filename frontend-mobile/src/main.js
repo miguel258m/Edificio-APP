@@ -39,7 +39,18 @@ const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname.endsWith('.local');
 
 // Determinamos la URL inicial
-let baseApiUrl = VITE_API_URL || (isLocal ? LOCAL_API_URL : PRODUCTION_API_URL);
+let baseApiUrl = VITE_API_URL;
+
+if (!baseApiUrl) {
+    if (isLocal) {
+        baseApiUrl = LOCAL_API_URL;
+    } else if (window.location.hostname.endsWith('.railway.app')) {
+        // Auto-detectar backend de Railway si estamos en Railway
+        baseApiUrl = 'https://edificio-backend-production.up.railway.app/api';
+    } else {
+        baseApiUrl = PRODUCTION_API_URL;
+    }
+}
 
 // [ADVERTENCIA] Si estamos en localhost pero hitting render, avisar
 if (isLocal && baseApiUrl.includes('onrender.com')) {

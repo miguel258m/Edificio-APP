@@ -66,10 +66,20 @@ app.use(helmet({
 // CORS - Configuración flexible
 app.use(cors({
     origin: (origin, callback) => {
-        // Permitir requests sin origin (como apps móviles o curl) o si está en la lista blanca
-        if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+        // Permitir requests sin origin (como apps móviles o curl)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1 ||
+            origin.endsWith('.railway.app') ||
+            origin.endsWith('.up.railway.app') ||
+            process.env.NODE_ENV !== 'production';
+
+        if (isAllowed) {
             callback(null, true);
         } else {
+            console.warn('🛑 CORS bloqueado para origin:', origin);
             callback(new Error('No permitido por CORS'));
         }
     },
