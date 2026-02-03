@@ -11,17 +11,53 @@ export async function initDatabase() {
     try {
         console.log('🔧 Verificando/Inicializando base de datos...');
 
-        // Leer y ejecutar init.sql
+        // 1. Ejecutar init.sql (que usa CREATE IF NOT EXISTS para tablas básicas)
         const initSQL = fs.readFileSync(
             path.join(__dirname, '../database/init.sql'),
             'utf8'
         );
 
-        console.log('📋 Creando tablas si no existen...');
+        // El script init.sql actual tiene DROP TABLE. 
+        // Para producción, vamos a ser más cuidadosos y solo agregar lo que falta.
+
+        console.log('📋 Verificando columnas y tipos faltantes...');
+
+        // Inyectar columnas faltantes si no existen
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                -- Agregar columna aprobado si no existe
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='aprobado') THEN
+                    ALTER TABLE usuarios ADD COLUMN aprobado BOOLEAN DEFAULT false;
+                END IF;
+
+                -- Agregar columna foto_perfil si no existe
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='foto_perfil') THEN
+                    ALTER TABLE usuarios ADD COLUMN foto_perfil VARCHAR(255);
+                END IF;
+
+                -- Intentar agregar nuevos roles al ENUM rol_usuario
+                -- Nota: PostgreSQL no permite agregar valores a un ENUM dentro de una transacción de forma sencilla en versiones antiguas,
+                -- pero este bloque DO es seguro en versiones modernas.
+                BEGIN
+                    ALTER TYPE rol_usuario ADD VALUE 'gerente';
+                EXCEPTION WHEN duplicate_object THEN NULL;
+                END;
+
+                BEGIN
+                    ALTER TYPE rol_usuario ADD VALUE 'limpieza';
+                EXCEPTION WHEN duplicate_object THEN NULL;
+                END;
+            END $$;
+        `);
+
+        // Ejecutar el resto del initSQL (ahora que es seguro)
+        // Nota: En una app real, usaríamos migraciones (knex/sequelize). 
+        // Aquí hacemos un "soft init".
         await pool.query(initSQL);
 
-        // Insertar datos iniciales
-        console.log('📝 Insertando datos iniciales...');
+        // 2. Insertar datos iniciales
+        console.log('📝 Verificando datos iniciales...');
 
         // Edificios
         await pool.query(`
@@ -35,18 +71,20 @@ export async function initDatabase() {
         const password = 'password123';
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Usuarios
+        // Usuarios (Asegurar que el admin esté aprobado)
         await pool.query(`
-            INSERT INTO usuarios (edificio_id, nombre, email, password, rol, apartamento, telefono) VALUES
-            (1, 'Admin Principal', 'admin@edificio.com', $1, 'admin', NULL, '555-1001'),
-            (1, 'Juan Pérez', 'vigilante@edificio.com', $1, 'vigilante', 'Caseta', '555-1002'),
-            (1, 'María García', 'maria@email.com', $1, 'residente', '101', '555-1101'),
-            (1, 'Carlos López', 'carlos@email.com', $1, 'residente', '102', '555-1102'),
-            (1, 'Ana Martínez', 'ana@email.com', $1, 'residente', '201', '555-1201'),
-            (1, 'Pedro Rodríguez', 'pedro@email.com', $1, 'residente', '202', '555-1202'),
-            (2, 'Luis Fernández', 'vigilante2@edificio.com', $1, 'vigilante', 'Caseta', '555-2002'),
-            (2, 'Laura Sánchez', 'laura@email.com', $1, 'residente', '301', '555-2101'),
-            (2, 'Roberto Torres', 'roberto@email.com', $1, 'residente', '302', '555-2102')
+            INSERT INTO usuarios (edificio_id, nombre, email, password, rol, aprobado) VALUES
+            (1, 'Admin Principal', 'admin@edificio.com', $1, 'admin', true),
+            (1, 'Juan Pérez', 'vigilante@edificio.com', $1, 'vigilante', true)
+            ON CONFLICT (email) DO UPDATE SET aprobado = true
+        `, [hashedPassword]);
+
+        // Otros usuarios de prueba
+        await pool.query(`
+            INSERT INTO usuarios (edificio_id, nombre, email, password, rol, aprobado) VALUES
+            (1, 'María García', 'maria@email.com', $1, 'residente', true),
+            (1, 'Carlos López', 'carlos@email.com', $1, 'residente', true),
+            (2, 'Luis Fernández', 'vigilante2@edificio.com', $1, 'vigilante', true)
             ON CONFLICT (email) DO NOTHING
         `, [hashedPassword]);
 

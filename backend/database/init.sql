@@ -21,7 +21,8 @@ DROP TYPE IF EXISTS estado_emergencia CASCADE;
 DROP TYPE IF EXISTS tipo_alerta CASCADE;
 DROP TYPE IF EXISTS estado_pago CASCADE;
 
-CREATE TYPE rol_usuario AS ENUM ('admin', 'vigilante', 'residente', 'medico');
+-- Roles actualizados: admin, vigilante, residente, medico, gerente, limpieza
+CREATE TYPE rol_usuario AS ENUM ('admin', 'vigilante', 'residente', 'medico', 'gerente', 'limpieza');
 CREATE TYPE tipo_solicitud AS ENUM ('medica', 'limpieza', 'entretenimiento');
 CREATE TYPE estado_solicitud AS ENUM ('pendiente', 'en_proceso', 'completada', 'cancelada');
 CREATE TYPE prioridad_solicitud AS ENUM ('baja', 'media', 'alta');
@@ -55,6 +56,8 @@ CREATE TABLE usuarios (
     apartamento VARCHAR(20),
     telefono VARCHAR(20),
     activo BOOLEAN DEFAULT true,
+    aprobado BOOLEAN DEFAULT false,
+    foto_perfil VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
