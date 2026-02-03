@@ -89,4 +89,41 @@ router.get('/', async (req, res) => {
     }
 });
 
+// =====================================================
+// GET /api/pagos/estado-residentes - Estado de pagos (Gerente/Admin)
+// ===================================
+router.get('/estado-residentes', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const edificio_id = req.user.edificio_id;
+
+        // Query para obtener residentes y ver si tienen un pago 'pagado' en el mes actual
+        const query = `
+            SELECT 
+                u.id, 
+                u.nombre as usuario_nombre, 
+                u.apartamento as usuario_apartamento,
+                u.email,
+                EXISTS (
+                    SELECT 1 
+                    FROM pagos p 
+                    WHERE p.usuario_id = u.id 
+                    AND p.edificio_id = u.edificio_id 
+                    AND p.estado = 'pagado'
+                    AND EXTRACT(MONTH FROM p.fecha_pago) = EXTRACT(MONTH FROM CURRENT_DATE)
+                    AND EXTRACT(YEAR FROM p.fecha_pago) = EXTRACT(YEAR FROM CURRENT_DATE)
+                ) as esta_pagado
+            FROM usuarios u
+            WHERE u.edificio_id = $1 AND u.rol = 'residente' AND u.aprobado = true
+            ORDER BY u.apartamento ASC, u.nombre ASC
+        `;
+
+        const result = await pool.query(query, [edificio_id]);
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('Error al obtener estado de pagos de residentes:', error);
+        res.status(500).json({ error: 'Error al obtener estado de pagos' });
+    }
+});
+
 export default router;

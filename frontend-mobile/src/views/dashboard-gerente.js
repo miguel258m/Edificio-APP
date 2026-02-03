@@ -61,6 +61,9 @@ export function renderDashboardGerente(container) {
               <button class="btn btn-primary" onclick="abrirNuevoAviso()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap;">
                 📢 Publicar Aviso
               </button>
+              <button class="btn btn-info" onclick="verResidentes()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap; background: #3b82f6;">
+                👥 Residentes
+              </button>
               <button class="btn btn-secondary" onclick="contactarVigilante()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap;">
                 👮 Contactar Vigilante
               </button>
@@ -378,6 +381,75 @@ export function renderDashboardGerente(container) {
         btn.textContent = originalText;
         btn.disabled = false;
       }
+    }
+  };
+
+  window.abrirChat = (userId, userName = 'Residente') => {
+    window.navigateTo('/chat', { userId, userName });
+  };
+
+
+
+  window.verResidentes = async () => {
+    let modal = document.getElementById('residentesModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'residentesModal';
+      modal.className = 'modal-overlay';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1rem;';
+      modal.innerHTML = `
+        <div class="card slide-up" style="max-width: 500px; width: 100%; max-height: 85vh; display: flex; flex-direction: column;">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="card-title" style="margin:0;">👥 Estado de Residentes</h2>
+            <button onclick="document.getElementById('residentesModal').remove()" style="background:none; border:none; font-size:1.5rem; color:var(--text-muted); cursor:pointer;">×</button>
+          </div>
+          
+          <div id="listaResidentesContent" style="flex: 1; overflow-y: auto; padding-right: 5px;">
+            <div class="loading-spinner" style="margin: 2rem auto;"></div>
+          </div>
+
+          <div class="mt-4 pt-3" style="border-top: 1px solid var(--bg-tertiary);">
+            <button class="btn btn-primary" style="width: 100%;" onclick="document.getElementById('residentesModal').remove()">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    const content = document.getElementById('listaResidentesContent');
+
+    try {
+      const response = await fetch(`${window.API_URL}/pagos/estado-residentes`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+      const residents = await response.json();
+
+      if (residents.length === 0) {
+        content.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay residentes registrados</p>';
+        return;
+      }
+
+      content.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          ${residents.map(r => `
+            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border: 1px solid ${r.esta_pagado ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 0.95rem;">${r.usuario_nombre}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">📍 Dpto ${r.usuario_apartamento || 'N/A'} | ${r.email}</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge ${r.esta_pagado ? 'badge-success' : 'badge-danger'}" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 20px;">
+                  ${r.esta_pagado ? '✅ PAGADO' : '❌ NO PAGO'}
+                </span>
+                <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem;">${new Date().toLocaleString('es-ES', { month: 'long' })}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error al cargar residentes:', error);
+      content.innerHTML = '<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ Error al cargar la lista</p>';
     }
   };
 
