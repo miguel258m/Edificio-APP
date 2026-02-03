@@ -141,14 +141,28 @@ router.patch('/toggle-estado', requireRole('gerente', 'admin'), async (req, res)
         const mesActual = new Date().getMonth() + 1;
         const anioActual = new Date().getFullYear();
 
+        console.log(`💰 Toggling pago: Usuario ${usuario_id}, Edificio ${edificio_id}, Estado: ${esta_pagado}`);
+
         if (esta_pagado) {
-            // Registrar como pagado: Insertar registro en la tabla pagos
-            await pool.query(
-                `INSERT INTO pagos (usuario_id, edificio_id, concepto, monto, fecha_pago, estado, metodo_pago)
-                 VALUES ($1, $2, $3, $4, CURRENT_DATE, 'pagado', 'manual')
-                 ON CONFLICT DO NOTHING`,
-                [usuario_id, edificio_id, `Mantenimiento ${mesActual}/${anioActual}`, 0]
+            // Verificar si ya existe un pago para este mes para evitar duplicados
+            const existing = await pool.query(
+                `SELECT 1 FROM pagos 
+                 WHERE usuario_id = $1 
+                 AND edificio_id = $2 
+                 AND estado = 'pagado'
+                 AND EXTRACT(MONTH FROM fecha_pago) = $3
+                 AND EXTRACT(YEAR FROM fecha_pago) = $4`,
+                [usuario_id, edificio_id, mesActual, anioActual]
             );
+
+            if (existing.rows.length === 0) {
+                // Registrar como pagado: Insertar registro en la tabla pagos
+                await pool.query(
+                    `INSERT INTO pagos (usuario_id, edificio_id, concepto, monto, fecha_pago, estado, metodo_pago)
+                     VALUES ($1, $2, $3, $4, CURRENT_DATE, 'pagado', 'manual')`,
+                    [usuario_id, edificio_id, `Mantenimiento ${mesActual}/${anioActual}`, 0]
+                );
+            }
         } else {
             // Quitar pago: Eliminar registros de este mes de la tabla pagos
             await pool.query(

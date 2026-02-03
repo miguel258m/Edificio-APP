@@ -438,15 +438,13 @@ export function renderDashboardGerente(container) {
                 <div style="font-size: 0.75rem; color: var(--text-muted);">📍 Dpto ${r.usuario_apartamento || 'N/A'} | ${r.email}</div>
               </div>
               <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                <span 
+                <button 
                   class="badge ${r.esta_pagado ? 'badge-success' : 'badge-danger'}" 
-                  style="font-size: 0.7rem; padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; transition: transform 0.1s;"
+                  style="font-size: 0.7rem; padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; border: none; font-family: inherit; transition: all 0.1s;"
                   onclick="togglePagoResidente(${r.id}, ${r.esta_pagado})"
-                  onmouseover="this.style.transform='scale(1.05)'"
-                  onmouseout="this.style.transform='scale(1)'"
                 >
                   ${r.esta_pagado ? '✅ PAGADO' : '❌ NO PAGO'}
-                </span>
+                </button>
                 <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">${new Date().toLocaleString('es-ES', { month: 'long' })}</p>
               </div>
             </div>
