@@ -58,19 +58,25 @@ export function renderLogin(container) {
 
   // Manejar envío del formulario
   const form = document.getElementById('loginForm');
-  form.addEventListener('submit', handleLogin);
+  if (form) form.addEventListener('submit', handleLogin);
 
   // Manejar navegación a registro
-  document.getElementById('goToRegister').onclick = (e) => {
-    e.preventDefault();
-    window.navigateTo('/register');
-  };
+  const goToRegisterBtn = document.getElementById('goToRegister');
+  if (goToRegisterBtn) {
+    goToRegisterBtn.onclick = (e) => {
+      e.preventDefault();
+      window.navigateTo('/register');
+    };
+  }
 
   // Manejar recuperación de contraseña
-  document.getElementById('recoverPassword').onclick = (e) => {
-    e.preventDefault();
-    showRecoveryModal();
-  };
+  const recoverPasswordBtn = document.getElementById('recoverPassword');
+  if (recoverPasswordBtn) {
+    recoverPasswordBtn.onclick = (e) => {
+      e.preventDefault();
+      showRecoveryModal();
+    };
+  }
 }
 
 // Modal de recuperación de contraseña
