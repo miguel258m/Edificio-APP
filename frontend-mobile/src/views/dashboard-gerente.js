@@ -55,23 +55,27 @@ export function renderDashboardGerente(container) {
         </div>
 
         <!-- Grupo Principal de Acción (Avisos + Acciones Rápidas) -->
-        <div class="grid grid-2 gap-3" style="margin-bottom: 2rem; align-items: stretch;">
+        <div class="flex flex-col gap-4" style="margin-bottom: 2.5rem;">
           <div id="announcementsWidget"></div>
 
-          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; justify-content: center;">
-            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">Acciones</h3>
-            <div class="flex flex-col gap-2">
-              <button class="btn btn-primary" onclick="abrirNuevoAviso()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap;">
-                📢 Publicar Aviso
+          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; padding: 1.5rem;">
+            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem;">Panel de Control</h3>
+            <div class="grid grid-2 gap-3">
+              <button class="btn btn-primary" onclick="abrirNuevoAviso()" style="padding: 1rem; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: var(--role-gerente); border: none;">
+                <span style="font-size: 1.5rem;">📢</span>
+                <span>Publicar Aviso</span>
               </button>
-              <button class="btn btn-info" onclick="verResidentes()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap; background: #3b82f6;">
-                👥 Residentes
+              <button class="btn btn-outline" onclick="verResidentes()" style="padding: 1rem; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);">
+                <span style="font-size: 1.5rem;">👥</span>
+                <span>Residentes</span>
               </button>
-              <button class="btn btn-secondary" onclick="contactarVigilante()" style="padding: 0.85rem; font-size: 0.85rem; white-space: nowrap;">
-                👮 Contactar Vigilante
+              <button class="btn btn-outline" onclick="contactarVigilante()" style="padding: 1rem; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);">
+                <span style="font-size: 1.5rem;">👮</span>
+                <span>Seguridad</span>
               </button>
-              <button class="btn btn-ghost" onclick="window.navigateTo('/perfil')" style="padding: 0.85rem; font-size: 0.85rem; border: 1px solid rgba(124, 58, 237, 0.1);">
-                👤 Mi Perfil
+              <button class="btn btn-outline" onclick="window.navigateTo('/perfil')" style="padding: 1rem; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);">
+                <span style="font-size: 1.5rem;">⚙️</span>
+                <span>Mi Perfil</span>
               </button>
             </div>
           </div>
