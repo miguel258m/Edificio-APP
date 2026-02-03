@@ -58,7 +58,8 @@ export function renderDashboardResidente(container) {
                 <span style="font-size: 1.5rem;">🎉</span>
                 <span>Eventos</span>
               </button>
-              <button class="btn btn-secondary" onclick="window.location.href='tel:911'" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem; background: var(--danger);">
+              <!-- MODIFICADO: Ahora llama a activarEmergencia() en vez de tel:911 -->
+              <button class="btn btn-secondary" onclick="activarEmergencia()" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem; background: var(--danger);">
                 <span style="font-size: 1.5rem;">🚑</span>
                 <span>Emergencia</span>
               </button>
@@ -114,6 +115,33 @@ export function renderDashboardResidente(container) {
           </div>
         </div>
       </div>
+
+      <!-- MODAL DE SOLICITUDES (Corrigiendo error "no funciona ningun boton") -->
+      <div id="solicitudModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="card" style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+          <div class="flex justify-between items-center mb-4">
+            <h2 id="modalTitle" class="card-title" style="margin: 0;">Solicitud</h2>
+            <button onclick="closeSolicitudModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
+          </div>
+          
+          <form id="solicitudForm">
+            <input type="hidden" id="tipoSolicitud">
+            
+            <div class="form-group">
+              <label class="form-label">Descripción del problema o necesidad</label>
+              <textarea class="form-input" id="descripcion" rows="4" placeholder="Escribe aquí los detalles..." required></textarea>
+            </div>
+            
+            <div id="camposAdicionales"></div>
+            
+            <div class="flex gap-2 mt-4">
+              <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeSolicitudModal()">Cancelar</button>
+              <button type="submit" class="btn btn-primary" style="flex: 1;">Enviar Solicitud</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   `;
 
   // Cargar datos
@@ -132,6 +160,11 @@ window.showSolicitudModal = (tipo) => {
   const title = document.getElementById('modalTitle');
   const tipoInput = document.getElementById('tipoSolicitud');
   const camposAdicionales = document.getElementById('camposAdicionales');
+
+  if (!modal) {
+    console.error('❌ Error: El modal de solicitudes no se encontró en el DOM');
+    return;
+  }
 
   tipoInput.value = tipo;
 
@@ -205,8 +238,11 @@ window.showSolicitudModal = (tipo) => {
 };
 
 window.closeSolicitudModal = () => {
-  document.getElementById('solicitudModal').classList.add('hidden');
-  document.getElementById('solicitudForm').reset();
+  const modal = document.getElementById('solicitudModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.getElementById('solicitudForm').reset();
+  }
 };
 
 async function enviarSolicitud() {
@@ -228,10 +264,6 @@ async function enviarSolicitud() {
     const prioridad = document.getElementById('urgencia')?.value || 'media';
     const body = { tipo, descripcion, detalles, prioridad };
 
-    console.log('Enviando solicitud:', body);
-    // Alert temporal para debug
-    alert('DEBUG: Enviando ' + tipo + ' con descripcion: ' + descripcion);
-
     const response = await fetch(`${window.API_URL}/solicitudes`, {
       method: 'POST',
       headers: {
@@ -243,18 +275,21 @@ async function enviarSolicitud() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Respuesta del servidor (éxito):', data);
-      alert('✅ Solicitud enviada correctamente. ID: ' + data.id);
+      alert('✅ Solicitud enviada correctamente.');
       closeSolicitudModal();
-      if (typeof loadSolicitudes === 'function') loadSolicitudes();
+      loadSolicitudes();
+
+      // Notificar vía socket si es médica
+      if (tipo === 'medica' && window.appState.socket) {
+        window.appState.socket.emit('nueva_solicitud', data);
+      }
     } else {
       const errorData = await response.json();
-      console.error('Error del servidor:', errorData);
-      alert('❌ Error del servidor: ' + (errorData.error || 'Desconocido'));
+      alert('❌ Error: ' + (errorData.error || 'No se pudo enviar la solicitud'));
     }
   } catch (error) {
     console.error('Error de conexión:', error);
-    alert('❌ Error de conexión: ' + error.message);
+    alert('❌ Error de conexión con el servidor');
   }
 }
 
@@ -265,6 +300,8 @@ async function loadSolicitudes() {
     });
     const solicitudes = await response.json();
     const container = document.getElementById('solicitudesList');
+
+    if (!container) return;
 
     if (!solicitudes || solicitudes.length === 0) {
       container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes solicitudes</p>';
@@ -285,36 +322,6 @@ async function loadSolicitudes() {
     `).join('');
   } catch (error) {
     console.error('Error al cargar solicitudes:', error);
-  }
-}
-
-async function loadPagos() {
-  try {
-    const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
-    const pagos = await response.json();
-    const container = document.getElementById('pagosList');
-
-    if (!pagos || pagos.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes pagos registrados</p>';
-      return;
-    }
-
-    container.innerHTML = pagos.slice(0, 3).map(p => `
-      <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
-        <div class="flex justify-between items-center mb-1">
-          <span style="font-weight: 600;">${p.concepto}</span>
-          <span class="badge badge-${getEstadoColor(p.estado)}">${p.estado}</span>
-        </div>
-        <div class="flex justify-between" style="font-size: 0.875rem; color: var(--text-secondary);">
-          <span>S/ ${p.monto}</span>
-          <span>${new Date(p.fecha_pago).toLocaleDateString()}</span>
-        </div>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error al cargar pagos:', error);
   }
 }
 
@@ -340,16 +347,17 @@ function getEstadoColor(estado) {
 }
 
 window.activarEmergencia = () => {
+  const user = window.appState.user;
   if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA MÉDICA? Se notificará al personal médico inmediatamente.')) {
     if (window.appState.socket && window.appState.socket.connected) {
       window.appState.socket.emit('nueva_emergencia', {
         tipo: 'medica',
-        descripcion: 'Solicitud de emergencia médica desde botón flotante',
+        descripcion: 'EMERGENCIA CRÍTICA: El residente requiere atención inmediata.',
         ubicacion: `Dpto ${user.apartamento || 'Desconocida'}`
       });
-      alert('✅ Emergencia médica activada. El personal médico ha sido notificado.');
+      alert('✅ Emergencia médica activada. El personal médico ha sido notificado y acudirá a tu dpto.');
     } else {
-      alert('⚠️ No hay conexión con el servidor. Por favor, intenta de nuevo.');
+      alert('⚠️ Error: No hay conexión en tiempo real con el servidor. Reintenta o contacta directo a vigilancia.');
     }
   }
 };
@@ -417,11 +425,3 @@ async function checkMedicalChatContext() {
     console.error('Error al verificar contexto médico:', error);
   }
 }
-
-window.showSolicitudes = () => {
-  window.navigateTo('/solicitudes');
-};
-
-window.showPerfil = () => {
-  window.navigateTo('/perfil');
-};

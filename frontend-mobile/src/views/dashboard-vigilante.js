@@ -333,10 +333,8 @@ async function loadSolicitudesPendientes() {
           <span class="badge badge-${getPrioridadColor(s.prioridad)}">${s.prioridad}</span>
         </div>
         <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${s.descripcion}</p>
-        <p style="font-size: 0.75rem; color: var(--text-muted);">
-          ${s.usuario_nombre} - Dpto. ${s.usuario_apartamento} ${s.usuario_telefono ? `| 📞 ${s.usuario_telefono}` : ''}
-          ${detalles?.area && detalles.area !== 'apartamento' ? ` | 📍 ${getAreaLabel(detalles.area)}` : ''}
         </p>
+      </div>
       `;
     }).join('');
   } catch (error) {
