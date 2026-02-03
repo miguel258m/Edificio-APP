@@ -41,7 +41,7 @@ export function renderLogin(container) {
             <div class="form-group mb-4">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                 <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0;">Contraseña</label>
-                <a href="#" style="font-size: 0.75rem; color: var(--role-admin); text-decoration: none; font-weight: 700; opacity: 0.9;">¿Olvidaste tu contraseña?</a>
+                <a href="#" id="recoverPassword" style="font-size: 0.75rem; color: var(--role-admin); text-decoration: none; font-weight: 700; opacity: 0.9;">¿Olvidaste tu contraseña?</a>
               </div>
               <input type="password" class="form-input" id="password" placeholder="••••••••" required style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); color: white; padding: 1.25rem; border-radius: 16px; font-size: 1rem; width: 100%;">
             </div>
