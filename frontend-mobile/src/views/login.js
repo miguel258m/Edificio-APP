@@ -4,27 +4,28 @@
 
 export function renderLogin(container) {
   container.innerHTML = `
-    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem;">
-      <div class="container" style="max-width: 400px;">
+    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at top right, var(--role-admin), transparent), radial-gradient(circle at bottom left, var(--role-residente), transparent); min-height: 100vh;">
+      <div class="container" style="max-width: 400px; position: relative; z-index: 1;">
         
-        <!-- Logo y título -->
-        <div class="text-center mb-4">
-          <div style="width: 80px; height: 80px; margin: 0 auto 1rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: var(--shadow-glow);">
+        <!-- Logo Premium -->
+        <div class="text-center mb-5 fade-in">
+          <div style="width: 96px; height: 96px; margin: 0 auto 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); border-radius: var(--radius-2xl); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: var(--shadow-glow); position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, var(--role-admin), transparent); animation: rotate 4s linear infinite; opacity: 0.1;"></div>
             🏢
           </div>
-          <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--primary-light), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          <h1 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             Edificio App
           </h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">
-            Sistema de administración inteligente
+          <p style="color: rgba(255,255,255,0.6); font-size: 0.95rem; font-weight: 500; letter-spacing: 0.02em;">
+            GESTIÓN INTELIGENTE DE RESIDENCIAS
           </p>
         </div>
 
-        <!-- Formulario de login -->
-        <div class="card fade-in">
+        <!-- Card de Login con Glassmorphism -->
+        <div class="card fade-in" style="background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); padding: 2.5rem; box-shadow: var(--shadow-2xl); border-radius: var(--radius-2xl);">
           <form id="loginForm">
-            <div class="form-group">
-              <label class="form-label">Correo electrónico</label>
+            <div class="form-group mb-4">
+              <label class="form-label" style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Correo electrónico</label>
               <input 
                 type="email" 
                 class="form-input" 
@@ -32,11 +33,12 @@ export function renderLogin(container) {
                 placeholder="tu@email.com"
                 required
                 autocomplete="email"
+                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; border-radius: var(--radius-lg); font-size: 1rem;"
               >
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Contraseña</label>
+            <div class="form-group mb-5">
+              <label class="form-label" style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Contraseña</label>
               <input 
                 type="password" 
                 class="form-input" 
@@ -44,28 +46,30 @@ export function renderLogin(container) {
                 placeholder="••••••••"
                 required
                 autocomplete="current-password"
+                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; border-radius: var(--radius-lg); font-size: 1rem;"
               >
             </div>
 
-            <div id="errorMessage" class="hidden" style="padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-md); color: var(--danger); font-size: 0.875rem; margin-bottom: 1rem;">
+            <div id="errorMessage" class="hidden" style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-lg); color: var(--danger); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center; font-weight: 500;">
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.1rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
               <span id="loginBtnText">Iniciar Sesión</span>
               <span id="loginSpinner" class="hidden">
-                <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
               </span>
             </button>
           </form>
 
-          <div class="mt-3 text-center">
-            <p style="font-size: 0.875rem; color: var(--text-muted);">
+          <div class="mt-5 text-center">
+            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">
               ¿Olvidaste tu contraseña? 
-              <a href="#" id="recoverPassword" style="color: var(--primary); text-decoration: none;">Recuperar</a>
+              <a href="#" id="recoverPassword" style="color: var(--role-admin); text-decoration: none; font-weight: 600; margin-left: 0.25rem;">Recuperar</a>
             </p>
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
-              ¿No tienes cuenta? 
-              <a href="#" id="goToRegister" style="color: var(--secondary); text-decoration: none; font-weight: 600;">Crear cuenta</a>
+            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 1.5rem 0;"></div>
+            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">
+              ¿No tienes una cuenta? 
+              <a href="#" id="goToRegister" style="color: var(--role-residente); text-decoration: none; font-weight: 700; margin-left: 0.25rem;">Regístrate aquí</a>
             </p>
           </div>
         </div>
