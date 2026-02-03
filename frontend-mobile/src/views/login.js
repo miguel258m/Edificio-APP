@@ -4,77 +4,55 @@
 
 export function renderLogin(container) {
   container.innerHTML = `
-    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at top right, var(--role-admin), transparent), radial-gradient(circle at bottom left, var(--role-residente), transparent); min-height: 100vh;">
-      <div class="container" style="max-width: 400px; position: relative; z-index: 1;">
+    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 100% 0%, var(--primary-dark), transparent 50%), radial-gradient(circle at 0% 100%, var(--secondary-dark), transparent 50%); background-color: var(--bg-primary); min-height: 100vh;">
+      <div class="container" style="max-width: 400px; width: 100%; position: relative; z-index: 1;">
         
-        <!-- Logo Premium -->
+        <!-- Logo Elite -->
         <div class="text-center mb-5 fade-in">
-          <div style="width: 96px; height: 96px; margin: 0 auto 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); border-radius: var(--radius-2xl); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: var(--shadow-glow); position: relative; overflow: hidden;">
-            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, var(--role-admin), transparent); animation: rotate 4s linear infinite; opacity: 0.1;"></div>
+          <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(16px); border-radius: 32px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; box-shadow: var(--shadow-glow); position: relative; overflow: hidden;">
+            <div style="position: absolute; width: 100%; height: 100%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); animation: sweep 3s infinite;"></div>
             🏢
           </div>
-          <h1 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Edificio App
+          <h1 style="font-size: 2.75rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Bienvenido
           </h1>
-          <p style="color: rgba(255,255,255,0.6); font-size: 0.95rem; font-weight: 500; letter-spacing: 0.02em;">
-            GESTIÓN INTELIGENTE DE RESIDENCIAS
-          </p>
+          <p style="color: var(--text-secondary); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Gestión Residencial Inteligente</p>
         </div>
 
-        <!-- Card de Login con Glassmorphism -->
-        <div class="card fade-in" style="background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); padding: 2.5rem; box-shadow: var(--shadow-2xl); border-radius: var(--radius-2xl);">
-          <form id="loginForm">
-            <div class="form-group mb-4">
-              <label class="form-label" style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Correo electrónico</label>
-              <input 
-                type="email" 
-                class="form-input" 
-                id="email" 
-                placeholder="tu@email.com"
-                required
-                autocomplete="email"
-                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; border-radius: var(--radius-lg); font-size: 1rem;"
-              >
-            </div>
-
+        <!-- Login Card Elite -->
+        <div class="card fade-in" style="background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(24px); padding: 3rem 2.5rem; box-shadow: var(--shadow-2xl); border-radius: 32px; position: relative; overflow: hidden;">
+           <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);"></div>
+           
+           <form id="loginForm" novalidate>
             <div class="form-group mb-5">
-              <label class="form-label" style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Contraseña</label>
-              <input 
-                type="password" 
-                class="form-input" 
-                id="password" 
-                placeholder="••••••••"
-                required
-                autocomplete="current-password"
-                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; border-radius: var(--radius-lg); font-size: 1rem;"
-              >
+              <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Correo Electrónico</label>
+              <div style="position: relative;">
+                <input type="email" class="form-input" id="email" placeholder="nombre@ejemplo.com" required style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); color: white; padding: 1.25rem; border-radius: 16px; font-size: 1rem; width: 100%;">
+              </div>
             </div>
 
-            <div id="errorMessage" class="hidden" style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-lg); color: var(--danger); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center; font-weight: 500;">
+            <div class="form-group mb-4">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0;">Contraseña</label>
+                <a href="#" style="font-size: 0.75rem; color: var(--role-admin); text-decoration: none; font-weight: 700; opacity: 0.9;">¿Olvidaste tu contraseña?</a>
+              </div>
+              <input type="password" class="form-input" id="password" placeholder="••••••••" required style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); color: white; padding: 1.25rem; border-radius: 16px; font-size: 1rem; width: 100%;">
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.1rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
-              <span id="loginBtnText">Iniciar Sesión</span>
-              <span id="loginSpinner" class="hidden">
-                <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+            <div id="errorMessage" class="hidden" style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 16px; color: var(--danger); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center; font-weight: 600;">
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%; padding: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; border-radius: 20px; background: linear-gradient(135deg, var(--role-admin), var(--primary-dark)); color: white; border: none; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); margin-top: 1rem;">
+              <span id="btnText">Iniciar Sesión</span>
+              <span id="spinner" class="hidden">
+                <div class="loading-spinner" style="width: 24px; height: 24px; border-width: 3px;"></div>
               </span>
             </button>
           </form>
 
           <div class="mt-5 text-center">
-            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">
-              ¿Olvidaste tu contraseña? 
-              <a href="#" id="recoverPassword" style="color: var(--role-admin); text-decoration: none; font-weight: 600; margin-left: 0.25rem;">Recuperar</a>
-            </p>
-            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 1.5rem 0;"></div>
-            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">
+            <p style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">
               ¿No tienes una cuenta? 
-              <a href="#" id="goToRegister" style="color: var(--role-residente); text-decoration: none; font-weight: 700; margin-left: 0.25rem;">Regístrate aquí</a>
-            </p>
-          </div>
-        </div>
-
-      </div>
     </div>
   `;
 
