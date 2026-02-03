@@ -12,28 +12,30 @@ export function renderDashboardMedico(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, #ef4444, #b91c1c); padding: 2rem 0 3rem; margin-bottom: -2rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-medico)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
         <div class="container">
-          <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-3">
-              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; color: white;">
-                ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👨‍⚕️'">` : '👨‍⚕️'}
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: var(--glass-bg); border: 2px solid var(--glass-border); padding: 3px; box-shadow: var(--shadow-md);">
+                <div style="width: 100%; height: 100%; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
+                  ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👨‍⚕️'">` : '👨‍⚕️'}
+                </div>
               </div>
               <div>
-                <p style="font-size: 0.875rem; opacity: 0.9;">Personal Médico</p>
-                <h1 style="font-size: 1.25rem; font-weight: 700;">${user.nombre}</h1>
-                <p style="font-size: 0.875rem; opacity: 0.8;">En guardia - Edificio ${user.edificio_id}</p>
+                <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); margin-bottom: 0.25rem;">Servicio de Salud</p>
+                <h1 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1;">${user.nombre}</h1>
+                <p style="font-size: 0.875rem; opacity: 0.8; margin-top: 0.25rem; font-weight: 500;">Médico de Guardia</p>
               </div>
             </div>
-            <button onclick="logout()" class="btn" style="padding: 0.5rem 1rem; color: white; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); font-size: 0.875rem;">
-              🚪 Salir
+            <button onclick="logout()" class="btn btn-ghost" style="padding: 0.6rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.05);">
+               🚪
             </button>
           </div>
         </div>
       </div>
 
-      <div class="container">
+      <div class="container" style="position: relative; z-index: 10;">
         <!-- Selector de Vista -->
         <div class="card" style="padding: 0.5rem; margin-top: 1rem; display: flex; gap: 0.5rem; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);">
           <button id="tabAlertas" class="btn btn-primary" style="flex: 1; font-size: 0.85rem;" onclick="switchMedicoView('alertas')">

@@ -16,32 +16,36 @@ export function renderDashboardResidente(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 0 3rem; margin-bottom: -2rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-residente)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
         <div class="container">
-          <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-3">
-              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; color: white;">
-                ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👤'">` : '👤'}
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: var(--glass-bg); border: 2px solid var(--glass-border); padding: 3px; box-shadow: var(--shadow-md); position: relative;">
+                <div style="width: 100%; height: 100%; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
+                  ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👤'">` : '👤'}
+                </div>
               </div>
               <div>
-                <p style="font-size: 0.875rem; opacity: 0.9;">${user.rol === 'admin' ? 'Administrador' : (user.rol.charAt(0).toUpperCase() + user.rol.slice(1))}</p>
-                <h1 style="font-size: 1.25rem; font-weight: 700;">${user.nombre}</h1>
-                <p style="font-size: 0.75rem; opacity: 0.8;">Dpto ${user.apartamento || 'N/A'}</p>
+                <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.7); margin-bottom: 0.25rem;">${user.rol === 'admin' ? 'Administrador' : 'Bienvenido Residente'}</p>
+                <h1 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1;">${user.nombre}</h1>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                   <span class="badge" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.1); font-size: 0.65rem;">📍 Dpto ${user.apartamento || 'N/A'}</span>
+                </div>
               </div>
             </div>
-            <button onclick="logout()" class="btn" style="padding: 0.5rem 1rem; color: white; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); font-size: 0.875rem;">
-              🚪 Salir
+            <button onclick="logout()" class="btn btn-ghost" style="padding: 0.6rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.05);">
+               🚪
             </button>
           </div>
         </div>
       </div>
 
-      <div class="container">
+      <div class="container" style="position: relative; z-index: 10;">
         <!-- Widget de Estado de Pago -->
-        <div id="paymentStatusWidget" class="mt-4 mb-2 fade-in"></div>
+        <div id="paymentStatusWidget" class="fade-in"></div>
 
-        <div class="grid grid-2 gap-3" style="margin-top: 0.5rem; align-items: stretch;">
+        <div class="grid grid-2 gap-3 mt-3" style="align-items: stretch;">
           <!-- Avisos Importantes -->
           <div id="announcementsWidget"></div>
 
