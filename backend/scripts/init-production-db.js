@@ -71,10 +71,11 @@ export async function initDatabase() {
         const password = 'password123';
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Usuarios (Asegurar que el admin esté aprobado)
+        // Usuarios (Asegurar que el admin y el gerente estén aprobados)
         await pool.query(`
             INSERT INTO usuarios (edificio_id, nombre, email, password, rol, aprobado) VALUES
             (1, 'Admin Principal', 'admin@edificio.com', $1, 'admin', true),
+            (1, 'Gerente Edificio', 'gerente@edificio.com', $1, 'gerente', true),
             (1, 'Juan Pérez', 'vigilante@edificio.com', $1, 'vigilante', true)
             ON CONFLICT (email) DO UPDATE SET aprobado = true
         `, [hashedPassword]);
