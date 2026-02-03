@@ -435,17 +435,20 @@ async function loadPaymentStatus() {
   if (!widget) return;
 
   try {
-    // Reutilizamos el endpoint que ya tenemos, pero solo para el usuario actual
-    const response = await fetch(`${window.API_URL}/pagos/historial`, {
+    // Endpoint correcto: /api/pagos/mis-pagos
+    const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, {
       headers: { 'Authorization': `Bearer ${window.appState.token}` }
     });
     const pagos = await response.json();
 
-    const mesActual = new Date().getMonth();
-    const anioActual = new Date().getFullYear();
+    const ahora = new Date();
+    const mesActual = ahora.getMonth();
+    const anioActual = ahora.getFullYear();
 
-    const pagadoEsteMes = pagos.some(p => {
+    const pagadoEsteMes = pagos && Array.isArray(pagos) && pagos.some(p => {
       const fecha = new Date(p.fecha_pago);
+      // Las fechas de la base de datos a veces vienen con desfase de zona horaria
+      // Comparamos mes y año del objeto Date
       return fecha.getMonth() === mesActual &&
         fecha.getFullYear() === anioActual &&
         p.estado === 'pagado';
