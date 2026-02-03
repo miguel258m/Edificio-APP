@@ -39,7 +39,8 @@ const httpServer = createServer(app);
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://edificio-app.onrender.com'
+    'https://edificio-app.onrender.com',
+    'https://edificio-frontend-production.up.railway.app'
 ];
 
 const io = new Server(httpServer, {

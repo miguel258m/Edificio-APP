@@ -28,7 +28,7 @@ window.appState = {
 // Configuración de la API
 // Priorizamos la variable de entorno de Vite si existe
 const VITE_API_URL = import.meta.env.VITE_API_URL;
-const PRODUCTION_API_URL = 'https://edificio-backend.onrender.com/api';
+const PRODUCTION_API_URL = 'https://edificio-backend-production.up.railway.app/api';
 const LOCAL_API_URL = `http://${window.location.hostname}:3000/api`;
 
 // Detectamos si estamos en un entorno local
