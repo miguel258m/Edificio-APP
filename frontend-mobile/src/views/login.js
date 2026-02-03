@@ -2,11 +2,18 @@
 // LOGIN VIEW - Pantalla de inicio de sesión
 // =====================================================
 
+import { initPWA } from '../utils/pwa.js';
+
 export function renderLogin(container) {
   container.innerHTML = `
     <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 100% 0%, var(--primary-dark), transparent 50%), radial-gradient(circle at 0% 100%, var(--secondary-dark), transparent 50%); background-color: var(--bg-primary); min-height: 100vh;">
       <div class="container" style="max-width: 400px; width: 100%; position: relative; z-index: 1;">
         
+        <!-- PWA Install Button (Hidden by default) -->
+        <button id="btnInstallApp" class="hidden fade-in" style="position: absolute; top: -60px; right: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 50;">
+          <span>📲</span> Instalar App
+        </button>
+
         <!-- Logo Elite -->
         <div class="text-center mb-5 fade-in">
           <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(16px); border-radius: 32px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; box-shadow: var(--shadow-glow); position: relative; overflow: hidden;">
@@ -59,11 +66,21 @@ export function renderLogin(container) {
         </div>
       </div>
     </div>
+
+    <style>
+      @keyframes sweep {
+        0% { transform: translateX(-100%) skewX(-15deg); }
+        50%, 100% { transform: translateX(100%) skewX(-15deg); }
+      }
+    </style>
   `;
 
   // Manejar envío del formulario
   const form = document.getElementById('loginForm');
   if (form) form.addEventListener('submit', handleLogin);
+
+  // Inicializar PWA logic
+  initPWA();
 
   // Manejar navegación a registro
   const goToRegisterBtn = document.getElementById('goToRegister');
