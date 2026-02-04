@@ -1,5 +1,5 @@
 // Service Worker para PWA
-const CACHE_NAME = 'edificio-app-v1';
+const CACHE_NAME = 'edificio-app-v2';
 const urlsToCache = [
     '/',
     '/index.html',

@@ -3,6 +3,7 @@
 // =====================================================
 
 import { initPWA } from '../utils/pwa.js';
+import { initSocket } from '../socket/client.js';
 
 export function renderLogin(container) {
   container.innerHTML = `
@@ -57,7 +58,16 @@ export function renderLogin(container) {
             </button>
           </form>
 
-          <div class="mt-5 text-center">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2.5rem; margin-bottom: 1.5rem; opacity: 0.5;">
+             <div style="flex: 1; height: 1px; background: white;"></div>
+             <span style="color: white; font-size: 0.8rem;">O inicia sesión con</span>
+             <div style="flex: 1; height: 1px; background: white;"></div>
+          </div>
+
+          <!-- Google Login Button Container (Debug border added) -->
+          <div id="googleBtnContainer" class="mb-4" style="display: flex; justify-content: center; min-height: 44px; width: 100%; border: 1px dashed rgba(255,255,255,0.2); border-radius: 12px; background: rgba(255,255,255,0.02);"></div>
+
+          <div class="mt-4 text-center">
             <p style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">
               ¿No tienes una cuenta? 
               <a href="#" id="goToRegister" style="color: var(--role-residente); text-decoration: none; font-weight: 700; margin-left: 0.5rem; border-bottom: 2px solid rgba(59, 130, 246, 0.3);">Regístrate</a>
@@ -81,6 +91,66 @@ export function renderLogin(container) {
 
   // Inicializar PWA logic
   initPWA();
+
+  // Inicializar Google Sign-In con reintentos suaves
+  let retryCount = 0;
+  const initGoogleBtn = () => {
+    const btnContainer = document.getElementById("googleBtnContainer");
+    if (!btnContainer) {
+      console.error("❌ googleBtnContainer no encontrado en el DOM");
+      return;
+    }
+
+    retryCount++;
+    console.log(`🔍 [Google Auth] Intento ${retryCount}. Revisando window.google...`);
+
+    // Verificar si el script está en el HTML
+    const scriptExists = !!document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    console.log(`📄 [Google Auth] ¿Script en HTML?: ${scriptExists}`);
+
+    if (window.google && window.google.accounts) {
+      console.log("✅ [Google Auth] API detectada.");
+      btnContainer.innerHTML = ''; // Limpiar mensaje de carga
+      try {
+        google.accounts.id.initialize({
+          client_id: "776968650110-n2idk31b0dj0g03me0fm2tvtu9fiogte.apps.googleusercontent.com",
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true // Añadido para mejor soporte en Safari/iOS
+        });
+
+        console.log("🛠️ [Google Auth] Renderizando botón...");
+        const width = btnContainer.parentElement ? Math.min(btnContainer.parentElement.offsetWidth - 40, 320) : 300;
+
+        google.accounts.id.renderButton(
+          btnContainer,
+          {
+            theme: "filled_blue",
+            size: "large",
+            width: width > 0 ? width : 300,
+            text: "signin_with",
+            shape: "pill"
+          }
+        );
+        console.log("🚀 [Google Auth] renderButton llamado. Si no lo ves, revisa la consola para errores de origen bloqueado.");
+      } catch (err) {
+        console.error("❌ [Google Auth] Error en initialize/render:", err);
+        btnContainer.innerHTML = `<span style="color: #ffaaaa; font-size: 10px;">Error Google: ${err.message}</span>`;
+      }
+    } else {
+      if (retryCount > 15) {
+        console.error("❌ [Google Auth] Se agotaron los reintentos. El script no cargó.");
+        btnContainer.innerHTML = `<span style="color: #ffaaaa; font-size: 10px;">No se pudo cargar Google. Revisa tu conexión.</span>`;
+        return;
+      }
+      console.warn("⏳ [Google Auth] window.google no listo. Reintentando...");
+      btnContainer.innerHTML = `<span style="color: gray; font-size: 10px; opacity: 0.5;">Cargando Google... (${retryCount})</span>`;
+      setTimeout(initGoogleBtn, 1000);
+    }
+  };
+
+  initGoogleBtn();
 
   // Manejar navegación a registro
   const goToRegisterBtn = document.getElementById('goToRegister');
@@ -207,4 +277,195 @@ async function handleLogin(e) {
     loginBtnText.classList.remove('hidden');
     loginSpinner.classList.add('hidden');
   }
+}
+
+// =====================================================
+// GOOGLE LOGIN LOGIC
+// =====================================================
+
+function handleGoogleResponse(response) {
+  // El token JWT de Google viene en response.credential
+  const googleToken = response.credential;
+
+  // Llamar a nuestro backend para verificar y loguear
+  loginWithGoogle(googleToken);
+}
+
+async function loginWithGoogle(token) {
+  const errorMessage = document.getElementById('errorMessage');
+  const loginSpinner = document.getElementById('spinner'); // Reutilizamos spinner si es posible o mostramos loading global
+
+  // Mostrar feedback visual simple
+  if (errorMessage) errorMessage.classList.add('hidden');
+
+  try {
+    const response = await fetch(`${window.API_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ token })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al iniciar sesión con Google');
+    }
+
+    // SI ES UN USUARIO NUEVO
+    if (data.newUser) {
+      showGoogleRegisterForm(data);
+      return;
+    }
+
+    // Guardar token y usuario (igual que login normal)
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    window.appState.token = data.token;
+    window.appState.user = data.user;
+
+    // Inicializar socket con el nuevo token
+    try {
+      initSocket(data.token);
+    } catch (e) {
+      console.warn('⚠️ Error al inicializar socket tras login google:', e);
+    }
+
+    // Redireccionar
+    if (data.user.rol === 'residente') window.navigateTo('/dashboard-residente');
+    else if (data.user.rol === 'vigilante') window.navigateTo('/dashboard-vigilante');
+    else if (data.user.rol === 'admin') window.navigateTo('/dashboard-admin');
+    else if (data.user.rol === 'limpieza') window.navigateTo('/dashboard-limpieza');
+    else if (data.user.rol === 'gerente') window.navigateTo('/dashboard-gerente');
+    else if (data.user.rol === 'medico') window.navigateTo('/dashboard-medico');
+    else window.navigateTo('/dashboard-residente');
+
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    if (errorMessage) {
+      errorMessage.textContent = error.message;
+      errorMessage.classList.remove('hidden');
+    } else {
+      alert(error.message);
+    }
+  }
+}
+
+// =====================================================
+// GOOGLE REGISTER UI & LOGIC
+// =====================================================
+
+async function showGoogleRegisterForm(googleData) {
+  const container = document.getElementById('app');
+  if (!container) return;
+
+  let selectedRol = 'residente'; // Valor por defecto
+
+  const renderGoogleForm = () => {
+    container.innerHTML = `
+      <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 100% 0%, var(--primary-dark), transparent 50%), radial-gradient(circle at 0% 100%, var(--secondary-dark), transparent 50%); background-color: var(--bg-primary); min-height: 100vh;">
+        <div class="card fade-in" style="max-width: 450px; width: 100%; background: var(--glass-bg); padding: 2.5rem; border-radius: 28px; border: 1px solid var(--glass-border); text-align: center; backdrop-filter: blur(24px);">
+          <div style="position: relative; display: inline-block; margin-bottom: 1.5rem;">
+            <img src="${googleData.foto}" style="width: 80px; height: 80px; border-radius: 24px; border: 2px solid var(--role-residente); box-shadow: var(--shadow-glow);">
+          </div>
+          
+          <h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 800;">¡Bienvenido, ${googleData.nombre.split(' ')[0]}!</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">Para terminar, dinos quién eres:</p>
+          
+          <!-- Botones de Rol Visuales -->
+          <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <button id="setResidente" type="button" style="flex: 1; padding: 1.25rem 0.5rem; border-radius: 16px; border: 2px solid ${selectedRol === 'residente' ? 'var(--role-residente)' : 'rgba(255,255,255,0.1)'}; background: ${selectedRol === 'residente' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.2)'}; color: white; cursor: pointer; transition: all 0.3s ease;">
+              <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🏠</span>
+              <span style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Residente</span>
+            </button>
+            <button id="setStaff" type="button" style="flex: 1; padding: 1.25rem 0.5rem; border-radius: 16px; border: 2px solid ${selectedRol === 'vigilante' ? 'var(--role-vigilante)' : 'rgba(255,255,255,0.1)'}; background: ${selectedRol === 'vigilante' ? 'rgba(71, 85, 105, 0.1)' : 'rgba(0,0,0,0.2)'}; color: white; cursor: pointer; transition: all 0.3s ease;">
+              <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">👷</span>
+              <span style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Personal</span>
+            </button>
+          </div>
+
+          <form id="googleFinishForm">
+            <div class="form-group mb-4" style="text-align: left;">
+              <label class="form-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Edificio</label>
+              <select id="googleEdificio" class="form-input" required style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; color: white; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                  <option value="" disabled selected>Cargando edificios...</option>
+              </select>
+            </div>
+
+            ${selectedRol === 'residente' ? `
+            <div id="aptContainer" class="form-group mb-5" style="text-align: left;">
+              <label class="form-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Número de Departamento</label>
+              <input type="text" id="googleApt" class="form-input" placeholder="Ej: 101-B" required style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; color: white; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+            </div>
+            ` : ''}
+
+            <button type="submit" class="btn" id="finishBtn" style="width: 100%; padding: 1.25rem; background: linear-gradient(135deg, ${selectedRol === 'residente' ? 'var(--role-residente)' : 'var(--role-vigilante)'}, var(--primary-dark)); color: white; border: none; border-radius: 20px; font-weight: 800; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+              FINALIZAR REGISTRO
+            </button>
+            
+            <button type="button" onclick="window.location.reload()" class="btn btn-ghost" style="width: 100%; margin-top: 1rem; color: var(--text-muted);">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    `;
+
+    // Eventos de botones
+    document.getElementById('setResidente').onclick = () => { selectedRol = 'residente'; renderGoogleForm(); };
+    document.getElementById('setStaff').onclick = () => { selectedRol = 'vigilante'; renderGoogleForm(); };
+
+    // Cargar edificios (solo si el select existe)
+    loadEdificiosForGoogle();
+
+    // Manejar envío
+    const form = document.getElementById('googleFinishForm');
+    if (form) {
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const finishBtn = document.getElementById('finishBtn');
+        finishBtn.disabled = true;
+        finishBtn.innerText = "PROCESANDO...";
+
+        try {
+          const payload = {
+            token_google: googleData.token_google,
+            edificio_id: document.getElementById('googleEdificio').value,
+            rol: selectedRol,
+            apartamento: selectedRol === 'residente' ? document.getElementById('googleApt').value : null,
+            telefono: ''
+          };
+
+          const response = await fetch(`${window.API_URL}/auth/google-register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Error al registrar");
+
+          alert("✅ Registro exitoso. Un administrador debe aprobar tu cuenta.");
+          window.navigateTo('/');
+        } catch (err) {
+          alert("❌ Error: " + err.message);
+          finishBtn.disabled = false;
+          finishBtn.innerText = "FINALIZAR REGISTRO";
+        }
+      };
+    }
+  };
+
+  const loadEdificiosForGoogle = async () => {
+    try {
+      const res = await fetch(`${window.API_URL}/edificios/public`);
+      const edificios = await res.json();
+      const select = document.getElementById('googleEdificio');
+      if (select) {
+        select.innerHTML = '<option value="" disabled selected>Selecciona tu edificio...</option>';
+        edificios.forEach(e => { select.innerHTML += `<option value="${e.id}">${e.nombre}</option>`; });
+      }
+    } catch (err) { console.error("Error edificios:", err); }
+  };
+
+  renderGoogleForm();
 }
