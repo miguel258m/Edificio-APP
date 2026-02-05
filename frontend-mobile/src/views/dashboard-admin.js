@@ -140,10 +140,17 @@ export function renderDashboardAdmin(container) {
         </div>
         <form id="alertaForm">
           <div class="form-group">
+            <label class="form-label">Edificio de destino</label>
+            <select class="form-select" id="edificioAlerta" required>
+              <option value="global">🌍 Todos los edificios (Global)</option>
+              <option value="" disabled>─ O selecciona uno ─</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Tipo de prioridad</label>
             <select class="form-select" id="tipoAlerta" required>
-              <option value="emergencia">🚨 Crítica</option>
               <option value="informativa">ℹ️ Informativa</option>
+              <option value="emergencia">🚨 Crítica</option>
               <option value="mantenimiento">🔧 Mantenimiento</option>
             </select>
           </div>
@@ -153,11 +160,11 @@ export function renderDashboardAdmin(container) {
           </div>
           <div class="form-group">
             <label class="form-label">Mensaje</label>
-            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Contenido del mensaje..."></textarea>
+            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Contenido del mensaje..." style="min-height: 100px;"></textarea>
           </div>
           <div class="flex gap-2">
             <button type="button" class="btn btn-ghost" onclick="closeAlertaModal()" style="flex: 1;">Cancelar</button>
-            <button type="submit" class="btn btn-danger" style="flex: 1;">Enviar a Todos</button>
+            <button type="submit" class="btn btn-primary" id="btnEnviarAlerta" style="flex: 1; background: var(--role-admin);">Enviar</button>
           </div>
         </form>
       </div>
@@ -167,10 +174,40 @@ export function renderDashboardAdmin(container) {
   // Cargar datos al iniciar
   loadAdminStats();
   loadAdminEmergencias();
+  loadEdificiosParaAlertas();
 
   // Inicializar alertas
   if (typeof renderAnnouncementsWidget === 'function') {
     renderAnnouncementsWidget('announcementsWidget');
+  }
+
+  // Vincular el formulario
+  setTimeout(() => {
+    const form = document.getElementById('alertaForm');
+    if (form) {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        enviarAlertaAdmin();
+      };
+    }
+  }, 100);
+}
+
+async function loadEdificiosParaAlertas() {
+  try {
+    const response = await fetch(`${window.API_URL}/edificios/public`);
+    const edificios = await response.json();
+    const select = document.getElementById('edificioAlerta');
+    if (select && Array.isArray(edificios)) {
+      edificios.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `🏢 ${e.nombre}`;
+        select.appendChild(opt);
+      });
+    }
+  } catch (error) {
+    console.warn('Error al cargar edificios para el modal de alertas:', error);
   }
 }
 
@@ -217,7 +254,9 @@ async function loadAdminEmergencias() {
     const container = document.getElementById('adminEmergenciasList');
     const count = document.getElementById('adminEmergenciasCount');
 
-    count.textContent = emergencias.length;
+    if (count) count.textContent = emergencias.length;
+
+    if (!container) return;
 
     if (emergencias.length === 0) {
       container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay alertas críticas en curso</p>';
@@ -254,24 +293,31 @@ window.closeAlertaModal = () => {
 };
 
 async function enviarAlertaAdmin() {
+  const edificio_id_val = document.getElementById('edificioAlerta').value;
   const tipo = document.getElementById('tipoAlerta').value;
   const titulo = document.getElementById('tituloAlerta').value;
   const mensaje = document.getElementById('mensajeAlerta').value;
+  const btn = document.getElementById('btnEnviarAlerta');
+
+  // Si selecciona global, el edificio_id será null para que el backend lo tome así
+  const edificio_id = edificio_id_val === 'global' ? null : edificio_id_val;
 
   try {
+    if (btn) btn.disabled = true;
+    if (btn) btn.innerText = 'Enviando...';
+
     const response = await fetch(`${window.API_URL}/alertas`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${window.appState.token}`
       },
-      body: JSON.stringify({ tipo, titulo, mensaje })
+      body: JSON.stringify({ tipo, titulo, mensaje, edificio_id })
     });
 
     if (response.ok) {
       alert('✅ Comunicado enviado correctamente');
       closeAlertaModal();
-      loadAdminStats();
       // Recargar el widget de avisos si existe
       if (typeof renderAnnouncementsWidget === 'function') {
         renderAnnouncementsWidget('announcementsWidget');
@@ -282,5 +328,8 @@ async function enviarAlertaAdmin() {
     }
   } catch (error) {
     alert('❌ Error de conexión al servidor');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (btn) btn.innerText = 'Enviar';
   }
 }

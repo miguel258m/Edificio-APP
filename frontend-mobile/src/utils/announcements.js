@@ -41,7 +41,7 @@ export async function renderAnnouncementsWidget(targetElementId) {
         const avisos = Array.isArray(data) ? data : [];
 
         if (avisos.length === 0) {
-            widgetContent.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted); padding: 1rem; width: 100%; text-align: center;">No hay avisos hoy</p>`;
+            widgetContent.innerHTML = `<p style="font-size: 0.875rem; color: var(--text-muted); padding: 1rem; width: 100%; text-align: center;">No hay avisos recientes</p>`;
             return;
         }
 

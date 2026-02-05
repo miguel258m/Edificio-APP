@@ -104,20 +104,16 @@ export function renderLogin(container) {
     retryCount++;
     console.log(`🔍 [Google Auth] Intento ${retryCount}. Revisando window.google...`);
 
-    // Verificar si el script está en el HTML
-    const scriptExists = !!document.querySelector('script[src*="accounts.google.com/gsi/client"]');
-    console.log(`📄 [Google Auth] ¿Script en HTML?: ${scriptExists}`);
-
     if (window.google && window.google.accounts) {
       console.log("✅ [Google Auth] API detectada.");
-      btnContainer.innerHTML = ''; // Limpiar mensaje de carga
+      btnContainer.innerHTML = '';
       try {
         google.accounts.id.initialize({
           client_id: "776968650110-n2idk31b0dj0g03me0fm2tvtu9fiogte.apps.googleusercontent.com",
           callback: handleGoogleResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
-          itp_support: true // Añadido para mejor soporte en Safari/iOS
+          itp_support: true
         });
 
         console.log("🛠️ [Google Auth] Renderizando botón...");
@@ -133,10 +129,14 @@ export function renderLogin(container) {
             shape: "pill"
           }
         );
-        console.log("🚀 [Google Auth] renderButton llamado. Si no lo ves, revisa la consola para errores de origen bloqueado.");
       } catch (err) {
         console.error("❌ [Google Auth] Error en initialize/render:", err);
-        btnContainer.innerHTML = `<span style="color: #ffaaaa; font-size: 10px;">Error Google: ${err.message}</span>`;
+        btnContainer.innerHTML = `
+          <div style="color: #ffaaaa; font-size: 11px; text-align: center; padding: 10px;">
+            <p>Error al cargar el botón de Google.</p>
+            <p style="opacity: 0.7; font-size: 10px;">Asegúrate de que el dominio <b>${window.location.origin}</b> esté autorizado en Google Cloud Console.</p>
+          </div>
+        `;
       }
     } else {
       if (retryCount > 15) {
@@ -144,7 +144,6 @@ export function renderLogin(container) {
         btnContainer.innerHTML = `<span style="color: #ffaaaa; font-size: 10px;">No se pudo cargar Google. Revisa tu conexión.</span>`;
         return;
       }
-      console.warn("⏳ [Google Auth] window.google no listo. Reintentando...");
       btnContainer.innerHTML = `<span style="color: gray; font-size: 10px; opacity: 0.5;">Cargando Google... (${retryCount})</span>`;
       setTimeout(initGoogleBtn, 1000);
     }

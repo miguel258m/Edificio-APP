@@ -10,9 +10,14 @@ router.use(authenticateToken);
 // =====================================================
 router.post('/', requireRole('vigilante', 'admin', 'gerente'), async (req, res) => {
     try {
-        const { titulo, mensaje, tipo } = req.body;
+        const { titulo, mensaje, tipo, edificio_id: selected_edificio_id } = req.body;
         const creada_por = req.user.id;
-        const edificio_id = req.user.edificio_id;
+        let edificio_id = req.user.edificio_id;
+
+        // Si es admin, puede elegir el edificio o dejarlo NULL para global
+        if (req.user.rol === 'admin') {
+            edificio_id = selected_edificio_id || null;
+        }
 
         if (!titulo || !mensaje) {
             return res.status(400).json({ error: 'Título y mensaje son requeridos' });
@@ -20,8 +25,8 @@ router.post('/', requireRole('vigilante', 'admin', 'gerente'), async (req, res) 
 
         const result = await pool.query(
             `INSERT INTO alertas (edificio_id, creada_por, titulo, mensaje, tipo)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
             [edificio_id, creada_por, titulo, mensaje, tipo || 'informativa']
         );
 
@@ -48,14 +53,13 @@ router.get('/', async (req, res) => {
 
         const result = await pool.query(
             `SELECT a.*, u.nombre as creada_por_nombre
-       FROM alertas a
-       JOIN usuarios u ON a.creada_por = u.id
-       WHERE a.edificio_id = $1
-       ORDER BY a.created_at DESC
-       LIMIT $2`,
+             FROM alertas a
+             JOIN usuarios u ON a.creada_por = u.id
+             WHERE a.edificio_id = $1 OR a.edificio_id IS NULL
+             ORDER BY a.created_at DESC
+             LIMIT $2`,
             [edificio_id, limit]
         );
-
         res.json(result.rows);
 
     } catch (error) {
