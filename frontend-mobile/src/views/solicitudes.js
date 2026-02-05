@@ -7,8 +7,9 @@ export function renderSolicitudes(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 1rem; margin-bottom: 1rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div>
@@ -24,10 +25,12 @@ export function renderSolicitudes(container) {
         </div>
       </div>
 
-      <div class="container">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Filtros -->
-        <div class="card mb-3">
-          <div class="flex gap-2" style="overflow-x: auto;">
+        <div class="card mb-4" style="padding: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);">
+          <div class="flex gap-2" style="overflow-x: auto; padding-bottom: 0.25rem;">
+
             <button class="btn btn-sm filter-btn active" data-filter="todas">Todas</button>
             <button class="btn btn-sm filter-btn" data-filter="pendiente">Pendientes</button>
             <button class="btn btn-sm filter-btn" data-filter="en_proceso">En Proceso</button>

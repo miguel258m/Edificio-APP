@@ -15,8 +15,9 @@ export function renderPerfil(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 1rem; margin-bottom: 1rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div>
@@ -30,7 +31,8 @@ export function renderPerfil(container) {
         </div>
       </div>
 
-      <div class="container">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Foto de perfil -->
         <div class="card mb-3 text-center">
           <div id="profileImageContainer" style="width: 120px; height: 120px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: var(--shadow-lg); overflow: hidden; border: 4px solid var(--bg-secondary);">

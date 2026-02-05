@@ -13,7 +13,8 @@ export function renderDashboardMedico(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-medico)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -35,9 +36,9 @@ export function renderDashboardMedico(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
         <!-- Selector de Vista -->
-        <div class="card" style="padding: 0.5rem; margin-top: 1rem; display: flex; gap: 0.5rem; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);">
+        <div class="card" style="padding: 0.75rem; margin-bottom: 2rem; display: flex; gap: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);">
           <button id="tabAlertas" class="btn btn-primary" style="flex: 1; font-size: 0.85rem;" onclick="switchMedicoView('alertas')">
             🏥 Alertas Activas
           </button>
@@ -46,10 +47,12 @@ export function renderDashboardMedico(container) {
           </button>
         </div>
 
+
         <!-- VISTA: ALERTAS ACTIVAS -->
         <div id="viewAlertas">
           <!-- Panel de Alertas Médicas -->
-          <div class="card mt-3 fade-in" style="border: 2px solid #ef4444; background: #fffcfc;">
+          <div class="card mt-3 fade-in" style="border: 2px solid var(--danger); background: rgba(244, 63, 94, 0.05);">
+
             <div class="flex justify-between items-center mb-3">
               <h2 class="card-title" style="margin: 0; color: #ef4444; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
                  <span>🚨 Emergencias Críticas</span>
@@ -62,7 +65,8 @@ export function renderDashboardMedico(container) {
           </div>
 
           <!-- Panel de Solicitudes Médicas -->
-          <div class="card mt-3 fade-in" style="border: 1px solid #6366f1; background: #fdfdff;">
+          <div class="card mt-3 fade-in" style="border: 1px solid var(--role-medico); background: rgba(34, 211, 238, 0.05);">
+
             <div class="flex justify-between items-center mb-3">
               <h2 class="card-title" style="margin: 0; color: #6366f1; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
                  <span>📋 Consultas y Pedidos</span>

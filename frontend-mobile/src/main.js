@@ -15,7 +15,9 @@ import { renderPerfil } from './views/perfil.js';
 import { renderDashboardGerente } from './views/dashboard-gerente.js';
 import { renderDashboardAdmin } from './views/dashboard-admin.js';
 import { renderDashboardMedico } from './views/dashboard-medico.js';
+import { renderDashboardEntretenimiento } from './views/dashboard-entretenimiento.js';
 import { renderGestionUsuarios } from './views/gestion-usuarios.js';
+
 import { initSocket } from './socket/client.js';
 
 // Estado global de la aplicación
@@ -76,7 +78,9 @@ const routes = {
     '/dashboard-gerente': renderDashboardGerente,
     '/dashboard-admin': renderDashboardAdmin,
     '/dashboard-medico': renderDashboardMedico,
+    '/dashboard-entretenimiento': renderDashboardEntretenimiento,
     '/chat': renderChat,
+
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
     '/perfil': renderPerfil,
@@ -170,7 +174,10 @@ async function checkAuth() {
                 redirectToPath = '/dashboard-gerente';
             } else if (user.rol === 'medico') {
                 redirectToPath = '/dashboard-medico';
+            } else if (user.rol === 'entretenimiento') {
+                redirectToPath = '/dashboard-entretenimiento';
             }
+
             window.navigateTo(redirectToPath);
         } else {
             router();

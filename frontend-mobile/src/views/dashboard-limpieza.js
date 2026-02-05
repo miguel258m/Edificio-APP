@@ -18,7 +18,9 @@ export function renderDashboardLimpieza(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-limpieza)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -40,14 +42,16 @@ export function renderDashboardLimpieza(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
-        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch; margin-bottom: 1.5rem;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
+        <div class="grid grid-2 gap-3" style="margin-top: 2rem; align-items: stretch; margin-bottom: 2.5rem;">
           <!-- Avisos Importantes Visibles -->
           <div id="announcementsWidget"></div>
 
           <!-- Acciones Rápidas -->
-          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; justify-content: center;">
-            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); text-transform: uppercase;">Estado</h3>
+          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; justify-content: center; border-left: 4px solid var(--role-limpieza);">
+            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.05em;">Estado</h3>
+
             <div class="flex flex-col gap-2">
               <button class="btn btn-primary" onclick="window.navigateTo('/perfil')" style="padding: 1rem; font-size: 0.85rem;">
                 👤 Mi Perfil

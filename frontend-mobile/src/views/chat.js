@@ -8,14 +8,17 @@ export function renderChat(container, targetUserId, targetUserName) {
 
   container.innerHTML = `
     <div class="page" style="display: flex; flex-direction: column; height: 100vh; background: var(--bg-primary);">
-      <!-- Chat Header -->
-      <div style="background: var(--bg-secondary); padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem;">
-        <button onclick="window.history.back()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer;">←</button>
-        <div style="flex: 1;">
-          <h2 style="font-size: 1.125rem; font-weight: 600; margin: 0;">${targetUserName}</h2>
-          <p id="chatStatus" style="font-size: 0.75rem; color: var(--success); margin: 0;">En línea</p>
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 2rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md); display: flex; align-items: center;">
+        <div class="container" style="display: flex; align-items: center; gap: 1rem;">
+          <button onclick="window.history.back()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer;">←</button>
+          <div style="flex: 1;">
+            <h2 style="font-size: 1.125rem; font-weight: 600; margin: 0;">${targetUserName}</h2>
+            <p id="chatStatus" style="font-size: 0.75rem; color: var(--success); margin: 0; opacity: 0.9;">En línea</p>
+          </div>
         </div>
       </div>
+
 
       <!-- Messages Area -->
       <div id="messagesArea" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">

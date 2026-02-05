@@ -17,7 +17,8 @@ export function renderDashboardResidente(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-residente)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -41,11 +42,13 @@ export function renderDashboardResidente(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Widget de Estado de Pago -->
         <div id="paymentStatusWidget" class="fade-in"></div>
 
-        <div class="grid grid-2 gap-3 mt-3" style="align-items: stretch;">
+        <div class="grid grid-2 gap-3 mt-4" style="align-items: stretch; margin-bottom: var(--spacing-md);">
+
           <!-- Avisos Importantes -->
           <div id="announcementsWidget"></div>
 
@@ -96,19 +99,21 @@ export function renderDashboardResidente(container) {
 
         <!-- Delivery y Restaurantes -->
         <div class="card mt-3 fade-in" style="animation-delay: 0.3s; background: rgba(255, 138, 0, 0.05); border: 1px solid rgba(255, 138, 0, 0.2);">
-          <h2 class="card-title" style="color: #ff8a00; display: flex; align-items: center; gap: 0.5rem;">
+          <h2 class="card-title" style="color: var(--warning); display: flex; align-items: center; gap: 0.75rem; font-size: 1.1rem; margin-bottom: 1rem;">
             <span>🍕</span> Delivery y Restaurantes
           </h2>
+
           <div id="deliveryList" class="grid grid-1 gap-2">
-            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+            <div style="padding: 1.25rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--warning)'; this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='translateX(0)'">
               <div>
-                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍕 Pizza Express</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Entrega en 30 min • Especialistas en artesanal</p>
+                <p style="font-weight: 600; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.25rem;">🍕 Pizza Express</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Entrega en 30 min • Especialistas en artesanal</p>
               </div>
-              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
+              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(251, 191, 36, 0.1); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.3); font-family: inherit; font-weight: 600; padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
                 📞 Llamar
               </a>
             </div>
+
             <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
               <div>
                 <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍱 Chifa Central</p>

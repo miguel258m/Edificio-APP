@@ -16,9 +16,9 @@ export function renderDashboardAdmin(container) {
   };
 
   container.innerHTML = `
-    <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-admin)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -40,10 +40,10 @@ export function renderDashboardAdmin(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
         <!-- Resumen de Cuentas (NUEVO) -->
-        <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0;">Cuentas Registradas</h3>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 2rem;">
+        <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">Cuentas Registradas</h3>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2.5rem;">
           <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
             <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🏠</div>
             <div style="font-size: 1.5rem; font-weight: 700;" id="count-residente">0</div>
@@ -64,14 +64,26 @@ export function renderDashboardAdmin(container) {
             <div style="font-size: 1.5rem; font-weight: 700;" id="count-gerente">0</div>
             <div style="font-size: 0.7rem; color: var(--text-muted);">Gerentes</div>
           </div>
+          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
+            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🩺</div>
+            <div style="font-size: 1.5rem; font-weight: 700;" id="count-medico">0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">Médicos</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
+            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎭</div>
+            <div style="font-size: 1.5rem; font-weight: 700;" id="count-entretenimiento">0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">Entret.</div>
+          </div>
         </div>
 
-        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch; margin-bottom: 1.5rem;">
+
+        <div class="grid grid-2 gap-3" style="margin-top: 2rem; align-items: stretch; margin-bottom: 2.5rem;">
           <!-- Avisos Importantes Visibles -->
           <div id="announcementsWidget"></div>
 
           <!-- Enviar comunicado o acción rápida -->
-          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary);">
+          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary); border-top: 3px solid var(--danger);">
+
              <h2 class="card-title" style="font-size: 0.875rem;">Acción Rápida</h2>
              <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
                 <button class="btn btn-danger" style="width: 100%; padding: 1rem;" onclick="showAlertaModal()">
@@ -85,7 +97,8 @@ export function renderDashboardAdmin(container) {
         </div>
 
         <!-- Gestión de Usuarios - ACCESO RÁPIDO -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.2s; background: var(--bg-secondary); border-left: 4px solid var(--primary);">
+        <div class="card fade-in" style="margin-top: 1.5rem; animation-delay: 0.2s; background: var(--bg-secondary); border-left: 4px solid var(--primary);">
+
           <div class="flex items-center gap-3 mb-2">
             <span style="font-size: 2rem;">👥</span>
             <div>
@@ -223,8 +236,11 @@ async function loadAdminStats() {
       residente: 0,
       limpieza: 0,
       vigilante: 0,
-      gerente: 0
+      gerente: 0,
+      medico: 0,
+      entretenimiento: 0
     };
+
 
     if (Array.isArray(users)) {
       users.forEach(u => {

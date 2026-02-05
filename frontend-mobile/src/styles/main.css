@@ -4,59 +4,80 @@
    ===================================================== */
 
 :root {
-  /* Paleta Core - Ultra Dark elite */
-  --bg-primary: #020617;
-  /* Deepest Indigo-Black */
-  --bg-secondary: #0f172a;
-  --bg-tertiary: #1e293b;
-  --bg-card: rgba(15, 23, 42, 0.8);
+  /* Paleta Core - Corporate Professional */
+  --bg-primary: #0f172a;
+  /* Slate 900 */
+  --bg-secondary: #1e293b;
+  /* Slate 800 */
+  --bg-tertiary: #334155;
+  /* Slate 700 */
+  --bg-card: rgba(30, 41, 59, 0.7);
 
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-secondary: #cbd5e1;
+  /* Slate 300 */
+  --text-muted: #94a3b8;
+  /* Slate 400 */
 
-  /* Acentos Elite - Vibrantes y profundos */
-  --role-residente: #3b82f6;
-  --role-gerente: #8b5cf6;
-  --role-vigilante: #475569;
-  --role-limpieza: #10b981;
-  --role-medico: #06b6d4;
-  --role-admin: #6366f1;
+  /* Acentos Muted & Professional */
+  --role-residente: #60a5fa;
+  /* Blue 400 */
+  --role-gerente: #a78bfa;
+  /* Violet 400 */
+  --role-vigilante: #64748b;
+  /* Slate 500 */
+  --role-limpieza: #34d399;
+  /* Emerald 400 */
+  --role-medico: #22d3ee;
+  /* Cyan 400 */
+  --role-entretenimiento: #f472b6;
+  /* Pink 400 */
+  --role-admin: #818cf8;
+  /* Indigo 400 */
 
   /* Colores de Estado */
   --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --warning: #fbbf24;
+  --danger: #f43f5e;
   --info: #3b82f6;
 
-  /* Sombras y Luces - High Fidelity */
+  /* Sombras y Luces - Soft & Layered */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.2);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 15px rgba(129, 140, 248, 0.15);
 
-  /* Glassmorphism Elite */
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.03);
+  /* Glassmorphism Refinado */
+  --glass-bg: rgba(30, 41, 59, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-highlight: rgba(255, 255, 255, 0.02);
+
+  /* Espaciado Estandarizado (Breathing Room) */
+  --spacing-xs: 0.5rem;
+  /* 8px */
+  --spacing-sm: 0.75rem;
+  /* 12px */
+  --spacing-md: 1.25rem;
+  /* 20px */
+  --spacing-lg: 2rem;
+  /* 32px */
+  --spacing-xl: 3rem;
+  /* 48px */
 
   /* Bordes */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
-  --radius-full: 9999px;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
 
   /* Fuente */
   --font-family: 'Outfit', 'Inter', system-ui, sans-serif;
   --primary: var(--role-admin);
-  --primary-light: #818cf8;
-  --primary-dark: #4338ca;
-  --secondary: var(--role-residente);
-  --secondary-dark: #2563eb;
+  --primary-light: #a5b4fc;
+  --primary-dark: #6366f1;
 }
+
 
 /* Fix específico para contrastes en Selects */
 select option {
@@ -165,16 +186,17 @@ body::before {
 
 .container {
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
 }
 
 .page {
   min-height: 100vh;
-  padding-bottom: 80px;
-  /* Espacio para bottom nav */
+  padding-bottom: 100px;
+  /* More space for bottom nav */
 }
+
 
 /* =====================================================
    CARDS
@@ -183,16 +205,21 @@ body::before {
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all var(--transition-base);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  margin-bottom: var(--spacing-md);
+  /* Added margin-bottom as default */
 }
 
 .card:hover {
   box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
 }
+
 
 .card-header {
   margin-bottom: var(--spacing-md);
@@ -254,13 +281,14 @@ body::before {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 20px rgba(129, 140, 248, 0.35);
 }
+
 
 .btn-secondary {
   background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);

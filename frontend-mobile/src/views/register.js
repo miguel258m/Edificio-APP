@@ -4,7 +4,8 @@
 
 export function renderRegister(container) {
   container.innerHTML = `
-    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 0% 0%, var(--primary-dark), transparent 40%), radial-gradient(circle at 100% 100%, var(--secondary-dark), transparent 40%); background-color: var(--bg-primary); min-height: 100vh;">
+    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 0% 0%, var(--bg-secondary), transparent 40%), radial-gradient(circle at 100% 100%, var(--bg-primary), transparent 40%); background-color: var(--bg-primary); min-height: 100vh;">
+
       <div class="container" style="max-width: 420px; width: 100%; position: relative; z-index: 1;">
         
         <!-- Logo Elite -->

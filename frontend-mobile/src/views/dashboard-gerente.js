@@ -18,7 +18,9 @@ export function renderDashboardGerente(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-gerente)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -40,7 +42,8 @@ export function renderDashboardGerente(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Emergencias Activas (Solo si existen) -->
         <div id="emergenciasAlert" class="hidden mb-4">
           <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid var(--danger); border-radius: var(--radius-lg); padding: 1rem;">
@@ -55,12 +58,13 @@ export function renderDashboardGerente(container) {
         </div>
 
         <!-- Grupo Principal de Acción (Avisos + Acciones Rápidas) -->
-        <div class="flex flex-col gap-4" style="margin-bottom: 2.5rem;">
+        <div class="flex flex-col gap-4" style="margin-bottom: 3rem;">
           <div id="announcementsWidget"></div>
 
-          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; padding: 1.5rem;">
-            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem;">Panel de Control</h3>
-            <div class="grid grid-2 gap-3">
+          <div class="card flex flex-col" style="background: var(--bg-secondary); margin: 0; padding: 2rem; border-top: 3px solid var(--role-gerente);">
+            <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">Panel de Control</h3>
+            <div class="grid grid-2 gap-4">
+
               <button class="btn btn-primary" onclick="abrirNuevoAviso()" style="padding: 1rem; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: var(--role-gerente); border: none;">
                 <span style="font-size: 1.5rem;">📢</span>
                 <span>Publicar Aviso</span>

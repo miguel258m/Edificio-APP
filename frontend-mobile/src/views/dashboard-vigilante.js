@@ -14,7 +14,8 @@ export function renderDashboardVigilante(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--role-vigilante)); padding: 2.5rem 0 3.5rem; margin-bottom: -2.5rem; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-lg);">
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -36,7 +37,8 @@ export function renderDashboardVigilante(container) {
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10;">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Alertas activas -->
         <div id="emergenciasAlert" class="card mt-3 fade-in" style="border: 2px solid var(--danger); display: none;">
           <div class="flex justify-between items-center mb-2">
@@ -48,12 +50,14 @@ export function renderDashboardVigilante(container) {
           </div>
         </div>
 
-        <div class="grid grid-2 gap-3" style="margin-top: 1.5rem; align-items: stretch; margin-bottom: 1.5rem;">
+        <div class="grid grid-2 gap-3" style="margin-top: 2rem; align-items: stretch; margin-bottom: 2.5rem;">
+
           <!-- Avisos Importantes Visibles -->
           <div id="announcementsWidget"></div>
 
           <!-- Enviar alerta general (Quick Action) -->
-          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary);">
+          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary); border-top: 3px solid var(--danger);">
+
             <h2 class="card-title" style="font-size: 0.875rem;">Acción Rápida</h2>
             <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
                <button class="btn btn-danger" style="width: 100%; padding: 1rem;" onclick="showAlertaModal()">
@@ -66,7 +70,8 @@ export function renderDashboardVigilante(container) {
           </div>
         </div>
 
-        <!--Mensajes pendientes-- >
+        <!-- Mensajes pendientes -->
+
         <div class="card mt-3 fade-in" style="animation-delay: 0.2s;">
           <div class="flex justify-between items-center mb-2">
             <h2 class="card-title" style="margin: 0;">💬 Mensajes</h2>
@@ -77,7 +82,8 @@ export function renderDashboardVigilante(container) {
           </div>
         </div>
 
-        <!--Solicitudes pendientes-- >
+        <!-- Solicitudes pendientes -->
+
     <div class="card mt-3 fade-in" style="animation-delay: 0.3s;">
       <div class="flex justify-between items-center mb-2">
         <h2 class="card-title" style="margin: 0;">📋 Solicitudes Pendientes</h2>
@@ -88,9 +94,11 @@ export function renderDashboardVigilante(container) {
       </div>
     </div>
 
-      </div >
+      </div>
 
-      < !--Bottom Navigation-- >
+
+      <!-- Bottom Navigation -->
+
     <nav class="bottom-nav">
       <a href="#" class="nav-item active">
         <span class="nav-icon">🏠</span>
@@ -109,9 +117,11 @@ export function renderDashboardVigilante(container) {
         <span>Perfil</span>
       </a>
     </nav>
-    </div >
+    </div>
 
-    < !--Modal para alerta general-- >
+
+    <!-- Modal para alerta general -->
+
     <div id="alertaModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div class="card" style="max-width: 500px; width: 100%;">
         <div class="flex justify-between items-center mb-3">

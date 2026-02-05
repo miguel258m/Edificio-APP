@@ -7,7 +7,8 @@ import { initSocket } from '../socket/client.js';
 
 export function renderLogin(container) {
   container.innerHTML = `
-    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 100% 0%, var(--primary-dark), transparent 50%), radial-gradient(circle at 0% 100%, var(--secondary-dark), transparent 50%); background-color: var(--bg-primary); min-height: 100vh;">
+    <div class="page" style="display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at 100% 0%, var(--bg-secondary), transparent 50%), radial-gradient(circle at 0% 100%, var(--bg-primary), transparent 50%); background-color: var(--bg-primary); min-height: 100vh;">
+
       <div class="container" style="max-width: 400px; width: 100%; position: relative; z-index: 1;">
         
         <!-- PWA Install Button (Hidden by default) -->

@@ -7,13 +7,13 @@ export function renderChats(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 2rem 1rem; margin-bottom: 1rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
         <div class="container">
           <div class="flex justify-between items-center">
             <div>
-              <h1 style="font-size: 1.5rem; font-weight: 700; color: white;">💬 Chats</h1>
-              <p style="font-size: 0.875rem; opacity: 0.9; color: white;">Tus conversaciones</p>
+              <h1 style="font-size: 1.5rem; font-weight: 700; color: white;">💬 Conversaciones</h1>
+              <p style="font-size: 0.875rem; opacity: 0.9; color: var(--text-secondary);">Mensajes con residentes y personal</p>
             </div>
             <button onclick="window.history.back()" class="btn btn-ghost" style="padding: 0.5rem; color: white;">
               ←
@@ -22,7 +22,9 @@ export function renderChats(container) {
         </div>
       </div>
 
-      <div class="container">
+
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <div id="chatsList">
           <div class="loading-spinner" style="margin: 2rem auto;"></div>
         </div>

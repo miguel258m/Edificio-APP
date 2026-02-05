@@ -299,7 +299,7 @@ router.patch('/:id/asignar-rol', requireRole('admin', 'gerente'), async (req, re
         const { id } = req.params;
         const { rol } = req.body;
 
-        const validRoles = ['limpieza', 'vigilante', 'gerente', 'residente', 'medico'];
+        const validRoles = ['limpieza', 'vigilante', 'gerente', 'residente', 'medico', 'entretenimiento'];
         if (!validRoles.includes(rol)) {
             console.error('Intento de asignar rol no válido:', rol);
             return res.status(400).json({ error: 'Rol no válido: ' + rol });

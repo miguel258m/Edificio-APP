@@ -7,8 +7,9 @@ export function renderGestionUsuarios(container) {
 
   container.innerHTML = `
     <div class="page">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, #7c3aed, #6366f1); padding: 2rem 1rem; margin-bottom: 1rem;">
+      <!-- Header Premium -->
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+
         <div class="container">
           <div class="flex justify-between items-center">
             <div>
@@ -22,10 +23,12 @@ export function renderGestionUsuarios(container) {
         </div>
       </div>
 
-      <div class="container">
+      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
+
         <!-- Tabs -->
-        <div class="card mb-3">
-          <div class="flex gap-2">
+        <div class="card mb-4" style="padding: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);">
+          <div class="flex gap-3">
+
             <button class="btn btn-sm tab-btn active" data-tab="pendientes">
               Pendientes <span class="badge badge-warning" id="countPendientes">0</span>
             </button>
@@ -81,7 +84,9 @@ export function renderGestionUsuarios(container) {
             <option value="vigilante">👮 Vigilante</option>
             <option value="gerente">📊 Gerente</option>
             <option value="medico">👨‍⚕️ Personal Médico</option>
+            <option value="entretenimiento">🎭 Personal de Entretenimiento</option>
             <option value="residente">🏠 Residente</option>
+
           </select>
         </div>
 
@@ -338,8 +343,10 @@ export function renderGestionUsuarios(container) {
       vigilante: 'primary',
       gerente: 'info',
       medico: 'danger',
+      entretenimiento: 'warning',
       residente: 'secondary'
     };
+
     return colores[rol] || 'secondary';
   }
 
@@ -349,8 +356,10 @@ export function renderGestionUsuarios(container) {
       vigilante: 'Vigilante',
       gerente: 'Gerente',
       medico: 'Personal Médico',
+      entretenimiento: 'Personal de Entretenimiento',
       residente: 'Residente'
     };
+
     return labels[rol] || rol;
   }
 
