@@ -116,7 +116,20 @@ function mostrarAlertaGeneral(alerta) {
         });
     }
 
-    alert(`📢 ${alerta.titulo}\n\n${alerta.mensaje}`);
+    // Actualizar el widget de avisos si existe en el DOM actual
+    const widget = document.getElementById('announcementsWidget');
+    if (widget) {
+        // Importación dinámica para evitar dependencias circulares si las hubiera
+        import('../utils/announcements.js').then(module => {
+            if (typeof module.renderAnnouncementsWidget === 'function') {
+                module.renderAnnouncementsWidget('announcementsWidget');
+            }
+        }).catch(err => console.error('Error al recargar widget:', err));
+    }
+
+    // Mostrar un aviso menos intrusivo que alert() si es posible, 
+    // pero por ahora alert() asegura que el usuario lo vea
+    console.log(`📢 AVISO RECIBIDO: ${alerta.titulo}`);
 }
 
 // Solicitar permiso para notificaciones

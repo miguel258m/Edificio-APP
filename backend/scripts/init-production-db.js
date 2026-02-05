@@ -48,6 +48,16 @@ export async function initDatabase() {
                     ALTER TYPE rol_usuario ADD VALUE 'limpieza';
                 EXCEPTION WHEN duplicate_object THEN NULL;
                 END;
+
+                BEGIN
+                    ALTER TYPE rol_usuario ADD VALUE 'medico';
+                EXCEPTION WHEN duplicate_object THEN NULL;
+                END;
+
+                BEGIN
+                    ALTER TYPE rol_usuario ADD VALUE 'entretenimiento';
+                EXCEPTION WHEN duplicate_object THEN NULL;
+                END;
             END $$;
         `);
 

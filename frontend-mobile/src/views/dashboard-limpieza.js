@@ -85,7 +85,7 @@ export function renderDashboardLimpieza(container) {
           <span class="nav-icon">🏠</span>
           <span>Inicio</span>
         </a>
-        <a href="#" class="nav-item" onclick="showPerfil(); return false;">
+        <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
           <span class="nav-icon">👤</span>
           <span>Perfil</span>
         </a>

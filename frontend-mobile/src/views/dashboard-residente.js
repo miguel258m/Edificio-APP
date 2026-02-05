@@ -161,6 +161,21 @@ export function renderDashboardResidente(container) {
           </form>
         </div>
       </div>
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <a href="#" class="nav-item active">
+          <span class="nav-icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item" onclick="window.navigateTo('/solicitudes'); return false;">
+          <span class="nav-icon">📋</span>
+          <span>Solicitudes</span>
+        </a>
+        <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
+          <span class="nav-icon">👤</span>
+          <span>Perfil</span>
+        </a>
+      </nav>
     </div>
   `;
 

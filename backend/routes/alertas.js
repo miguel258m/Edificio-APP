@@ -31,9 +31,19 @@ router.post('/', requireRole('vigilante', 'admin', 'gerente'), async (req, res) 
         );
 
         const alerta = result.rows[0];
+        alerta.creada_por_nombre = req.user.nombre;
 
-        // Emitir evento de Socket.io para notificar a todos
-        // (se manejará en el socket handler)
+        // Emitir evento de Socket.io
+        const io = req.app.get('io');
+        if (io) {
+            if (edificio_id === null) {
+                // Notificar a todos los edificios (Aviso Global)
+                io.emit('alerta_general', alerta);
+            } else {
+                // Notificar solo al edificio específico
+                io.to(`edificio_${edificio_id}`).emit('alerta_general', alerta);
+            }
+        }
 
         res.status(201).json(alerta);
 
@@ -48,18 +58,38 @@ router.post('/', requireRole('vigilante', 'admin', 'gerente'), async (req, res) 
 // =====================================================
 router.get('/', async (req, res) => {
     try {
-        const edificio_id = req.user.edificio_id;
-        const { limit = 10 } = req.query;
+        const { rol, edificio_id } = req.user;
+        const { limit = 50 } = req.query;
 
-        const result = await pool.query(
-            `SELECT a.*, u.nombre as creada_por_nombre
-             FROM alertas a
-             JOIN usuarios u ON a.creada_por = u.id
-             WHERE a.edificio_id = $1 OR a.edificio_id IS NULL
-             ORDER BY a.created_at DESC
-             LIMIT $2`,
-            [edificio_id, limit]
-        );
+        let query;
+        let params;
+
+        if (rol === 'admin') {
+            // El admin ve TODOS los avisos del sistema para poder gestionarlos
+            query = `
+                SELECT a.*, u.nombre as creada_por_nombre, e.nombre as edificio_nombre
+                FROM alertas a
+                LEFT JOIN usuarios u ON a.creada_por = u.id
+                LEFT JOIN edificios e ON a.edificio_id = e.id
+                ORDER BY a.created_at DESC
+                LIMIT $1
+            `;
+            params = [limit];
+        } else {
+            // Residentes y vigilantes solo ven los de su edificio o globales
+            query = `
+                SELECT a.*, u.nombre as creada_por_nombre, e.nombre as edificio_nombre
+                FROM alertas a
+                LEFT JOIN usuarios u ON a.creada_por = u.id
+                LEFT JOIN edificios e ON a.edificio_id = e.id
+                WHERE a.edificio_id = $1 OR a.edificio_id IS NULL
+                ORDER BY a.created_at DESC
+                LIMIT $2
+            `;
+            params = [edificio_id, limit];
+        }
+
+        const result = await pool.query(query, params);
         res.json(result.rows);
 
     } catch (error) {

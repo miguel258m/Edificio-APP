@@ -112,7 +112,7 @@ export function renderDashboardVigilante(container) {
         <span class="nav-icon">📋</span>
         <span>Solicitudes</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
         <span class="nav-icon">👤</span>
         <span>Perfil</span>
       </a>

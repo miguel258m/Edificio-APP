@@ -47,9 +47,16 @@ export async function renderAnnouncementsWidget(targetElementId) {
 
         widgetContent.innerHTML = avisos.map(a => `
             <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid ${getAlertaColor(a.tipo)}; box-shadow: var(--shadow-sm); margin-bottom: 0.5rem;">
-                <div class="flex justify-between items-start mb-1">
-                    <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); line-height: 1.2;">${a.titulo}</span>
-                    <span style="font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.5rem;">${new Date(a.created_at).toLocaleDateString()}</span>
+                <div class="flex flex-col mb-1">
+                    <div class="flex justify-between items-start">
+                        <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); line-height: 1.2;">${a.titulo}</span>
+                        <span style="font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.5rem;">${new Date(a.created_at).toLocaleDateString()}</span>
+                    </div>
+                    ${window.appState.user.rol === 'admin' ? `
+                        <div style="font-size: 0.7rem; color: var(--primary); font-weight: 600; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+                            <span>🏢</span> ${a.edificio_nombre || 'Global / Todos'}
+                        </div>
+                    ` : ''}
                 </div>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${a.mensaje}
@@ -114,11 +121,21 @@ async function loadAvisosList() {
         container.innerHTML = avisos.map(a => `
       <div style="padding: 1rem; border-left: 4px solid ${getAlertaColor(a.tipo)}; background: var(--bg-secondary); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1rem;">
         <div class="flex justify-between items-start mb-1">
-          <h4 style="font-weight: 600; color: var(--text-primary);">${a.titulo}</h4>
+          <div>
+            <h4 style="font-weight: 600; color: var(--text-primary);">${a.titulo}</h4>
+            ${window.appState.user.rol === 'admin' ? `
+              <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-top: 0.1rem;">
+                🏢 Destino: ${a.edificio_nombre || 'Global / Todos los edificios'}
+              </div>
+            ` : ''}
+          </div>
           <span style="font-size: 0.7rem; color: var(--text-muted);">${new Date(a.created_at).toLocaleDateString()}</span>
         </div>
         <p style="font-size: 0.875rem; color: var(--text-secondary);">${a.mensaje}</p>
-        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">Por: ${a.creada_por_nombre}</p>
+        <div class="flex justify-between items-center mt-2">
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">Por: ${a.creada_por_nombre}</p>
+            ${!a.edificio_id ? `<span class="badge badge-success" style="font-size: 0.6rem; padding: 0.1rem 0.4rem;">GLOBAL</span>` : ''}
+        </div>
       </div>
     `).join('');
 
