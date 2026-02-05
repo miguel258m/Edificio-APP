@@ -163,9 +163,23 @@ export function renderGestionUsuarios(container) {
             <div class="flex-1">
               <h3 style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">${u.nombre}</h3>
               <p style="font-size: 0.875rem; color: var(--text-muted);">${u.email}</p>
-              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                📅 Registrado: ${new Date(u.created_at).toLocaleDateString('es-ES')}
-              </p>
+              <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                ${u.apartamento ? `
+                  <span style="color: var(--success); font-weight: 700; font-size: 0.7rem; display: flex; align-items: center; gap: 0.25rem;">
+                    🏠 SOLICITUD RESIDENTE (Dpto ${u.apartamento})
+                  </span>
+                ` : `
+                  <span style="color: var(--primary); font-weight: 700; font-size: 0.7rem; display: flex; align-items: center; gap: 0.25rem;">
+                    👷 SOLICITUD DE PERSONAL (Sin Dpto)
+                  </span>
+                `}
+                <span style="font-size: 0.7rem; color: var(--text-muted);">
+                  📍 Edificio: ${u.edificio_nombre || 'No especificado'}
+                </span>
+                <span style="font-size: 0.65rem; color: var(--text-muted);">
+                  📅 Registrado: ${new Date(u.created_at).toLocaleDateString('es-ES')}
+                </span>
+              </div>
             </div>
             <span class="badge badge-warning">Pendiente</span>
           </div>
