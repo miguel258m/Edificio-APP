@@ -16,7 +16,9 @@ export function renderDashboardAdmin(container) {
   };
 
   container.innerHTML = `
+    <div class="page">
       <!-- Header Premium -->
+
       <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
 
         <div class="container">
@@ -45,7 +47,8 @@ export function renderDashboardAdmin(container) {
         <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">Cuentas Registradas</h3>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2.5rem;">
           <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🏠</div>
+            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">👥</div>
+
             <div style="font-size: 1.5rem; font-weight: 700;" id="count-residente">0</div>
             <div style="font-size: 0.7rem; color: var(--text-muted);">Residentes</div>
           </div>
