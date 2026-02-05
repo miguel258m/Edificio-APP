@@ -330,9 +330,13 @@ export function renderGestionUsuarios(container) {
 
   window.goToDashboard = () => {
     const dashboards = {
-      'admin': '/dashboard-vigilante',
+      'residente': '/dashboard-residente',
+      'vigilante': '/dashboard-vigilante',
+      'admin': '/dashboard-admin',
+      'limpieza': '/dashboard-limpieza',
       'gerente': '/dashboard-gerente',
-      'vigilante': '/dashboard-vigilante'
+      'medico': '/dashboard-medico',
+      'entretenimiento': '/dashboard-entretenimiento'
     };
     window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
   };

@@ -213,7 +213,9 @@ export function renderPerfil(container) {
       'vigilante': '/dashboard-vigilante',
       'admin': '/dashboard-admin',
       'limpieza': '/dashboard-limpieza',
-      'gerente': '/dashboard-gerente'
+      'gerente': '/dashboard-gerente',
+      'medico': '/dashboard-medico',
+      'entretenimiento': '/dashboard-entretenimiento'
     };
     window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
   };
