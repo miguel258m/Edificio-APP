@@ -292,57 +292,65 @@ router.get('/aprobados', requireRole('admin', 'gerente', 'vigilante'), async (re
 });
 
 // =====================================================
-// PATCH /api/usuarios/:id/asignar-rol - Asignar rol a trabajador
+// PATCH /api/usuarios/:id/password - Cambiar contraseña (admin/gerente)
 // =====================================================
-router.patch('/:id/asignar-rol', requireRole('admin', 'gerente'), async (req, res) => {
+router.patch('/:id/password', requireRole('admin', 'gerente'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { rol } = req.body;
+        const { password } = req.body;
 
-        const validRoles = ['limpieza', 'vigilante', 'gerente', 'residente', 'medico', 'entretenimiento'];
-        if (!validRoles.includes(rol)) {
-            console.error('Intento de asignar rol no válido:', rol);
-            return res.status(400).json({ error: 'Rol no válido: ' + rol });
+        if (!password || password.length < 4) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 4 caracteres' });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const result = await pool.query(
-            `UPDATE usuarios 
-             SET rol = $1, aprobado = true
-             WHERE id = $2
-             RETURNING id, nombre, email, rol`,
-            [rol, id]
+            'UPDATE usuarios SET password = $1 WHERE id = $2 RETURNING id, nombre',
+            [hashedPassword, id]
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado o ya aprobado' });
+            return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        res.json(result.rows[0]);
+        res.json({ message: 'Contraseña actualizada correctamente', usuario: result.rows[0].nombre });
 
     } catch (error) {
-        console.error('Error al asignar rol - DETALLE:', error);
-        res.status(500).json({ error: 'Error al asignar rol: ' + error.message });
+        console.error('Error al cambiar contraseña:', error);
+        res.status(500).json({ error: 'Error al cambiar contraseña' });
     }
 });
 
 // =====================================================
-// DELETE /api/usuarios/:id - Eliminar usuario (rechazar)
+// DELETE /api/usuarios/:id - Eliminar usuario
 // =====================================================
 router.delete('/:id', requireRole('admin', 'gerente'), async (req, res) => {
     try {
         const { id } = req.params;
+        const requesterRol = req.user.rol;
 
-        // Permitir eliminar si el usuario NO está aprobado
-        const result = await pool.query(
-            'DELETE FROM usuarios WHERE id = $1 AND aprobado = false RETURNING id',
-            [id]
-        );
+        let query;
+        let params = [id];
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado o ya está aprobado' });
+        if (requesterRol === 'admin') {
+            // Admin puede eliminar a cualquier usuario menos a sí mismo
+            if (parseInt(id) === req.user.id) {
+                return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta de administrador' });
+            }
+            query = 'DELETE FROM usuarios WHERE id = $1 RETURNING id';
+        } else {
+            // Gerente solo puede eliminar si el usuario NO está aprobado
+            query = 'DELETE FROM usuarios WHERE id = $1 AND aprobado = false RETURNING id';
         }
 
-        res.json({ message: 'Usuario rechazado y cuenta eliminada correctamente' });
+        const result = await pool.query(query, params);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado o no tienes permisos para eliminarlo' });
+        }
+
+        res.json({ message: 'Usuario eliminado correctamente' });
 
     } catch (error) {
         console.error('Error al eliminar usuario:', error);

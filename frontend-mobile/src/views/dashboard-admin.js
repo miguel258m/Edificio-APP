@@ -48,10 +48,10 @@ export function renderDashboardAdmin(container) {
       <div class="container" style="margin-top: -1.5rem; position: relative; z-index: 10;">
         <!-- Quick Stats Row -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-          <div class="card" style="margin-bottom: 0; background: var(--bg-card); border-left: 4px solid var(--warning); padding: 1.25rem;">
+          <div class="card" style="margin-bottom: 0; background: var(--bg-card); border-left: 4px solid var(--warning); padding: 1.25rem; cursor: pointer;" onclick="window.navigateTo('/gestion-usuarios')">
             <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pendientes</div>
             <div style="font-size: 1.75rem; font-weight: 800; margin: 0.25rem 0;" id="count-pending">0</div>
-            <div style="font-size: 0.65rem; color: var(--warning);">Por aprobar</div>
+            <div style="font-size: 0.65rem; color: var(--warning);">Click para aprobar</div>
           </div>
           <div class="card" id="card-emergencias" style="margin-bottom: 0; background: var(--bg-card); border-left: 4px solid var(--danger); padding: 1.25rem; cursor: pointer;" onclick="scrollToEmergencias()">
             <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Emergencias</div>
@@ -62,36 +62,36 @@ export function renderDashboardAdmin(container) {
 
         <!-- Role Summary Charts -->
         <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="width: 20px; height: 2px; background: var(--primary-light);"></span> Resumen Global de Cuentas
+          <span style="width: 20px; height: 2px; background: var(--primary-light);"></span> Resumen Global (Click para gestionar)
         </h3>
         
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem;">
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('residente')">
             <div style="font-size: 1.5rem;">👥</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-residente">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Residentes</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('medico')">
             <div style="font-size: 1.5rem;">🩺</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-medico">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Médicos</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('limpieza')">
             <div style="font-size: 1.5rem;">🧹</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-limpieza">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Limpieza</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('entretenimiento')">
             <div style="font-size: 1.5rem;">🎭</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-entretenimiento">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Recreación</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('vigilante')">
             <div style="font-size: 1.5rem;">🛡️</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-vigilante">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Vigilantes</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+          <div class="card text-center clickable-card" style="padding: 1rem; margin-bottom: 0; cursor: pointer;" onclick="verListaUsuarios('gerente')">
             <div style="font-size: 1.5rem;">📊</div>
             <div style="font-size: 1.25rem; font-weight: 700;" id="count-gerente">0</div>
             <div style="font-size: 0.65rem; color: var(--text-muted);">Gerentes</div>
@@ -214,7 +214,41 @@ export function renderDashboardAdmin(container) {
       </div>
     </div>
 
+    <!-- Modal para Lista de Usuarios (Gestion interactiva) -->
+    <div id="modalListaUsuarios" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(10px);">
+      <div style="background: var(--bg-secondary); width: 100%; max-width: 600px; height: 90vh; border-radius: 24px 24px 0 0; padding: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.5);">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 id="modalListaTitulo" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0;">Usuarios</h2>
+            <p id="modalListaSubtitulo" style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Gestionar cuentas</p>
+          </div>
+          <button onclick="cerrarListaUsuarios()" style="background: rgba(255,255,255,0.1); border: none; width: 44px; height: 44px; border-radius: 50%; color: #fff; font-size: 1.5rem;">×</button>
+        </div>
+        <div id="modalListaContenido" style="flex: 1; overflow-y: auto; padding-bottom: 2rem;">
+            <div class="loading-spinner" style="margin: 4rem auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cambio Password -->
+    <div id="modalPasswordAdmin" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+      <div class="card" style="width: 100%; max-width: 400px; border: 1px solid var(--primary);">
+        <h3 class="card-title">🔑 Nueva Contraseña</h3>
+        <p id="passwordUsuarioNombre" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;"></p>
+        <div class="form-group">
+            <input type="password" id="nuevaPassInput" class="form-input" placeholder="Minimo 4 caracteres">
+        </div>
+        <div class="flex gap-3">
+            <button class="btn btn-ghost flex-1" onclick="cerrarModalPass()">Cancelar</button>
+            <button class="btn btn-primary flex-1" id="btnConfirmPass" onclick="confirmarCambioPass()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
     <style>
+        .clickable-card { transition: transform 0.2s, background 0.2s; }
+        .clickable-card:active { transform: scale(0.95); background: rgba(129, 140, 248, 0.1); }
+        .user-mgmt-card { background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border); }
         .pulse-icon {
             width: 12px;
             height: 12px;
@@ -258,6 +292,142 @@ export function renderDashboardAdmin(container) {
         }
     </style>
   `;
+
+  // --- LOGICA FRONTEND GESTION ---
+  let usuariosCache = [];
+  let userPassSelected = null;
+
+  window.verListaUsuarios = async (rol) => {
+    const modal = document.getElementById('modalListaUsuarios');
+    const titulo = document.getElementById('modalListaTitulo');
+    const content = document.getElementById('modalListaContenido');
+
+    const labels = {
+      residente: 'Residentes',
+      medico: 'Médicos',
+      limpieza: 'Personal Limpieza',
+      entretenimiento: 'Recreación',
+      vigilante: 'Vigilantes',
+      gerente: 'Gerentes'
+    };
+
+    titulo.textContent = labels[rol] || 'Usuarios';
+    modal.classList.remove('hidden');
+    content.innerHTML = '<div class="loading-spinner" style="margin: 4rem auto;"></div>';
+
+    try {
+      const res = await fetch(`${window.API_URL}/usuarios?rol=${rol}`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+      usuariosCache = await res.json();
+      renderListaModal();
+    } catch (e) {
+      content.innerHTML = '<p class="text-center color-danger">Error al cargar usuarios</p>';
+    }
+  };
+
+  const renderListaModal = () => {
+    const content = document.getElementById('modalListaContenido');
+    if (!usuariosCache || usuariosCache.length === 0) {
+      content.innerHTML = '<p class="text-center" style="margin-top: 2rem;">No hay usuarios en esta categoría.</p>';
+      return;
+    }
+
+    content.innerHTML = usuariosCache.map(u => `
+        <div class="user-mgmt-card fade-in">
+            <div class="flex justify-between items-start">
+               <div>
+                  <h4 style="font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">${u.nombre}</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">📧 ${u.email}</p>
+                  <p style="font-size: 0.75rem; color: var(--primary-light); margin: 0.25rem 0;">📍 ${u.apartamento ? `Depto ${u.apartamento}` : 'Personal'}</p>
+               </div>
+               <div class="flex flex-direction-column gap-2">
+                  <button class="btn btn-sm btn-ghost" onclick="abrirModalPass(${u.id}, '${u.nombre}')" style="background: rgba(129,140,248,0.1); color: var(--primary-light); border: 1px solid rgba(129,140,248,0.2);">
+                    🔑 Pwd
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">
+                    🗑️
+                  </button>
+               </div>
+            </div>
+        </div>
+    `).join('');
+  };
+
+  window.cerrarListaUsuarios = () => {
+    document.getElementById('modalListaUsuarios').classList.add('hidden');
+  };
+
+  window.abrirModalPass = (id, nombre) => {
+    userPassSelected = id;
+    document.getElementById('passwordUsuarioNombre').textContent = `Usuario: ${nombre}`;
+    document.getElementById('modalPasswordAdmin').classList.remove('hidden');
+    document.getElementById('nuevaPassInput').value = '';
+    document.getElementById('nuevaPassInput').focus();
+  };
+
+  window.cerrarModalPass = () => {
+    document.getElementById('modalPasswordAdmin').classList.add('hidden');
+    userPassSelected = null;
+  };
+
+  window.confirmarCambioPass = async () => {
+    const pass = document.getElementById('nuevaPassInput').value;
+    if (pass.length < 4) return alert('Mínimo 4 caracteres');
+
+    const btn = document.getElementById('btnConfirmPass');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      const res = await fetch(`${window.API_URL}/usuarios/${userPassSelected}/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${window.appState.token}`
+        },
+        body: JSON.stringify({ password: pass })
+      });
+
+      if (res.ok) {
+        alert('✅ Contraseña actualizada');
+        cerrarModalPass();
+      } else {
+        const data = await res.json();
+        alert('❌ Error: ' + data.error);
+      }
+    } catch (e) {
+      alert('❌ Error de conexión');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    }
+  };
+
+  window.eliminarUsuario = async (id, nombre) => {
+    if (!confirm(`¿Seguro que quieres eliminar permanentemente a ${nombre}?`)) return;
+
+    try {
+      const res = await fetch(`${window.API_URL}/usuarios/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+
+      if (res.ok) {
+        alert('✅ Usuario eliminado');
+        usuariosCache = usuariosCache.filter(u => u.id !== id);
+        renderListaModal();
+        loadAdminStats(); // Actualizar contadores del fondo
+      } else {
+        const data = await res.json();
+        alert('❌ Error: ' + data.error);
+      }
+    } catch (e) {
+      alert('❌ Error de conexión');
+    }
+  };
+
+  // --- FIN LOGICA GESTION ---
 
   // Inicializar lógica de radio buttons para el modal
   setTimeout(() => {
@@ -456,6 +626,62 @@ async function loadAdminEmergencias() {
     `).join('');
   } catch (error) {
     console.error('Error al cargar emergencias:', error);
+  }
+}
+
+window.showAlertaModal = () => {
+  const modal = document.getElementById('alertaModal');
+  if (modal) modal.classList.remove('hidden');
+};
+
+window.closeAlertaModal = () => {
+  const modal = document.getElementById('alertaModal');
+  const form = document.getElementById('alertaForm');
+  if (modal) modal.classList.add('hidden');
+  if (form) form.reset();
+};
+
+async function enviarAlertaAdmin() {
+  const edificio_id_val = document.getElementById('edificioAlerta').value;
+  const tipo = document.querySelector('input[name="tipoAlerta"]:checked').value;
+  const titulo = document.getElementById('tituloAlerta').value;
+  const mensaje = document.getElementById('mensajeAlerta').value;
+  const btn = document.getElementById('btnEnviarAlerta');
+
+  const edificio_id = edificio_id_val === 'global' ? null : edificio_id_val;
+
+  try {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Enviando...';
+    }
+
+    const response = await fetch(`${window.API_URL}/alertas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.appState.token}`
+      },
+      body: JSON.stringify({ tipo, titulo, mensaje, edificio_id })
+    });
+
+    if (response.ok) {
+      alert('✅ Comunicado enviado correctamente');
+      closeAlertaModal();
+      if (typeof renderAnnouncementsWidget === 'function') {
+        renderAnnouncementsWidget('announcementsWidget');
+      }
+    } else {
+      const data = await response.json();
+      alert('❌ Error: ' + (data.error || 'No se pudo enviar'));
+    }
+  } catch (error) {
+    alert('❌ Error de conexión al servidor');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Enviar Comunicado';
+    }
   }
 }
 
