@@ -18,110 +18,128 @@ export function renderDashboardAdmin(container) {
   container.innerHTML = `
     <div class="page">
       <!-- Header Premium -->
-
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
-
+      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 2.5rem 0; border-bottom: 1px solid var(--glass-border); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, transparent 70%); border-radius: 50%; filter: blur(40px);"></div>
+        
         <div class="container">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-4">
-              <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: var(--glass-bg); border: 2px solid var(--glass-border); padding: 3px; box-shadow: var(--shadow-md);">
-                <div style="width: 100%; height: 100%; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
+              <div style="width: 56px; height: 56px; border-radius: var(--radius-full); background: var(--glass-bg); border: 2px solid var(--primary); padding: 3px; box-shadow: 0 0 20px rgba(129, 140, 248, 0.3);">
+                <div style="width: 100%; height: 100%; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                   ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👑'">` : '👤'}
                 </div>
               </div>
               <div>
-                <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); margin-bottom: 0.25rem;">Control Maestro</p>
-                <h1 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1;">${user.nombre}</h1>
-                <p style="font-size: 0.875rem; opacity: 0.8; margin-top: 0.25rem; font-weight: 500;">Administrador Global</p>
+                <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--primary-light); margin-bottom: 0.1rem;">Panel de Control</p>
+                <h1 style="font-size: 1.25rem; font-weight: 800; color: #fff;">${user.nombre}</h1>
+                <div class="flex items-center gap-2" style="margin-top: 0.1rem;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                  <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: 500;">Administrador Global</span>
+                </div>
               </div>
             </div>
-            <button onclick="logout()" class="btn btn-ghost" style="padding: 0.6rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.05);">
+            <button onclick="logout()" class="btn" style="padding: 0.5rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 44px; height: 44px;">
                🚪
             </button>
           </div>
         </div>
       </div>
 
-      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
-        <!-- Resumen de Cuentas (NUEVO) -->
-        <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">Cuentas Registradas</h3>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2.5rem;">
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">👥</div>
-
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-residente">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Residentes</div>
+      <div class="container" style="margin-top: -1.5rem; position: relative; z-index: 10;">
+        <!-- Quick Stats Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+          <div class="card" style="margin-bottom: 0; background: var(--bg-card); border-left: 4px solid var(--warning); padding: 1.25rem;">
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pendientes</div>
+            <div style="font-size: 1.75rem; font-weight: 800; margin: 0.25rem 0;" id="count-pending">0</div>
+            <div style="font-size: 0.65rem; color: var(--warning);">Por aprobar</div>
           </div>
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🧹</div>
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-limpieza">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Limpieza</div>
-          </div>
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🛡️</div>
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-vigilante">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Vigilantes</div>
-          </div>
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">📊</div>
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-gerente">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Gerentes</div>
-          </div>
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🩺</div>
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-medico">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Médicos</div>
-          </div>
-          <div class="card text-center" style="padding: 1rem; background: var(--bg-secondary);">
-            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎭</div>
-            <div style="font-size: 1.5rem; font-weight: 700;" id="count-entretenimiento">0</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Entret.</div>
+          <div class="card" id="card-emergencias" style="margin-bottom: 0; background: var(--bg-card); border-left: 4px solid var(--danger); padding: 1.25rem; cursor: pointer;" onclick="scrollToEmergencias()">
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Emergencias</div>
+            <div style="font-size: 1.75rem; font-weight: 800; margin: 0.25rem 0; color: var(--danger);" id="adminEmergenciasCount">0</div>
+            <div style="font-size: 0.65rem; color: var(--danger);">Activas ahora</div>
           </div>
         </div>
 
+        <!-- Role Summary Charts -->
+        <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="width: 20px; height: 2px; background: var(--primary-light);"></span> Resumen Global de Cuentas
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem;">
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">👥</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-residente">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Residentes</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">🩺</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-medico">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Médicos</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">🧹</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-limpieza">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Limpieza</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">🎭</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-entretenimiento">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Recreación</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">🛡️</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-vigilante">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Vigilantes</div>
+          </div>
+          <div class="card text-center" style="padding: 1rem; margin-bottom: 0;">
+            <div style="font-size: 1.5rem;">📊</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" id="count-gerente">0</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">Gerentes</div>
+          </div>
+        </div>
 
-        <div class="grid grid-2 gap-3" style="margin-top: 2rem; align-items: stretch; margin-bottom: 2.5rem;">
+        <!-- NEW: Detailed Breakdown per Building -->
+        <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="width: 20px; height: 2px; background: var(--primary-light);"></span> Desglose por Condominio
+        </h3>
+        
+        <div id="edificiosStatsContainer" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem;">
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Cargando estadísticas por edificio...</div>
+        </div>
+
+        <!-- Activity Feed & Quick Actions row -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
           <!-- Avisos Importantes Visibles -->
           <div id="announcementsWidget"></div>
 
-          <!-- Enviar comunicado o acción rápida -->
-          <div class="card flex flex-col" style="margin: 0; background: var(--bg-secondary); border-top: 3px solid var(--danger);">
-
-             <h2 class="card-title" style="font-size: 0.875rem;">Acción Rápida</h2>
-             <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
-                <button class="btn btn-danger" style="width: 100%; padding: 1rem;" onclick="showAlertaModal()">
-                   📢 Comunicado
-                </button>
-                <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">
-                   Envía un aviso oficial
-                </p>
-             </div>
-          </div>
-        </div>
-
-        <!-- Gestión de Usuarios - ACCESO RÁPIDO -->
-        <div class="card fade-in" style="margin-top: 1.5rem; animation-delay: 0.2s; background: var(--bg-secondary); border-left: 4px solid var(--primary);">
-
-          <div class="flex items-center gap-3 mb-2">
-            <span style="font-size: 2rem;">👥</span>
-            <div>
-              <h2 class="card-title" style="margin: 0;">Gestión de Usuarios</h2>
-              <p style="font-size: 0.875rem; color: var(--text-muted);">Aprobar registros y asignar roles</p>
+          <div class="card" style="margin-bottom: 0; background: var(--bg-secondary); border-top: 4px solid var(--primary);">
+            <div class="flex items-center gap-3 mb-4">
+              <span style="font-size: 1.5rem;">📢</span>
+              <div>
+                <h2 class="card-title" style="margin: 0; font-size: 1rem;">Acción Directa</h2>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Gestionar alertas y avisos</p>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <button class="btn btn-primary" style="padding: 0.75rem;" onclick="showAlertaModal()">
+                 Nuevo Aviso
+              </button>
+              <button class="btn btn-ghost" style="padding: 0.75rem;" onclick="window.navigateTo('/gestion-usuarios')">
+                 Aprobar 👥
+              </button>
             </div>
           </div>
-          <button class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" onclick="window.navigateTo('/gestion-usuarios')">
-            Ir a Administración
-          </button>
         </div>
 
-        <!-- Alertas activas Críticas -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.3s; border: 2px solid var(--danger);">
-          <div class="flex justify-between items-center mb-2">
-            <h2 class="card-title" style="margin: 0; color: var(--danger);">🚨 Emergencias Activas</h2>
-            <span class="badge badge-danger" id="adminEmergenciasCount">0</span>
+        <!-- Emergencias Section -->
+        <div id="section-emergencias" class="card fade-in" style="animation-delay: 0.3s; border: 2px solid var(--danger); background: rgba(244, 63, 94, 0.05);">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="card-title" style="margin: 0; color: var(--danger); display: flex; align-items: center; gap: 0.5rem;">
+              <span class="pulse-icon"></span> Emergencias Activas
+            </h2>
           </div>
           <div id="adminEmergenciasList">
-            <p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay emergencias críticas</p>
+            <p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay alertas críticas en curso</p>
           </div>
         </div>
       </div>
@@ -142,50 +160,114 @@ export function renderDashboardAdmin(container) {
         </a>
         <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
           <span class="nav-icon">👤</span>
-          <span>Ajustes</span>
+          <span>Perfil</span>
         </a>
       </nav>
     </div>
 
     <!-- Modal para comunicado -->
-    <div id="alertaModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div class="card" style="max-width: 500px; width: 100%;">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="card-title" style="margin: 0;">📢 Nuevo Comunicado</h2>
-          <button onclick="closeAlertaModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
+    <div id="alertaModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(8px);">
+      <div class="card" style="max-width: 500px; width: 100%; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📢</span> Nuevo Comunicado
+          </h2>
+          <button onclick="closeAlertaModal()" style="background: rgba(255,255,255,0.05); border: none; font-size: 1.25rem; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">×</button>
         </div>
         <form id="alertaForm">
           <div class="form-group">
             <label class="form-label">Edificio de destino</label>
             <select class="form-select" id="edificioAlerta" required>
               <option value="global">🌍 Todos los edificios (Global)</option>
-              <option value="" disabled>─ O selecciona uno ─</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Tipo de prioridad</label>
-            <select class="form-select" id="tipoAlerta" required>
-              <option value="informativa">ℹ️ Informativa</option>
-              <option value="emergencia">🚨 Crítica</option>
-              <option value="mantenimiento">🔧 Mantenimiento</option>
-            </select>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <label style="cursor: pointer;">
+                    <input type="radio" name="tipoAlerta" value="informativa" checked style="display:none;">
+                    <div style="padding: 0.5rem; text-align: center; border-radius: var(--radius-md); background: var(--bg-tertiary); font-size: 0.75rem; border: 2px solid transparent;" class="radio-tab">ℹ️ Info</div>
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" name="tipoAlerta" value="mantenimiento" style="display:none;">
+                    <div style="padding: 0.5rem; text-align: center; border-radius: var(--radius-md); background: var(--bg-tertiary); font-size: 0.75rem; border: 2px solid transparent;" class="radio-tab">🔧 Mant.</div>
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" name="tipoAlerta" value="emergencia" style="display:none;">
+                    <div style="padding: 0.5rem; text-align: center; border-radius: var(--radius-md); background: var(--bg-tertiary); font-size: 0.75rem; border: 2px solid transparent;" class="radio-tab">🚨 Crítica</div>
+                </label>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Título</label>
-            <input type="text" class="form-input" id="tituloAlerta" required placeholder="Título del comunicado">
+            <input type="text" class="form-input" id="tituloAlerta" required placeholder="Ej: Corte de agua programado">
           </div>
           <div class="form-group">
             <label class="form-label">Mensaje</label>
-            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Contenido del mensaje..." style="min-height: 100px;"></textarea>
+            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Describe el detalle del aviso..." style="min-height: 120px;"></textarea>
           </div>
-          <div class="flex gap-2">
+          <div class="flex gap-3" style="margin-top: 1rem;">
             <button type="button" class="btn btn-ghost" onclick="closeAlertaModal()" style="flex: 1;">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="btnEnviarAlerta" style="flex: 1; background: var(--role-admin);">Enviar</button>
+            <button type="submit" class="btn btn-primary" id="btnEnviarAlerta" style="flex: 1.5;">Enviar Comunicado</button>
           </div>
         </form>
       </div>
     </div>
+
+    <style>
+        .pulse-icon {
+            width: 12px;
+            height: 12px;
+            background: var(--danger);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        .radio-tab { transition: all 0.2s; }
+        input[type="radio"]:checked + .radio-tab {
+            background: var(--primary) !important;
+            border-color: var(--primary-light) !important;
+            color: white;
+            font-weight: 700;
+        }
+        .building-stat-row {
+            display: grid;
+            grid-template-columns: 2fr repeat(5, 1fr);
+            gap: 2px;
+            background: rgba(255,255,255,0.05);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            align-items: center;
+        }
+        .building-stat-header {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .building-stat-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+        }
+    </style>
   `;
+
+  // Inicializar lógica de radio buttons para el modal
+  setTimeout(() => {
+    const radioTabs = document.querySelectorAll('.radio-tab');
+    radioTabs.forEach(tab => {
+      tab.parentElement.onclick = () => {
+        tab.previousElementSibling.checked = true;
+      };
+    });
+  }, 100);
 
   // Cargar datos al iniciar
   loadAdminStats();
@@ -209,6 +291,11 @@ export function renderDashboardAdmin(container) {
   }, 100);
 }
 
+window.scrollToEmergencias = () => {
+  const el = document.getElementById('section-emergencias');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
+
 async function loadEdificiosParaAlertas() {
   try {
     const response = await fetch(`${window.API_URL}/edificios/public`);
@@ -229,13 +316,26 @@ async function loadEdificiosParaAlertas() {
 
 async function loadAdminStats() {
   try {
-    const resUsers = await fetch(`${window.API_URL}/usuarios`, {
+    const [resUsers, resEdificios] = await Promise.all([
+      fetch(`${window.API_URL}/usuarios`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      }),
+      fetch(`${window.API_URL}/edificios/public`)
+    ]);
+
+    const users = await resUsers.json();
+    const edificios = await resEdificios.json();
+
+    // Cargar pendientes
+    const resPendientes = await fetch(`${window.API_URL}/usuarios/pendientes`, {
       headers: { 'Authorization': `Bearer ${window.appState.token}` }
     });
-    const users = await resUsers.json();
+    const pendientes = await resPendientes.json();
+    const countPendingEl = document.getElementById('count-pending');
+    if (countPendingEl) countPendingEl.textContent = Array.isArray(pendientes) ? pendientes.length : 0;
 
-    // Contar usuarios por rol
-    const counts = {
+    // Contar usuarios global
+    const countsGlobal = {
       residente: 0,
       limpieza: 0,
       vigilante: 0,
@@ -244,20 +344,76 @@ async function loadAdminStats() {
       entretenimiento: 0
     };
 
+    // Estructura para conteo por edificio
+    const statsPorEdificio = {};
+    if (Array.isArray(edificios)) {
+      edificios.forEach(e => {
+        statsPorEdificio[e.id] = {
+          nombre: e.nombre,
+          residente: 0,
+          limpieza: 0,
+          entretenimiento: 0,
+          medico: 0,
+          gerente: 0,
+          vigilante: 0
+        };
+      });
+    }
 
     if (Array.isArray(users)) {
       users.forEach(u => {
-        if (counts.hasOwnProperty(u.rol)) {
-          counts[u.rol]++;
+        // Global
+        if (countsGlobal.hasOwnProperty(u.rol)) {
+          countsGlobal[u.rol]++;
+        }
+
+        // Por edificio
+        if (u.edificio_id && statsPorEdificio[u.edificio_id]) {
+          if (statsPorEdificio[u.edificio_id].hasOwnProperty(u.rol)) {
+            statsPorEdificio[u.edificio_id][u.rol]++;
+          }
         }
       });
     }
 
-    // Actualizar UI
-    Object.keys(counts).forEach(rol => {
+    // Actualizar UI Global
+    Object.keys(countsGlobal).forEach(rol => {
       const el = document.getElementById(`count-${rol}`);
-      if (el) el.textContent = counts[rol];
+      if (el) el.textContent = countsGlobal[rol];
     });
+
+    // Renderizar desglose por edificio
+    const buildingsContainer = document.getElementById('edificiosStatsContainer');
+    if (buildingsContainer && Array.isArray(edificios)) {
+      if (edificios.length === 0) {
+        buildingsContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay edificios registrados</p>';
+      } else {
+        buildingsContainer.innerHTML = `
+                <div class="building-stat-row" style="background: transparent; padding-bottom: 0;">
+                    <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Condominio</div>
+                    <div class="building-stat-header">Res</div>
+                    <div class="building-stat-header">Lim</div>
+                    <div class="building-stat-header">Rec</div>
+                    <div class="building-stat-header">Med</div>
+                    <div class="building-stat-header">Ger</div>
+                </div>
+            `;
+
+        Object.values(statsPorEdificio).forEach(stat => {
+          const row = document.createElement('div');
+          row.className = 'building-stat-row';
+          row.innerHTML = `
+                    <div style="font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ${stat.nombre}</div>
+                    <div class="building-stat-value">${stat.residente}</div>
+                    <div class="building-stat-value" style="color: var(--role-limpieza);">${stat.limpieza}</div>
+                    <div class="building-stat-value" style="color: var(--role-entretenimiento);">${stat.entretenimiento}</div>
+                    <div class="building-stat-value" style="color: var(--role-medico);">${stat.medico}</div>
+                    <div class="building-stat-value" style="color: var(--role-gerente);">${stat.gerente}</div>
+                `;
+          buildingsContainer.appendChild(row);
+        });
+      }
+    }
 
   } catch (error) {
     console.warn('Error al cargar stats de usuarios:', error);
@@ -273,25 +429,29 @@ async function loadAdminEmergencias() {
     const container = document.getElementById('adminEmergenciasList');
     const count = document.getElementById('adminEmergenciasCount');
 
-    if (count) count.textContent = emergencias.length;
+    if (count) count.textContent = Array.isArray(emergencias) ? emergencias.length : 0;
 
     if (!container) return;
 
-    if (emergencias.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay alertas críticas en curso</p>';
+    if (!Array.isArray(emergencias) || emergencias.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay alertas críticas en curso</p>';
       return;
     }
 
     container.innerHTML = emergencias.map(e => `
-      <div style="padding: 0.875rem; background: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--danger-light); margin-bottom: 0.5rem;">
-        <div class="flex justify-between items-start mb-1">
-          <span style="font-weight: 600; font-size: 0.9rem;">📍 Dpto. ${e.usuario_apartamento || 'N/A'}</span>
-          <span style="font-size: 0.7rem; color: var(--text-muted);">${new Date(e.created_at).toLocaleTimeString()}</span>
+      <div class="fade-in" style="padding: 1rem; background: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--danger-light); margin-bottom: 0.75rem; border-left: 4px solid var(--danger);">
+        <div class="flex justify-between items-start mb-2">
+          <span style="font-weight: 700; font-size: 0.95rem; color: #fff;">📍 Dpto. ${e.usuario_apartamento || 'N/A'}</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted); background: rgba(244, 63, 94, 0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(244, 63, 94, 0.2);">${new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
-        <p style="font-size: 0.875rem;">${e.descripcion}</p>
-        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-          Por: ${e.usuario_nombre} ${e.usuario_telefono ? `| 📞 ${e.usuario_telefono}` : ''}
-        </p>
+        <p style="font-size: 0.85rem; color: #fff; margin-bottom: 0.5rem; line-height: 1.4;">${e.descripcion}</p>
+        <div style="display: flex; align-items: center; gap: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+          <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">👤</div>
+          <div>
+            <p style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin: 0;">${e.usuario_nombre}</p>
+            <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">🏢 Edificio ID: ${e.edificio_id} ${e.usuario_telefono ? `| 📞 ${e.usuario_telefono}` : ''}</p>
+          </div>
+        </div>
       </div>
     `).join('');
   } catch (error) {
@@ -313,17 +473,18 @@ window.closeAlertaModal = () => {
 
 async function enviarAlertaAdmin() {
   const edificio_id_val = document.getElementById('edificioAlerta').value;
-  const tipo = document.getElementById('tipoAlerta').value;
+  const tipo = document.querySelector('input[name="tipoAlerta"]:checked').value;
   const titulo = document.getElementById('tituloAlerta').value;
   const mensaje = document.getElementById('mensajeAlerta').value;
   const btn = document.getElementById('btnEnviarAlerta');
 
-  // Si selecciona global, el edificio_id será null para que el backend lo tome así
   const edificio_id = edificio_id_val === 'global' ? null : edificio_id_val;
 
   try {
-    if (btn) btn.disabled = true;
-    if (btn) btn.innerText = 'Enviando...';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Enviando...';
+    }
 
     const response = await fetch(`${window.API_URL}/alertas`, {
       method: 'POST',
@@ -337,7 +498,6 @@ async function enviarAlertaAdmin() {
     if (response.ok) {
       alert('✅ Comunicado enviado correctamente');
       closeAlertaModal();
-      // Recargar el widget de avisos si existe
       if (typeof renderAnnouncementsWidget === 'function') {
         renderAnnouncementsWidget('announcementsWidget');
       }
@@ -348,7 +508,9 @@ async function enviarAlertaAdmin() {
   } catch (error) {
     alert('❌ Error de conexión al servidor');
   } finally {
-    if (btn) btn.disabled = false;
-    if (btn) btn.innerText = 'Enviar';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Enviar Comunicado';
+    }
   }
 }

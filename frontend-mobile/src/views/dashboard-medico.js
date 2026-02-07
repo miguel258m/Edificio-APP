@@ -201,7 +201,7 @@ async function loadHistorialPersonal() {
     }
 
     container.innerHTML = historial.map(item => `
-      <div style="padding: 1rem; border-bottom: 1px solid #eee; margin-bottom: 0.5rem; animation: slideIn 0.3s ease-out;">
+      <div style="padding: 1rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 0.5rem; animation: slideIn 0.3s ease-out;">
         <div class="flex justify-between items-start mb-1">
           <span class="badge ${item._tipoItem === 'emergencia' ? 'badge-danger' : 'badge-info'}" style="font-size: 0.6rem;">
             ${item._tipoItem === 'emergencia' ? '🚨 EMERGENCIA' : '🩺 CONSULTA'}
@@ -253,10 +253,9 @@ async function loadEmergenciasMedicas() {
       const isMine = e.atendido_por === user.id;
 
       return `
-          <div style="padding: 1.1rem; background: ${isAttending ? '#f8fafc' : 'rgba(239, 68, 68, 0.05)'}; border: 1.5px solid ${isAttending ? '#cbd5e1' : '#ef4444'}; border-radius: var(--radius-lg); margin-bottom: 0.75rem;">
+          <div style="padding: 1.1rem; background: ${isAttending ? '#1e293b' : 'rgba(239, 68, 68, 0.1)'} !important; border: 1.5px solid ${isAttending ? '#334155' : '#ef4444'} !important; border-radius: var(--radius-lg); margin-bottom: 0.75rem; color: white !important;">
             <div class="flex justify-between items-start mb-2">
               <div>
-                <h3 style="font-weight: 700; color: ${isAttending ? '#64748b' : '#b91c1c'}; margin: 0; font-size: 0.95rem;">
                    ${isAttending ? '🩺 EN ATENCIÓN' : '🚨 EMERGENCIA NUEVA'}
                 </h3>
                 <p style="font-size: 0.7rem; color: var(--text-muted);">${new Date(e.created_at).toLocaleTimeString()}</p>
@@ -272,7 +271,7 @@ async function loadEmergenciasMedicas() {
             </div>
 
             ${isAttending ? `
-                <div style="font-size: 0.75rem; color: #6366f1; margin: 0.5rem 0; font-weight: 600; padding: 0.4rem; background: #f0f1ff; border-radius: 4px; display: inline-block;">
+                <div style="font-size: 0.75rem; color: var(--role-medico); margin: 0.5rem 0; font-weight: 600; padding: 0.4rem; background: var(--bg-tertiary); border-radius: 4px; display: inline-block;">
                    👨‍⚕️ Atendido por: ${isMine ? 'Ti (Ahora)' : e.medico_nombre}
                 </div>
             ` : ''}
@@ -320,7 +319,7 @@ async function loadSolicitudesMedicas() {
     }
 
     container.innerHTML = pendientes.map(s => `
-      <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); margin-bottom: 0.75rem; background: #fff;">
+      <div style="padding: 1rem; border: 1px solid var(--glass-border) !important; border-radius: var(--radius-md); margin-bottom: 0.75rem; background: #1e293b !important; backdrop-filter: blur(10px); color: white !important;">
         <div class="flex justify-between items-start mb-2">
           <h3 style="font-weight: 600; color: #6366f1; margin: 0; font-size: 0.9rem;">🩺 Consulta</h3>
           <span class="badge badge-${s.estado === 'pendiente' ? 'warning' : 'info'}" style="font-size: 0.6rem;">${s.estado === 'pendiente' ? 'NUEVA' : 'ATENDIENDO'}</span>
