@@ -24,22 +24,22 @@ export function renderDashboardAdmin(container) {
         <div style="position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(245,158,11,0.08) 0%,transparent 70%);border-radius:50%;"></div>
         <div class="container">
           <div class="flex justify-between items-center">
-            <div class="flex items-center gap-4">
-              <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);padding:2px;box-shadow:0 0 28px rgba(99,102,241,0.5);">
-                <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:1.6rem;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:46px;height:46px;min-width:46px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);padding:2px;box-shadow:0 0 18px rgba(99,102,241,0.45);">
+                <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
                   ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='';this.parentElement.innerHTML='👑'">` : '👑'}
                 </div>
               </div>
-              <div>
-                <p style="font-size:0.62rem;font-weight:900;text-transform:uppercase;letter-spacing:0.2em;color:#a5b4fc;margin:0 0 0.2rem;">Panel de Control</p>
-                <h1 style="font-size:1.3rem;font-weight:900;color:#f8fafc;margin:0;letter-spacing:-0.02em;">${user.nombre}</h1>
-                <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-                  <span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;display:inline-block;"></span>
-                  <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);font-weight:500;">Administrador Global</span>
+              <div style="line-height:1.3;">
+                <p style="font-size:0.58rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#a5b4fc;margin:0 0 1px;">Panel de Control</p>
+                <h1 style="font-size:1.1rem;font-weight:900;color:#f8fafc;margin:0;">${user.nombre}</h1>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 7px #10b981;display:inline-block;flex-shrink:0;"></span>
+                  <span style="font-size:0.62rem;color:rgba(255,255,255,0.45);font-weight:500;">Administrador Global</span>
                 </div>
               </div>
             </div>
-            <button onclick="logout()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;width:44px;height:44px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:#fff;transition:background 0.2s;">🚪</button>
+            <button onclick="logout()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;width:38px;height:38px;min-width:38px;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;color:#fff;">🚪</button>
           </div>
         </div>
       </div>
