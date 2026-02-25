@@ -511,7 +511,10 @@ async function loadEdificiosParaAlertas() {
   }
 }
 
+let _loadingStats = false;
 async function loadAdminStats() {
+  if (_loadingStats) return;
+  _loadingStats = true;
   try {
     const [resUsers, resEdificios] = await Promise.all([
       fetch(`${window.API_URL}/usuarios`, {
@@ -533,13 +536,14 @@ async function loadAdminStats() {
     const countsGlobal = { residente: 0, limpieza: 0, vigilante: 0, gerente: 0, medico: 0, entretenimiento: 0 };
     const statsPorEdificio = {};
 
-    if (Array.isArray(edificios)) {
-      // Deduplicar por ID para evitar filas repetidas
-      const edificiosUnicos = edificios.filter((e, idx, arr) => arr.findIndex(x => x.id === e.id) === idx);
-      edificiosUnicos.forEach(e => {
-        statsPorEdificio[e.id] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0 };
-      });
-    }
+    // Deduplicar por nombre (el API puede devolver el mismo edificio con distinto ID)
+    const edificiosUnicos = Array.isArray(edificios)
+      ? edificios.filter((e, idx, arr) => arr.findIndex(x => x.nombre === e.nombre) === idx)
+      : [];
+
+    edificiosUnicos.forEach(e => {
+      statsPorEdificio[e.id] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0 };
+    });
 
     if (Array.isArray(users)) {
       users.forEach(u => {
@@ -556,8 +560,7 @@ async function loadAdminStats() {
     });
 
     const buildingsContainer = document.getElementById('edificiosStatsContainer');
-    if (buildingsContainer && Array.isArray(edificios)) {
-      const edificiosUnicos = edificios.filter((e, idx, arr) => arr.findIndex(x => x.id === e.id) === idx);
+    if (buildingsContainer) {
 
       if (edificiosUnicos.length === 0) {
         buildingsContainer.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.3);">No hay edificios registrados</p>';
@@ -590,6 +593,8 @@ async function loadAdminStats() {
     }
   } catch (error) {
     console.warn('Error al cargar stats de usuarios:', error);
+  } finally {
+    _loadingStats = false;
   }
 }
 
