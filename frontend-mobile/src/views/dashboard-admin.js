@@ -536,20 +536,33 @@ async function loadAdminStats() {
     const countsGlobal = { residente: 0, limpieza: 0, vigilante: 0, gerente: 0, medico: 0, entretenimiento: 0 };
     const statsPorEdificio = {};
 
-    // Deduplicar por nombre (el API puede devolver el mismo edificio con distinto ID)
+    // Deduplicar edificios por nombre para mostrar una sola fila por condominio
     const edificiosUnicos = Array.isArray(edificios)
       ? edificios.filter((e, idx, arr) => arr.findIndex(x => x.nombre === e.nombre) === idx)
       : [];
 
+    // Mapear TODOS los IDs (incluyendo duplicados) a su nombre de edificio
+    const idToNombre = {};
+    if (Array.isArray(edificios)) {
+      edificios.forEach(e => { idToNombre[e.id] = e.nombre; });
+    }
+
+    // Conteo de personal por nombre de edificio
+    const statsPorNombre = {};
     edificiosUnicos.forEach(e => {
-      statsPorEdificio[e.id] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0 };
+      statsPorNombre[e.nombre] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0 };
     });
 
     if (Array.isArray(users)) {
       users.forEach(u => {
         if (countsGlobal.hasOwnProperty(u.rol)) countsGlobal[u.rol]++;
-        if (u.edificio_id && statsPorEdificio[u.edificio_id]) {
-          if (statsPorEdificio[u.edificio_id].hasOwnProperty(u.rol)) statsPorEdificio[u.edificio_id][u.rol]++;
+
+        // Buscar por nombre del edificio usando el mapa de IDs
+        const nombreEdificio = idToNombre[u.edificio_id];
+        if (nombreEdificio && statsPorNombre[nombreEdificio]) {
+          if (statsPorNombre[nombreEdificio].hasOwnProperty(u.rol)) {
+            statsPorNombre[nombreEdificio][u.rol]++;
+          }
         }
       });
     }
@@ -576,7 +589,7 @@ async function loadAdminStats() {
           </div>`;
 
         const rowsHtml = edificiosUnicos.map(e => {
-          const stat = statsPorEdificio[e.id] || { residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0 };
+          const stat = statsPorNombre[e.nombre] || { residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0 };
           return `
           <div class="building-stat-row">
             <div style="font-size:0.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e2e8f0;">🏢 ${e.nombre}</div>
