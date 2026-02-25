@@ -22,23 +22,40 @@ export async function initDatabase() {
 
         console.log('📋 Verificando columnas y tipos faltantes...');
 
-        // Inyectar columnas faltantes si no existen
+        // Asegurar que los tipos básicos existan antes de ejecutar init.sql
         await pool.query(`
             DO $$ 
             BEGIN 
-                -- Agregar columna aprobado si no existe
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='aprobado') THEN
-                    ALTER TABLE usuarios ADD COLUMN aprobado BOOLEAN DEFAULT false;
+                -- Crear tipos si no existen
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'rol_usuario') THEN
+                    CREATE TYPE rol_usuario AS ENUM ('admin', 'residente', 'vigilante');
+                END IF;
+                
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_solicitud') THEN
+                    CREATE TYPE tipo_solicitud AS ENUM ('mantenimiento', 'limpieza', 'seguridad', 'otros');
                 END IF;
 
-                -- Agregar columna foto_perfil si no existe
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='foto_perfil') THEN
-                    ALTER TABLE usuarios ADD COLUMN foto_perfil VARCHAR(255);
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_solicitud') THEN
+                    CREATE TYPE estado_solicitud AS ENUM ('pendiente', 'en_proceso', 'completada', 'rechazada');
                 END IF;
 
-                -- Intentar agregar nuevos roles al ENUM rol_usuario
-                -- Nota: PostgreSQL no permite agregar valores a un ENUM dentro de una transacción de forma sencilla en versiones antiguas,
-                -- pero este bloque DO es seguro en versiones modernas.
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prioridad_solicitud') THEN
+                    CREATE TYPE prioridad_solicitud AS ENUM ('baja', 'media', 'alta', 'urgente');
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_emergencia') THEN
+                    CREATE TYPE estado_emergencia AS ENUM ('activa', 'atendida', 'falsa_alarma');
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_alerta') THEN
+                    CREATE TYPE tipo_alerta AS ENUM ('informativa', 'urgente', 'critica');
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_pago') THEN
+                    CREATE TYPE estado_pago AS ENUM ('pendiente', 'pagado', 'atrasado', 'rechazado');
+                END IF;
+
+                -- Agregar nuevos roles al ENUM rol_usuario si ya existe
                 BEGIN
                     ALTER TYPE rol_usuario ADD VALUE 'gerente';
                 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -58,13 +75,31 @@ export async function initDatabase() {
                     ALTER TYPE rol_usuario ADD VALUE 'entretenimiento';
                 EXCEPTION WHEN duplicate_object THEN NULL;
                 END;
+
+                -- Agregar columnas faltantes a usuarios
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='aprobado') THEN
+                    ALTER TABLE usuarios ADD COLUMN aprobado BOOLEAN DEFAULT false;
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='usuarios' AND column_name='foto_perfil') THEN
+                    ALTER TABLE usuarios ADD COLUMN foto_perfil VARCHAR(255);
+                END IF;
+
+                -- Agregar columna fecha_completada a solicitudes
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='solicitudes' AND column_name='fecha_completada') THEN
+                    ALTER TABLE solicitudes ADD COLUMN fecha_completada TIMESTAMP;
+                END IF;
             END $$;
         `);
 
         // Ejecutar el resto del initSQL (ahora que es seguro)
         // Nota: En una app real, usaríamos migraciones (knex/sequelize). 
         // Aquí hacemos un "soft init".
-        await pool.query(initSQL);
+        try {
+            await pool.query(initSQL);
+        } catch (initError) {
+            console.warn('⚠️ Nota: Algunos comandos de init.sql pueden haber fallado si los objetos ya existen:', initError.message);
+        }
 
         // 2. Insertar datos iniciales
         console.log('📝 Verificando datos iniciales...');

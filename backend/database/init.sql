@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS solicitudes (
     prioridad prioridad_solicitud DEFAULT 'media',
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_atencion TIMESTAMP,
+    fecha_completada TIMESTAMP,
     atendido_por INTEGER REFERENCES usuarios(id)
 );
 
@@ -120,28 +121,28 @@ CREATE TABLE IF NOT EXISTS alertas (
 -- =====================================================
 -- ÍNDICES para mejorar rendimiento
 -- =====================================================
-CREATE INDEX idx_usuarios_edificio ON usuarios(edificio_id);
-CREATE INDEX idx_usuarios_email ON usuarios(email);
-CREATE INDEX idx_usuarios_rol ON usuarios(rol);
+CREATE INDEX IF NOT EXISTS idx_usuarios_edificio ON usuarios(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
+CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios(rol);
 
-CREATE INDEX idx_solicitudes_usuario ON solicitudes(usuario_id);
-CREATE INDEX idx_solicitudes_edificio ON solicitudes(edificio_id);
-CREATE INDEX idx_solicitudes_estado ON solicitudes(estado);
-CREATE INDEX idx_solicitudes_tipo ON solicitudes(tipo);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_usuario ON solicitudes(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_edificio ON solicitudes(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_estado ON solicitudes(estado);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_tipo ON solicitudes(tipo);
 
-CREATE INDEX idx_mensajes_remitente ON mensajes(remitente_id);
-CREATE INDEX idx_mensajes_destinatario ON mensajes(destinatario_id);
-CREATE INDEX idx_mensajes_edificio ON mensajes(edificio_id);
-CREATE INDEX idx_mensajes_leido ON mensajes(leido);
+CREATE INDEX IF NOT EXISTS idx_mensajes_remitente ON mensajes(remitente_id);
+CREATE INDEX IF NOT EXISTS idx_mensajes_destinatario ON mensajes(destinatario_id);
+CREATE INDEX IF NOT EXISTS idx_mensajes_edificio ON mensajes(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_mensajes_leido ON mensajes(leido);
 
-CREATE INDEX idx_pagos_usuario ON pagos(usuario_id);
-CREATE INDEX idx_pagos_edificio ON pagos(edificio_id);
-CREATE INDEX idx_pagos_estado ON pagos(estado);
+CREATE INDEX IF NOT EXISTS idx_pagos_usuario ON pagos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_edificio ON pagos(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_estado ON pagos(estado);
 
-CREATE INDEX idx_emergencias_edificio ON emergencias(edificio_id);
-CREATE INDEX idx_emergencias_estado ON emergencias(estado);
+CREATE INDEX IF NOT EXISTS idx_emergencias_edificio ON emergencias(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_emergencias_estado ON emergencias(estado);
 
-CREATE INDEX idx_alertas_edificio ON alertas(edificio_id);
+CREATE INDEX IF NOT EXISTS idx_alertas_edificio ON alertas(edificio_id);
 
 -- =====================================================
 -- Mensaje de confirmación

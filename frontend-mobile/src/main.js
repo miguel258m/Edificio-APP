@@ -54,12 +54,6 @@ if (!baseApiUrl) {
     }
 }
 
-// [ADVERTENCIA] Si estamos en localhost pero hitting render, avisar
-if (isLocal && baseApiUrl.includes('onrender.com')) {
-    console.warn('⚠️ ATENCIÓN: Estás en localhost pero usando el BACKEND de PRODUCCIÓN (Render).');
-    console.warn('Para usar el backend local, asegúrate de que VITE_API_URL no esté definida o apunta a localhost:3000');
-}
-
 // Aseguramos que termine en /api y no tenga barras dobles al final
 if (baseApiUrl.endsWith('/')) baseApiUrl = baseApiUrl.slice(0, -1);
 if (!baseApiUrl.endsWith('/api')) baseApiUrl += '/api';

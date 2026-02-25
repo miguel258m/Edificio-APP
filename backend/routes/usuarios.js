@@ -220,6 +220,39 @@ router.patch('/:id/aprobar', requireRole('admin', 'vigilante'), async (req, res)
 });
 
 // =====================================================
+// PATCH /api/usuarios/:id/asignar-rol - Asignar Rol y Aprobar Usuario
+// =====================================================
+router.patch('/:id/asignar-rol', requireRole('admin', 'gerente', 'vigilante'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rol } = req.body;
+
+        if (!rol) {
+            return res.status(400).json({ error: 'El rol es obligatorio' });
+        }
+
+        // Al asignar un rol manualmente, también aprobamos al usuario
+        const result = await pool.query(
+            `UPDATE usuarios 
+             SET rol = $1, aprobado = true 
+             WHERE id = $2 
+             RETURNING id, nombre, email, rol, aprobado`,
+            [rol, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al asignar rol:', error);
+        res.status(500).json({ error: 'Error al asignar rol: ' + error.message });
+    }
+});
+
+// =====================================================
 // GET /api/usuarios/pendientes - Usuarios pendientes de aprobación
 // =====================================================
 router.get('/pendientes', requireRole('admin', 'gerente', 'vigilante'), async (req, res) => {

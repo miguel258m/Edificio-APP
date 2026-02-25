@@ -39,7 +39,6 @@ const httpServer = createServer(app);
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://edificio-app.onrender.com',
     'https://edificio-frontend-production.up.railway.app'
 ];
 
@@ -97,7 +96,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 500, // Aumentado para desarrollo y pruebas intensas
+    max: 2000, // Aumentado para soportar múltiples condominios y IPs compartidas
     message: {
         error: 'Demasiadas solicitudes desde esta IP, por favor intente de nuevo en 15 minutos'
     },
@@ -196,13 +195,17 @@ async function startServer() {
         console.log('--------------------------------');
 
         // Inicializar/Verificar base de datos
-        await initDatabase();
+        console.log('⏳ Inicializando base de datos...');
+        const initSuccess = await initDatabase();
+        if (!initSuccess) {
+            console.warn('⚠️ La inicialización de la base de datos reportó advertencias o fallos menores.');
+        }
 
         // Verificar conexión a base de datos
         const dbConnected = await testConnection();
 
         if (!dbConnected) {
-            console.error('❌ No se pudo conectar a la base de datos');
+            console.error('❌ No se pudo conectar a la base de datos. Verifique DATABASE_URL o credenciales locales.');
             process.exit(1);
         }
 

@@ -13,9 +13,9 @@ const pool = new Pool(
             ssl: {
                 rejectUnauthorized: false
             },
-            max: 20, // Máximo de conexiones en el pool
+            max: 35, // Aumentado para soportar más usuarios en simultáneo
             idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
+            connectionTimeoutMillis: 5000,
         }
         : {
             host: process.env.DB_HOST || 'localhost',
@@ -23,9 +23,9 @@ const pool = new Pool(
             database: process.env.DB_NAME || 'edificio_db',
             user: process.env.DB_USER || 'postgres',
             password: process.env.DB_PASSWORD || 'admin123',
-            max: 20, // Máximo de conexiones en el pool
+            max: 35, // Aumentado para desarrollo con muchos usuarios
             idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
+            connectionTimeoutMillis: 5000,
         }
 );
 
