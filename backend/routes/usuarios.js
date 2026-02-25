@@ -4,32 +4,38 @@ import { authenticateToken, requireRole } from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Configuración de Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const router = express.Router();
 
 // Configuración de multer para fotos de perfil
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'perfil-' + uniqueSuffix + path.extname(file.originalname));
+// Configuración de almacenamiento en Cloudinary
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'perfiles',
+        allowed_formats: ['jpeg', 'jpg', 'png', 'webp'],
+        public_id: (req, file) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            return 'perfil-' + uniqueSuffix;
+        }
     }
 });
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|webp/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, webp)'));
-    }
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
 router.use(authenticateToken);
@@ -162,22 +168,10 @@ router.post('/foto-perfil', upload.single('foto'), async (req, res) => {
         }
 
         const userId = req.user.id;
-        const fotoUrl = `/uploads/${req.file.filename}`;
-
-        // Obtener foto anterior para eliminarla
-        const prevResult = await pool.query('SELECT foto_perfil FROM usuarios WHERE id = $1', [userId]);
-        const oldFoto = prevResult.rows[0]?.foto_perfil;
+        const fotoUrl = req.file.path; // Cloudinary devuelve la URL completa en path
 
         // Actualizar base de datos
         await pool.query('UPDATE usuarios SET foto_perfil = $1 WHERE id = $2', [fotoUrl, userId]);
-
-        // Eliminar foto anterior si existe y no es la predeterminada
-        if (oldFoto && oldFoto.startsWith('/uploads/')) {
-            const oldPath = path.join(path.resolve(), oldFoto);
-            if (fs.existsSync(oldPath)) {
-                fs.unlinkSync(oldPath);
-            }
-        }
 
         res.json({ foto_perfil: fotoUrl });
 
