@@ -45,16 +45,23 @@ router.use(authenticateToken);
 // =====================================================
 router.get('/', requireRole('admin', 'vigilante'), async (req, res) => {
     try {
-        const edificio_id = req.user.edificio_id;
-        const { rol } = req.query;
-
         let query = `
       SELECT id, edificio_id, nombre, email, rol, apartamento, telefono, activo, created_at
       FROM usuarios
-      WHERE edificio_id = $1
+      WHERE 1=1
     `;
 
-        const params = [edificio_id];
+        const params = [];
+
+        // Si no es admin, filtrar por su propio edificio
+        if (req.user.rol !== 'admin') {
+            params.push(req.user.edificio_id);
+            query += ` AND edificio_id = $${params.length}`;
+        } else if (req.query.edificio_id) {
+            // Si es admin y mandó edificio_id, filtrar por ese
+            params.push(req.query.edificio_id);
+            query += ` AND edificio_id = $${params.length}`;
+        }
 
         if (rol) {
             params.push(rol);
@@ -256,14 +263,22 @@ router.get('/pendientes', requireRole('admin', 'gerente', 'vigilante'), async (r
 
         let result;
         if (rol === 'admin') {
-            // Admin ve todos los edificios
-            result = await pool.query(
-                `SELECT u.id, u.nombre, u.email, u.telefono, u.rol, u.apartamento, u.created_at, e.nombre as edificio_nombre
-                 FROM usuarios u
-                 LEFT JOIN edificios e ON u.edificio_id = e.id
-                 WHERE u.aprobado = false
-                 ORDER BY u.created_at DESC`
-            );
+            const { edificio_id: filter_edificio_id } = req.query;
+            let query = `
+                SELECT u.id, u.nombre, u.email, u.telefono, u.rol, u.apartamento, u.created_at, e.nombre as edificio_nombre
+                FROM usuarios u
+                LEFT JOIN edificios e ON u.edificio_id = e.id
+                WHERE u.aprobado = false
+            `;
+            const params = [];
+
+            if (filter_edificio_id) {
+                params.push(filter_edificio_id);
+                query += ` AND u.edificio_id = $${params.length}`;
+            }
+
+            query += ' ORDER BY u.created_at DESC';
+            result = await pool.query(query, params);
         } else {
             // Otros ven solo su edificio
             result = await pool.query(

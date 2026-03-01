@@ -17,6 +17,7 @@ import { renderDashboardAdmin } from './views/dashboard-admin.js';
 import { renderDashboardMedico } from './views/dashboard-medico.js';
 import { renderDashboardEntretenimiento } from './views/dashboard-entretenimiento.js';
 import { renderGestionUsuarios } from './views/gestion-usuarios.js';
+import { renderPagoMetodos } from './views/pago-metodos.js';
 
 import { initSocket } from './socket/client.js';
 
@@ -78,7 +79,8 @@ const routes = {
     '/chats': renderChats,
     '/solicitudes': renderSolicitudes,
     '/perfil': renderPerfil,
-    '/gestion-usuarios': renderGestionUsuarios
+    '/gestion-usuarios': renderGestionUsuarios,
+    '/pago-metodos': renderPagoMetodos
 };
 
 // Función para navegar
@@ -109,6 +111,9 @@ function router() {
                 return;
             }
             renderChat(app, state.userId, state.userName);
+        } else if (path === '/solicitudes') {
+            const state = window.history.state || {};
+            render(app, state.tipo || null);
         } else {
             render(app);
         }

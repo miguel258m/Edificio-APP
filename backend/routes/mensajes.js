@@ -124,8 +124,8 @@ router.get('/conversaciones', async (req, res) => {
                 (
                     SELECT contenido 
                     FROM mensajes 
-                    WHERE (remitente_id = currentUserId AND destinatario_id = usuario_id) 
-                       OR (remitente_id = usuario_id AND destinatario_id = currentUserId)
+                    WHERE (remitente_id = $1 AND destinatario_id = usuario_id) 
+                       OR (remitente_id = usuario_id AND destinatario_id = $1)
                     ORDER BY created_at DESC 
                     LIMIT 1
                 ) AS ultimo_mensaje,

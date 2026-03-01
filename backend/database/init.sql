@@ -17,7 +17,7 @@
 -- =====================================================
 CREATE TABLE IF NOT EXISTS edificios (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(200) NOT NULL,
+    nombre VARCHAR(200) UNIQUE NOT NULL,
     direccion TEXT NOT NULL,
     ciudad VARCHAR(100),
     codigo_postal VARCHAR(20),
@@ -119,6 +119,19 @@ CREATE TABLE IF NOT EXISTS alertas (
 );
 
 -- =====================================================
+-- TABLA: delivery_services
+-- =====================================================
+CREATE TABLE IF NOT EXISTS delivery_services (
+    id SERIAL PRIMARY KEY,
+    edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    telefono VARCHAR(20) NOT NULL,
+    activo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
 -- ÍNDICES para mejorar rendimiento
 -- =====================================================
 CREATE INDEX IF NOT EXISTS idx_usuarios_edificio ON usuarios(edificio_id);
@@ -144,11 +157,32 @@ CREATE INDEX IF NOT EXISTS idx_emergencias_estado ON emergencias(estado);
 
 CREATE INDEX IF NOT EXISTS idx_alertas_edificio ON alertas(edificio_id);
 
+
+-- =====================================================
+-- TABLA: citas (agenda médica)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS citas (
+    id SERIAL PRIMARY KEY,
+    medico_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    residente_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+    edificio_id INTEGER,
+    titulo VARCHAR(200) NOT NULL,
+    descripcion TEXT,
+    fecha DATE NOT NULL,
+    hora TIME NOT NULL,
+    estado VARCHAR(30) DEFAULT 'programada',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_citas_medico ON citas(medico_id);
+CREATE INDEX IF NOT EXISTS idx_citas_fecha ON citas(fecha);
+CREATE INDEX IF NOT EXISTS idx_citas_edificio ON citas(edificio_id);
+
 -- =====================================================
 -- Mensaje de confirmación
 -- =====================================================
 DO $$
 BEGIN
     RAISE NOTICE '✅ Base de datos inicializada correctamente';
-    RAISE NOTICE '📊 Tablas creadas: edificios, usuarios, solicitudes, mensajes, pagos, emergencias, alertas';
+    RAISE NOTICE '📊 Tablas creadas: edificios, usuarios, solicitudes, mensajes, pagos, emergencias, alertas, citas';
 END $$;

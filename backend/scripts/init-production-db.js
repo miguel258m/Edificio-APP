@@ -89,6 +89,19 @@ export async function initDatabase() {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='solicitudes' AND column_name='fecha_completada') THEN
                     ALTER TABLE solicitudes ADD COLUMN fecha_completada TIMESTAMP;
                 END IF;
+
+                -- Crear tabla delivery_services si no existe
+                IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='delivery_services') THEN
+                    CREATE TABLE delivery_services (
+                        id SERIAL PRIMARY KEY,
+                        edificio_id INTEGER REFERENCES edificios(id) ON DELETE CASCADE,
+                        nombre VARCHAR(100) NOT NULL,
+                        descripcion TEXT,
+                        telefono VARCHAR(20) NOT NULL,
+                        activo BOOLEAN DEFAULT true,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                END IF;
             END $$;
         `);
 
@@ -130,7 +143,9 @@ export async function initDatabase() {
             INSERT INTO usuarios (edificio_id, nombre, email, password, rol, aprobado) VALUES
             (1, 'María García', 'maria@email.com', $1, 'residente', true),
             (1, 'Carlos López', 'carlos@email.com', $1, 'residente', true),
-            (2, 'Luis Fernández', 'vigilante2@edificio.com', $1, 'vigilante', true)
+            (2, 'Luis Fernández', 'vigilante2@edificio.com', $1, 'vigilante', true),
+            (1, 'Dr. Gregory House', 'doctor@edificio.com', $1, 'medico', true),
+            (1, 'Personal Limpieza', 'limpieza@edificio.com', $1, 'limpieza', true)
             ON CONFLICT (email) DO NOTHING
         `, [hashedPassword]);
 

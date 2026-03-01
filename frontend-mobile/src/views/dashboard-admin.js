@@ -1,267 +1,288 @@
 // =====================================================
-// DASHBOARD ADMINISTRADOR - Vista principal para administradores
+// DASHBOARD ADMINISTRADOR - Layout Desktop con Sidebar
 // =====================================================
 
 import { renderAnnouncementsWidget } from '../utils/announcements.js';
+import { renderSidebarLayout } from '../utils/sidebar-layout.js';
 
 export function renderDashboardAdmin(container) {
   const user = window.appState.user;
-  const baseUrl = window.API_URL.replace('/api', '');
 
-  const getFotoUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `${baseUrl}${normalizedPath}`;
-  };
+  // Nav items del sidebar
+  const navItems = [
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-admin' },
+    { key: 'usuarios', icon: '👥', label: 'Gestión Usuarios', path: '/gestion-usuarios', badge: '' },
+    { key: 'reportes', icon: '📋', label: 'Reportes', path: '/solicitudes' },
+    { key: 'alertas', icon: '🔔', label: 'Alertas', onClick: 'showAlertaModal()' },
+    { key: 'perfil', icon: '⚙️', label: 'Mi Perfil', path: '/perfil' },
+  ];
 
-  container.innerHTML = `
-    <div class="page" style="background: #0a0f1e; min-height: 100vh;">
+  const main = renderSidebarLayout(container, {
+    role: 'admin',
+    activeNav: 'dashboard',
+    pageTitle: 'Dashboard',
+    pageSubtitle: 'Panel de administración del edificio',
+    breadcrumb: 'Dashboard',
+    navItems,
+  });
 
-      <!-- ===== HEADER ===== -->
-      <div style="background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%); padding: 2rem 0 1.75rem; border-bottom: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden;">
-        <div style="position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(99,102,241,0.18) 0%,transparent 70%);border-radius:50%;"></div>
-        <div style="position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(245,158,11,0.08) 0%,transparent 70%);border-radius:50%;"></div>
-        <div class="container">
-          <div class="flex justify-between items-center">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:46px;height:46px;min-width:46px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);padding:2px;box-shadow:0 0 18px rgba(99,102,241,0.45);">
-                <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
-                  ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='';this.parentElement.innerHTML='👑'">` : '👑'}
-                </div>
-              </div>
-              <div style="line-height:1.3;">
-                <p style="font-size:0.58rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#a5b4fc;margin:0 0 1px;">Panel de Control</p>
-                <h1 style="font-size:1.1rem;font-weight:900;color:#f8fafc;margin:0;">${user.nombre}</h1>
-                <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
-                  <span style="width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 7px #10b981;display:inline-block;flex-shrink:0;"></span>
-                  <span style="font-size:0.62rem;color:rgba(255,255,255,0.45);font-weight:500;">Administrador Global</span>
-                </div>
-              </div>
+  // Inyectar el contenido del dashboard
+  main.innerHTML += `
+    <!-- ===== BIENVENIDA Y SELECTOR ===== -->
+    <div style="margin-bottom: 25px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: white; margin: 0;">¡Hola, ${user.nombre.split(' ')[0]}! 👋</h2>
+          <p id="dashboardWelcomeMsg" style="font-size: 0.88rem; color: var(--sb-muted); margin: 4px 0 0;">Cargando resumen del estado actual...</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; background: var(--sb-card); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--sb-border);">
+          <span style="font-size: 0.78rem; color: var(--sb-muted); font-weight: 600;">📍 Condominio:</span>
+          <select id="dashboardEdificioSelector" onchange="window.filterDashboardByEdificio(this.value)" style="background: var(--sb-surface); border: 1px solid var(--sb-border); color: var(--sb-text); border-radius: 8px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; outline: none; min-width: 160px;">
+            <option value="all">🌍 Todos los edificios</option>
+          </select>
+          <div id="statsLoader" class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px; display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== KPI STATS ===== -->
+    <div class="ds-stats-grid">
+      <div class="ds-stat-card amber">
+        <div class="ds-stat-label">⏳ Pendientes</div>
+        <div class="ds-stat-value" id="count-pending">–</div>
+        <div class="ds-stat-sub">Usuarios por aprobar</div>
+      </div>
+      <div class="ds-stat-card red" id="card-emergencias">
+        <div class="ds-stat-label">🚨 Emergencias</div>
+        <div class="ds-stat-value" id="adminEmergenciasCount">–</div>
+        <div class="ds-stat-sub">Alertas activas ahora</div>
+      </div>
+      <div class="ds-stat-card blue">
+        <div class="ds-stat-label">👥 Residentes</div>
+        <div class="ds-stat-value" id="count-residente">–</div>
+        <div class="ds-stat-sub">En el edificio actual</div>
+      </div>
+      <div class="ds-stat-card green">
+        <div class="ds-stat-label">🛡️ Vigilantes</div>
+        <div class="ds-stat-value" id="count-vigilante">–</div>
+        <div class="ds-stat-sub">Personal de seguridad</div>
+      </div>
+    </div>
+
+    <!-- ===== ACCIONES RAPIDAS + PERSONAL ===== -->
+    <div class="ds-grid-2" style="margin-bottom: 20px;">
+
+      <!-- Estado del Sistema (Insights Operativos) -->
+      <div class="ds-card">
+        <div class="ds-card-header">
+          <div>
+            <p class="ds-card-title">🚀 Estado del Sistema</p>
+            <p class="ds-card-subtitle">Tareas y métricas clave</p>
+          </div>
+        </div>
+        <div class="ds-grid-2" style="gap: 12px;">
+          <div class="insight-card" onclick="window.navigateTo('/gestion-usuarios')">
+            <div class="insight-icon" style="background:rgba(251,191,36,0.1); color:#fbbf24;">⏳</div>
+            <div>
+              <p class="insight-value" id="insight-pending">–</p>
+              <p class="insight-label">Registros pendientes</p>
             </div>
-            <button onclick="logout()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;width:38px;height:38px;min-width:38px;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;color:#fff;">🚪</button>
+          </div>
+          <div class="insight-card" onclick="window.scrollToDsEmergencias()">
+            <div class="insight-icon" style="background:rgba(248,113,113,0.1); color:#f87171;">🚨</div>
+            <div>
+              <p class="insight-value" id="insight-emergencies">–</p>
+              <p class="insight-label">Emergencias activas</p>
+            </div>
+          </div>
+          <div class="insight-card" onclick="window.navigateTo('/solicitudes')">
+            <div class="insight-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">📋</div>
+            <div>
+              <p class="insight-value" id="insight-reports">–</p>
+              <p class="insight-label">Reportes totales</p>
+            </div>
+          </div>
+          <div class="insight-card" onclick="window.scrollToActivityFeed()">
+            <div class="insight-icon" style="background:rgba(34,211,238,0.1); color:#22d3ee;">📈</div>
+            <div>
+              <p class="insight-value" id="insight-activity">Alta</p>
+              <p class="insight-label">Actividad hoy</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="container" style="padding-top:1.5rem;padding-bottom:110px;">
-
-        <!-- ===== KPI CARDS ===== -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:2rem;">
-
-          <div onclick="window.navigateTo('/gestion-usuarios')" style="
-            background:linear-gradient(135deg,#b45309,#d97706,#f59e0b);
-            border-radius:20px;padding:1.4rem;cursor:pointer;
-            box-shadow:0 10px 36px rgba(217,119,6,0.4);
-            position:relative;overflow:hidden;
-            transition:transform 0.18s,box-shadow 0.18s;">
-            <div style="position:absolute;top:-20px;right:-20px;font-size:6rem;opacity:0.1;line-height:1;transform:rotate(10deg);">⏳</div>
-            <p style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,0.85);margin:0 0 0.4rem;">Pendientes</p>
-            <p style="font-size:3rem;font-weight:900;color:#fff;margin:0;line-height:1;" id="count-pending">–</p>
-            <p style="font-size:0.65rem;color:rgba(255,255,255,0.7);margin:0.5rem 0 0;font-weight:700;">Aprobar →</p>
+      <!-- Widget de Usuarios en Línea -->
+      <div class="ds-card" id="onlineUsersWidget" style="min-height: 200px;">
+        <div class="ds-card-header">
+          <div>
+            <p class="ds-card-title">🟢 Usuarios en Línea</p>
+            <p class="ds-card-subtitle">Actividad en tiempo real</p>
           </div>
-
-          <div onclick="scrollToEmergencias()" id="card-emergencias" style="
-            background:linear-gradient(135deg,#9f1239,#be123c,#f43f5e);
-            border-radius:20px;padding:1.4rem;cursor:pointer;
-            box-shadow:0 10px 36px rgba(244,63,94,0.4);
-            position:relative;overflow:hidden;
-            transition:transform 0.18s,box-shadow 0.18s;">
-            <div style="position:absolute;top:-20px;right:-20px;font-size:6rem;opacity:0.1;line-height:1;transform:rotate(10deg);">🚨</div>
-            <p style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,0.85);margin:0 0 0.4rem;">Emergencias</p>
-            <p style="font-size:3rem;font-weight:900;color:#fff;margin:0;line-height:1;" id="adminEmergenciasCount">–</p>
-            <p style="font-size:0.65rem;color:rgba(255,255,255,0.7);margin:0.5rem 0 0;font-weight:700;">Activas ahora →</p>
-          </div>
+          <span id="onlineCountBadge" class="badge badge-success" style="font-size: 0.7rem;">0</span>
         </div>
-
-        <!-- ===== SECTION LABEL ===== -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;">
-          <div style="width:3px;height:20px;background:linear-gradient(to bottom,#6366f1,#a855f7);border-radius:2px;"></div>
-          <p style="font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#a5b4fc;margin:0;">Acciones Rápidas</p>
-        </div>
-
-        <!-- ===== ACTION CARDS GRID ===== -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:2rem;">
-
-          <!-- Gestión Usuarios -->
-          <div onclick="window.navigateTo('/gestion-usuarios')" style="
-            background:linear-gradient(155deg,#0f2e52 0%,#082040 100%);
-            border-radius:20px;padding:1.5rem 1.25rem 1.25rem;
-            border:1px solid rgba(96,165,250,0.2);
-            box-shadow:0 8px 28px rgba(0,0,0,0.5);
-            cursor:pointer;position:relative;overflow:hidden;
-            transition:transform 0.18s;">
-            <div style="position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;background:rgba(96,165,250,0.1);border-radius:50%;"></div>
-            <div style="font-size:2.4rem;margin-bottom:0.9rem;filter:drop-shadow(0 4px 12px rgba(96,165,250,0.6));">👥</div>
-            <p style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin:0 0 0.3rem;line-height:1.25;">Gestión de<br>Usuarios</p>
-            <p style="font-size:0.68rem;color:#60a5fa;margin:0;font-weight:700;">Aprobar y gestionar</p>
-          </div>
-
-          <!-- Nuevo Comunicado -->
-          <div onclick="showAlertaModal()" style="
-            background:linear-gradient(155deg,#1a1646 0%,#0d0b2a 100%);
-            border-radius:20px;padding:1.5rem 1.25rem 1.25rem;
-            border:1px solid rgba(129,140,248,0.2);
-            box-shadow:0 8px 28px rgba(0,0,0,0.5);
-            cursor:pointer;position:relative;overflow:hidden;
-            transition:transform 0.18s;">
-            <div style="position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;background:rgba(129,140,248,0.1);border-radius:50%;"></div>
-            <div style="font-size:2.4rem;margin-bottom:0.9rem;filter:drop-shadow(0 4px 12px rgba(129,140,248,0.6));">📢</div>
-            <p style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin:0 0 0.3rem;line-height:1.25;">Nuevo<br>Comunicado</p>
-            <p style="font-size:0.68rem;color:#818cf8;margin:0;font-weight:700;">Avisos a residentes</p>
-          </div>
-
-          <!-- Reportes -->
-          <div onclick="window.navigateTo('/solicitudes')" style="
-            background:linear-gradient(155deg,#052e1c 0%,#021a10 100%);
-            border-radius:20px;padding:1.5rem 1.25rem 1.25rem;
-            border:1px solid rgba(16,185,129,0.2);
-            box-shadow:0 8px 28px rgba(0,0,0,0.5);
-            cursor:pointer;position:relative;overflow:hidden;
-            transition:transform 0.18s;">
-            <div style="position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;background:rgba(16,185,129,0.1);border-radius:50%;"></div>
-            <div style="font-size:2.4rem;margin-bottom:0.9rem;filter:drop-shadow(0 4px 12px rgba(16,185,129,0.6));">📋</div>
-            <p style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin:0 0 0.3rem;line-height:1.25;">Reportes y<br>Solicitudes</p>
-            <p style="font-size:0.68rem;color:#10b981;margin:0;font-weight:700;">Ver incidencias</p>
-          </div>
-
-          <!-- Mi Perfil -->
-          <div onclick="window.navigateTo('/perfil')" style="
-            background:linear-gradient(155deg,#2d0f52 0%,#190830 100%);
-            border-radius:20px;padding:1.5rem 1.25rem 1.25rem;
-            border:1px solid rgba(192,132,252,0.2);
-            box-shadow:0 8px 28px rgba(0,0,0,0.5);
-            cursor:pointer;position:relative;overflow:hidden;
-            transition:transform 0.18s;">
-            <div style="position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;background:rgba(192,132,252,0.1);border-radius:50%;"></div>
-            <div style="font-size:2.4rem;margin-bottom:0.9rem;filter:drop-shadow(0 4px 12px rgba(192,132,252,0.6));">⚙️</div>
-            <p style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin:0 0 0.3rem;line-height:1.25;">Mi Perfil y<br>Configuración</p>
-            <p style="font-size:0.68rem;color:#c084fc;margin:0;font-weight:700;">Cuenta personal</p>
-          </div>
-        </div>
-
-        <!-- ===== PERSONAL SECTION ===== -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;">
-          <div style="width:3px;height:20px;background:linear-gradient(to bottom,#10b981,#06d6a0);border-radius:2px;"></div>
-          <p style="font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#6ee7b7;margin:0;">Personal del Edificio</p>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:2rem;">
-
-          <div class="admin-role-card" onclick="verListaUsuarios('residente')" style="background:linear-gradient(135deg,rgba(96,165,250,0.12),rgba(96,165,250,0.05));border:1px solid rgba(96,165,250,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(96,165,250,0.5));">👥</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-residente">–</div>
-            <div style="font-size:0.62rem;color:#60a5fa;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Residentes</div>
-          </div>
-
-          <div class="admin-role-card" onclick="verListaUsuarios('vigilante')" style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(245,158,11,0.5));">🛡️</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-vigilante">–</div>
-            <div style="font-size:0.62rem;color:#f59e0b;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Vigilantes</div>
-          </div>
-
-          <div class="admin-role-card" onclick="verListaUsuarios('medico')" style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(16,185,129,0.05));border:1px solid rgba(16,185,129,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(16,185,129,0.5));">🩺</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-medico">–</div>
-            <div style="font-size:0.62rem;color:#10b981;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Médicos</div>
-          </div>
-
-          <div class="admin-role-card" onclick="verListaUsuarios('limpieza')" style="background:linear-gradient(135deg,rgba(192,132,252,0.12),rgba(192,132,252,0.05));border:1px solid rgba(192,132,252,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(192,132,252,0.5));">🧹</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-limpieza">–</div>
-            <div style="font-size:0.62rem;color:#c084fc;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Limpieza</div>
-          </div>
-
-          <div class="admin-role-card" onclick="verListaUsuarios('entretenimiento')" style="background:linear-gradient(135deg,rgba(251,113,133,0.12),rgba(251,113,133,0.05));border:1px solid rgba(251,113,133,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(251,113,133,0.5));">🎭</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-entretenimiento">–</div>
-            <div style="font-size:0.62rem;color:#fb7185;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Recreación</div>
-          </div>
-
-          <div class="admin-role-card" onclick="verListaUsuarios('gerente')" style="background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(251,191,36,0.05));border:1px solid rgba(251,191,36,0.25);">
-            <div style="font-size:1.75rem;filter:drop-shadow(0 2px 6px rgba(251,191,36,0.5));">📊</div>
-            <div style="font-size:1.75rem;font-weight:900;color:#f8fafc;line-height:1;" id="count-gerente">–</div>
-            <div style="font-size:0.62rem;color:#fbbf24;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Gerentes</div>
-          </div>
-        </div>
-
-        <!-- ===== AVISOS ===== -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;">
-          <div style="width:3px;height:20px;background:linear-gradient(to bottom,#f59e0b,#fbbf24);border-radius:2px;"></div>
-          <p style="font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#fcd34d;margin:0;">Avisos Recientes</p>
-        </div>
-        <div id="announcementsWidget" style="margin-bottom:2rem;"></div>
-
-        <!-- ===== EDIFICIOS ===== -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;">
-          <div style="width:3px;height:20px;background:linear-gradient(to bottom,#6366f1,#818cf8);border-radius:2px;"></div>
-          <p style="font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#a5b4fc;margin:0;">Desglose por Condominio</p>
-        </div>
-        <div id="edificiosStatsContainer" style="display:flex;flex-direction:column;gap:0.65rem;margin-bottom:2rem;">
-          <div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.3);">Cargando estadísticas...</div>
-        </div>
-
-        <!-- ===== EMERGENCIAS ===== -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;" id="section-emergencias">
-          <div style="width:3px;height:20px;background:linear-gradient(to bottom,#f43f5e,#fb7185);border-radius:2px;"></div>
-          <p style="font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:0.18em;color:#fda4af;margin:0;">🚨 Emergencias Activas</p>
-        </div>
-        <div id="adminEmergenciasList">
-          <p style="text-align:center;color:rgba(255,255,255,0.3);padding:1.5rem;background:rgba(244,63,94,0.05);border-radius:14px;border:1px solid rgba(244,63,94,0.1);">✅ Sin alertas críticas activas</p>
+        <div id="onlineUsersList" class="ds-online-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="text-align:center;padding:1rem;color:var(--sb-muted);font-size:0.8rem;">Conectando al servidor...</div>
         </div>
       </div>
 
-      <!-- ===== BOTTOM NAV ===== -->
-      <nav class="bottom-nav">
-        <a href="#" class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span>Resumen</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/gestion-usuarios'); return false;">
-          <span class="nav-icon">👥</span>
-          <span>Usuarios</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/solicitudes'); return false;">
-          <span class="nav-icon">📋</span>
-          <span>Reportes</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
-          <span class="nav-icon">👤</span>
-          <span>Perfil</span>
-        </a>
-      </nav>
+      <!-- Personal del Edificio -->
+      <div class="ds-card">
+        <div class="ds-card-header">
+          <div>
+            <p class="ds-card-title">🛡️ Personal del Edificio</p>
+            <p class="ds-card-subtitle">Staff y servicios</p>
+          </div>
+        </div>
+        <div class="ds-role-grid">
+          <div class="ds-role-pill" onclick="verListaUsuarios('vigilante')">
+            <div class="ds-role-pill-icon">🛡️</div>
+            <div class="ds-role-pill-count" id="pr-vigilante">–</div>
+            <div class="ds-role-pill-label">Vigilantes</div>
+          </div>
+          <div class="ds-role-pill" onclick="verListaUsuarios('medico')">
+            <div class="ds-role-pill-icon">🩺</div>
+            <div class="ds-role-pill-count" id="pr-medico">–</div>
+            <div class="ds-role-pill-label">Médicos</div>
+          </div>
+          <div class="ds-role-pill" onclick="verListaUsuarios('limpieza')">
+            <div class="ds-role-pill-icon">🧹</div>
+            <div class="ds-role-pill-count" id="pr-limpieza">–</div>
+            <div class="ds-role-pill-label">Limpieza</div>
+          </div>
+          <div class="ds-role-pill" onclick="verListaUsuarios('entretenimiento')">
+            <div class="ds-role-pill-icon">🎭</div>
+            <div class="ds-role-pill-count" id="pr-entretenimiento">–</div>
+            <div class="ds-role-pill-label">Recreación</div>
+          </div>
+          <div class="ds-role-pill" onclick="verListaUsuarios('gerente')">
+            <div class="ds-role-pill-icon">📊</div>
+            <div class="ds-role-pill-count" id="pr-gerente">–</div>
+            <div class="ds-role-pill-label">Gerentes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Residentes del Edificio -->
+      <div class="ds-card">
+        <div class="ds-card-header">
+          <div>
+            <p class="ds-card-title">👥 Residentes del Edificio</p>
+            <p class="ds-card-subtitle">Habitantes registrados</p>
+          </div>
+        </div>
+        <div class="ds-role-grid">
+          <div class="ds-role-pill" onclick="verListaUsuarios('residente')" style="width: 100%; grid-column: span 2;">
+            <div class="ds-role-pill-icon">🏠</div>
+            <div class="ds-role-pill-count" id="pr-residente">–</div>
+            <div class="ds-role-pill-label">Total Residentes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AVISOS + EDIFICIOS ===== -->
+    <div class="ds-grid-2" style="margin-bottom: 20px;">
+      <!-- Avisos recientes -->
+      <div class="ds-card">
+        <div class="ds-card-header" style="border-bottom: 1px solid var(--sb-border); margin-bottom: 15px; padding-bottom: 10px;">
+          <div>
+            <p class="ds-card-title">📢 Comunicados Recientes</p>
+          </div>
+          <button onclick="showAlertaModal()" style="background:rgba(31,111,235,0.15);border:1px solid rgba(31,111,235,0.3);color:#58a6ff;border-radius:8px;padding:6px 14px;font-size:0.75rem;cursor:pointer;font-weight:600;">+ Nuevo</button>
+        </div>
+        <div id="announcementsWidget"></div>
+      </div>
+
+      <!-- Actividad Reciente (Nuevo Feed) -->
+      <div class="ds-card" id="activityFeedContainer">
+        <div class="ds-card-header">
+          <div>
+            <p class="ds-card-title">🕒 Actividad Reciente</p>
+            <p class="ds-card-subtitle">Últimos eventos del sistema</p>
+          </div>
+        </div>
+        <div id="activityFeed" style="margin-top: 10px;">
+          <div class="activity-item">
+            <div class="activity-dot" style="background: #3b82f6;"></div>
+            <div style="flex: 1;">
+              <p style="font-size: 0.8rem; color: white; margin: 0;"><strong>Sistema</strong> iniciado correctamente</p>
+              <p style="font-size: 0.7rem; color: var(--sb-muted); margin: 2px 0 0;">Hoy, 08:00 AM</p>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background: #fbbf24;"></div>
+            <div style="flex: 1;">
+              <p style="font-size: 0.8rem; color: white; margin: 0;">Buscando actualizaciones de <strong>registros</strong>...</p>
+              <p style="font-size: 0.7rem; color: var(--sb-muted); margin: 2px 0 0;">Hace 5 min</p>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background: #4ade80;"></div>
+            <div style="flex: 1;">
+              <p style="font-size: 0.8rem; color: white; margin: 0;">Resumen del dashboard actualizado</p>
+              <p style="font-size: 0.7rem; color: var(--sb-muted); margin: 2px 0 0;">Ahora</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DESGLOSE POR CONDOMINIO (Si aplica) ===== -->
+    <div id="edificiosStatsCard" class="ds-card" style="margin-bottom: 20px;">
+      <div class="ds-card-header">
+        <div>
+          <p class="ds-card-title">📊 Desglose por Condominio</p>
+        </div>
+      </div>
+      <div id="edificiosStatsContainer">
+        <div style="text-align:center;padding:2rem;color:var(--sb-muted);">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- ===== EMERGENCIAS ACTIVAS ===== -->
+    <div class="ds-card" id="section-emergencias">
+      <div class="ds-card-header">
+        <div>
+          <p class="ds-card-title" style="color:#f87171;">🚨 Emergencias Activas</p>
+        </div>
+      </div>
+      <div id="adminEmergenciasList">
+        <p style="text-align:center;color:var(--sb-muted);padding:1.5rem;">✅ Sin alertas críticas activas</p>
+      </div>
     </div>
 
     <!-- ===== MODAL COMUNICADO ===== -->
-    <div id="alertaModal" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(10px);">
-      <div class="card" style="max-width:500px;width:100%;border:1px solid rgba(99,102,241,0.3);box-shadow:0 25px 60px rgba(0,0,0,0.7);">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="card-title" style="margin:0;display:flex;align-items:center;gap:0.5rem;"><span>📢</span> Nuevo Comunicado</h2>
-          <button onclick="closeAlertaModal()" style="background:rgba(255,255,255,0.07);border:none;font-size:1.25rem;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center;">×</button>
+    <div id="alertaModal" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+      <div style="background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.7);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0;">📢 Nuevo Comunicado</h2>
+          <button onclick="closeAlertaModal()" style="background:rgba(255,255,255,0.07);border:1px solid var(--sb-border);width:30px;height:30px;border-radius:6px;cursor:pointer;color:var(--sb-muted);font-size:1.1rem;display:flex;align-items:center;justify-content:center;">×</button>
         </div>
         <form id="alertaForm">
-          <div class="form-group">
-            <label class="form-label">Edificio de destino</label>
-            <select class="form-select" id="edificioAlerta" required>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:6px;font-weight:600;">Edificio de destino</label>
+            <select class="form-select" id="edificioAlerta" required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);">
               <option value="global">🌍 Todos los edificios (Global)</option>
             </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Tipo de prioridad</label>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
-              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="informativa" checked style="display:none;"><div style="padding:0.5rem;text-align:center;border-radius:var(--radius-md);background:var(--bg-tertiary);font-size:0.75rem;border:2px solid transparent;" class="radio-tab">ℹ️ Info</div></label>
-              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="mantenimiento" style="display:none;"><div style="padding:0.5rem;text-align:center;border-radius:var(--radius-md);background:var(--bg-tertiary);font-size:0.75rem;border:2px solid transparent;" class="radio-tab">🔧 Mant.</div></label>
-              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="emergencia" style="display:none;"><div style="padding:0.5rem;text-align:center;border-radius:var(--radius-md);background:var(--bg-tertiary);font-size:0.75rem;border:2px solid transparent;" class="radio-tab">🚨 Crítica</div></label>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:6px;font-weight:600;">Tipo de prioridad</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="informativa" checked style="display:none;"><div style="padding:8px;text-align:center;border-radius:6px;background:var(--sb-card);font-size:0.75rem;border:1px solid var(--sb-border);" class="radio-tab">ℹ️ Info</div></label>
+              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="mantenimiento" style="display:none;"><div style="padding:8px;text-align:center;border-radius:6px;background:var(--sb-card);font-size:0.75rem;border:1px solid var(--sb-border);" class="radio-tab">🔧 Mant.</div></label>
+              <label style="cursor:pointer;"><input type="radio" name="tipoAlerta" value="emergencia" style="display:none;"><div style="padding:8px;text-align:center;border-radius:6px;background:var(--sb-card);font-size:0.75rem;border:1px solid var(--sb-border);" class="radio-tab">🚨 Crítica</div></label>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Título</label>
-            <input type="text" class="form-input" id="tituloAlerta" required placeholder="Ej: Corte de agua programado">
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:6px;font-weight:600;">Título</label>
+            <input type="text" class="form-input" id="tituloAlerta" required placeholder="Ej: Corte de agua programado" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);">
           </div>
-          <div class="form-group">
-            <label class="form-label">Mensaje</label>
-            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Describe el detalle del aviso..." style="min-height:120px;"></textarea>
+          <div style="margin-bottom:18px;">
+            <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:6px;font-weight:600;">Mensaje</label>
+            <textarea class="form-textarea" id="mensajeAlerta" required placeholder="Describe el detalle del aviso..." style="min-height:100px;background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></textarea>
           </div>
-          <div class="flex gap-3" style="margin-top:1rem;">
+          <div style="display:flex;gap:10px;">
             <button type="button" class="btn btn-ghost" onclick="closeAlertaModal()" style="flex:1;">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="btnEnviarAlerta" style="flex:1.5;">Enviar Comunicado</button>
           </div>
@@ -270,14 +291,14 @@ export function renderDashboardAdmin(container) {
     </div>
 
     <!-- ===== MODAL LISTA USUARIOS ===== -->
-    <div id="modalListaUsuarios" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10000;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(12px);">
-      <div style="background:#0f172a;width:100%;max-width:600px;height:90vh;border-radius:24px 24px 0 0;padding:1.5rem;display:flex;flex-direction:column;box-shadow:0 -10px 50px rgba(0,0,0,0.7);border-top:1px solid rgba(99,102,241,0.3);">
-        <div class="flex justify-between items-center mb-6">
+    <div id="modalListaUsuarios" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:10000;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(12px);">
+      <div style="background:var(--sb-surface);width:100%;max-width:640px;height:88vh;border-radius:16px 16px 0 0;padding:24px;display:flex;flex-direction:column;box-shadow:0 -10px 50px rgba(0,0,0,0.7);border-top:1px solid var(--sb-border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <div>
-            <h2 id="modalListaTitulo" style="font-size:1.25rem;font-weight:900;color:#f8fafc;margin:0;">Usuarios</h2>
-            <p id="modalListaSubtitulo" style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin:0;">Gestionar cuentas</p>
+            <h2 id="modalListaTitulo" style="font-size:1.1rem;font-weight:700;color:var(--sb-text);margin:0;">Usuarios</h2>
+            <p id="modalListaSubtitulo" style="font-size:0.78rem;color:var(--sb-muted);margin:0;">Gestionar cuentas</p>
           </div>
-          <button onclick="cerrarListaUsuarios()" style="background:rgba(255,255,255,0.08);border:none;width:44px;height:44px;border-radius:50%;color:#fff;font-size:1.5rem;cursor:pointer;">×</button>
+          <button onclick="cerrarListaUsuarios()" style="background:rgba(255,255,255,0.08);border:1px solid var(--sb-border);width:38px;height:38px;border-radius:8px;color:var(--sb-text);font-size:1.3rem;cursor:pointer;">×</button>
         </div>
         <div id="modalListaContenido" style="flex:1;overflow-y:auto;padding-bottom:2rem;">
           <div class="loading-spinner" style="margin:4rem auto;"></div>
@@ -287,105 +308,96 @@ export function renderDashboardAdmin(container) {
 
     <!-- ===== MODAL PASSWORD ===== -->
     <div id="modalPasswordAdmin" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10001;display:flex;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(10px);">
-      <div class="card" style="width:100%;max-width:400px;border:1px solid rgba(99,102,241,0.35);">
-        <h3 class="card-title">🔑 Nueva Contraseña</h3>
-        <p id="passwordUsuarioNombre" style="color:rgba(255,255,255,0.5);margin-bottom:1.5rem;font-size:0.9rem;"></p>
-        <div class="form-group">
-          <input type="password" id="nuevaPassInput" class="form-input" placeholder="Mínimo 4 caracteres">
-        </div>
-        <div class="flex gap-3">
-          <button class="btn btn-ghost flex-1" onclick="cerrarModalPass()">Cancelar</button>
-          <button class="btn btn-primary flex-1" id="btnConfirmPass" onclick="confirmarCambioPass()">Guardar</button>
+      <div style="background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:12px;padding:24px;width:100%;max-width:380px;">
+        <h3 style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0 0 6px;">🔑 Nueva Contraseña</h3>
+        <p id="passwordUsuarioNombre" style="color:var(--sb-muted);margin-bottom:16px;font-size:0.85rem;"></p>
+        <input type="password" id="nuevaPassInput" class="form-input" placeholder="Mínimo 4 caracteres" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);margin-bottom:16px;">
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="cerrarModalPass()" style="flex:1;">Cancelar</button>
+          <button class="btn btn-primary" id="btnConfirmPass" onclick="confirmarCambioPass()" style="flex:1;">Guardar</button>
         </div>
       </div>
     </div>
 
     <style>
-      .admin-role-card {
-        border-radius: 16px; padding: 1rem 0.6rem; text-align: center;
-        cursor: pointer; transition: transform 0.18s;
-        display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-      }
-      .admin-role-card:active { transform: scale(0.92); }
-      .user-mgmt-card { background: rgba(255,255,255,0.05); border-radius: 14px; padding: 1.25rem; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.08); }
-      .pulse-icon { width:12px;height:12px;background:#f43f5e;border-radius:50%;display:inline-block;animation:pulse-red 2s infinite; }
+      .user-mgmt-card { background: var(--sb-card); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid var(--sb-border); display:flex;align-items:center;justify-content:space-between; }
+      .insight-card { background: var(--sb-surface); border: 1px solid var(--sb-border); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; transition: all 0.2s; cursor: pointer; }
+      .insight-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); background: rgba(255,255,255,0.02); }
+      .insight-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+      .insight-value { font-size: 1.1rem; font-weight: 800; color: white; margin: 0; line-height: 1; }
+      .insight-label { font-size: 0.720rem; color: var(--sb-muted); margin: 2px 0 0; font-weight: 500; }
+      
+      .activity-item { padding: 10px 0; border-bottom: 1px solid var(--sb-border); display: flex; gap: 10px; }
+      .activity-item:last-child { border-bottom: none; }
+      .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+      
+      .pulse-icon { width:10px;height:10px;background:#f87171;border-radius:50%;display:inline-block;animation:pulse-red 2s infinite; }
       @keyframes pulse-red {
-        0% { transform:scale(0.95);box-shadow:0 0 0 0 rgba(244,63,94,0.7); }
-        70% { transform:scale(1);box-shadow:0 0 0 10px rgba(244,63,94,0); }
-        100% { transform:scale(0.95);box-shadow:0 0 0 0 rgba(244,63,94,0); }
+        0% { transform:scale(0.95);box-shadow:0 0 0 0 rgba(248,113,113,0.7); }
+        70% { transform:scale(1);box-shadow:0 0 0 8px rgba(248,113,113,0); }
+        100% { transform:scale(0.95);box-shadow:0 0 0 0 rgba(248,113,113,0); }
       }
-      .radio-tab { transition: all 0.2s; }
-      input[type="radio"]:checked + .radio-tab { background:var(--primary)!important;border-color:var(--primary-light)!important;color:white;font-weight:700; }
-      .building-stat-row { display:grid;grid-template-columns:2fr repeat(5,1fr);gap:2px;background:rgba(255,255,255,0.04);padding:0.75rem;border-radius:12px;align-items:center; }
-      .building-stat-header { font-size:0.6rem;font-weight:900;color:rgba(255,255,255,0.35);text-transform:uppercase;text-align:center; }
-      .building-stat-value { font-size:0.9rem;font-weight:800;text-align:center;color:#f1f5f9; }
+      .radio-tab { transition: all 0.2s; cursor:pointer; }
+      input[type="radio"]:checked + .radio-tab { background: rgba(31,111,235,0.2)!important; border-color: #388bfd!important; color:#58a6ff; font-weight:700; }
     </style>
   `;
 
-  // --- LOGICA FRONTEND GESTION ---
+  // ─── LOGICA ──────────────────────────────────────────
   let usuariosCache = [];
   let userPassSelected = null;
+  let currentEdificioFilter = 'all';
+
+  window.filterDashboardByEdificio = (val) => {
+    currentEdificioFilter = val;
+    loadAdminStats(val);
+  };
 
   window.verListaUsuarios = async (rol) => {
     const modal = document.getElementById('modalListaUsuarios');
     const titulo = document.getElementById('modalListaTitulo');
     const content = document.getElementById('modalListaContenido');
-
-    const labels = {
-      residente: 'Residentes',
-      medico: 'Médicos',
-      limpieza: 'Personal Limpieza',
-      entretenimiento: 'Recreación',
-      vigilante: 'Vigilantes',
-      gerente: 'Gerentes'
-    };
-
+    const labels = { residente: 'Residentes', medico: 'Médicos', limpieza: 'Personal Limpieza', entretenimiento: 'Recreación', vigilante: 'Vigilantes', gerente: 'Gerentes' };
     titulo.textContent = labels[rol] || 'Usuarios';
     modal.classList.remove('hidden');
-    content.innerHTML = '<div class="loading-spinner" style="margin: 4rem auto;"></div>';
-
+    content.innerHTML = '<div class="loading-spinner" style="margin:4rem auto;"></div>';
     try {
-      const res = await fetch(`${window.API_URL}/usuarios?rol=${rol}`, {
+      const url = new URL(`${window.API_URL}/usuarios`);
+      url.searchParams.append('rol', rol);
+      if (currentEdificioFilter !== 'all') {
+        url.searchParams.append('edificio_id', currentEdificioFilter);
+      }
+      const res = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
       usuariosCache = await res.json();
       renderListaModal();
     } catch (e) {
-      content.innerHTML = '<p class="text-center color-danger">Error al cargar usuarios</p>';
+      content.innerHTML = '<p style="color:#f87171;text-align:center;padding:2rem;">Error al cargar usuarios</p>';
     }
   };
 
   const renderListaModal = () => {
     const content = document.getElementById('modalListaContenido');
     if (!usuariosCache || usuariosCache.length === 0) {
-      content.innerHTML = '<p class="text-center" style="margin-top: 2rem;">No hay usuarios en esta categoría.</p>';
+      content.innerHTML = '<p style="text-align:center;color:var(--sb-muted);padding:2rem;">No hay usuarios en esta categoría.</p>';
       return;
     }
-
     content.innerHTML = usuariosCache.map(u => `
-        <div class="user-mgmt-card fade-in">
-            <div class="flex justify-between items-start">
-               <div>
-                  <h4 style="font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">${u.nombre}</h4>
-                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">📧 ${u.email}</p>
-                  <p style="font-size: 0.75rem; color: var(--primary-light); margin: 0.25rem 0;">📍 ${u.apartamento ? `Depto ${u.apartamento}` : 'Personal'}</p>
-               </div>
-               <div class="flex flex-direction-column gap-2">
-                  <button class="btn btn-sm btn-ghost" onclick="abrirModalPass(${u.id}, '${u.nombre}')" style="background: rgba(129,140,248,0.1); color: var(--primary-light); border: 1px solid rgba(129,140,248,0.2);">
-                    🔑 Pwd
-                  </button>
-                  <button class="btn btn-sm btn-danger" onclick="eliminarUsuario(${u.id}, '${u.nombre}')">
-                    🗑️
-                  </button>
-               </div>
-            </div>
+      <div class="user-mgmt-card fade-in">
+        <div>
+          <h4 style="font-weight:700;color:var(--sb-text);margin:0 0 3px;">${u.nombre}</h4>
+          <p style="font-size:0.78rem;color:var(--sb-muted);margin:0;">📧 ${u.email}</p>
+          <p style="font-size:0.75rem;color:#58a6ff;margin:3px 0 0;">${u.apartamento ? `📍 Dpto ${u.apartamento}` : '📍 Personal'}</p>
         </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="abrirModalPass(${u.id}, '${u.nombre}')" style="background:rgba(31,111,235,0.12);border:1px solid rgba(31,111,235,0.3);color:#58a6ff;border-radius:6px;padding:6px 10px;font-size:0.72rem;cursor:pointer;font-family:inherit;">🔑 Pwd</button>
+          <button onclick="eliminarUsuario(${u.id}, '${u.nombre}')" style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:6px;padding:6px 10px;font-size:0.72rem;cursor:pointer;font-family:inherit;">🗑️</button>
+        </div>
+      </div>
     `).join('');
   };
 
-  window.cerrarListaUsuarios = () => {
-    document.getElementById('modalListaUsuarios').classList.add('hidden');
-  };
+  window.cerrarListaUsuarios = () => document.getElementById('modalListaUsuarios').classList.add('hidden');
 
   window.abrirModalPass = (id, nombre) => {
     userPassSelected = id;
@@ -403,246 +415,66 @@ export function renderDashboardAdmin(container) {
   window.confirmarCambioPass = async () => {
     const pass = document.getElementById('nuevaPassInput').value;
     if (pass.length < 4) return alert('Mínimo 4 caracteres');
-
     const btn = document.getElementById('btnConfirmPass');
-    btn.disabled = true;
-    btn.textContent = 'Guardando...';
-
+    btn.disabled = true; btn.textContent = 'Guardando...';
     try {
       const res = await fetch(`${window.API_URL}/usuarios/${userPassSelected}/password`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${window.appState.token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.appState.token}` },
         body: JSON.stringify({ password: pass })
       });
-
-      if (res.ok) {
-        alert('✅ Contraseña actualizada');
-        cerrarModalPass();
-      } else {
-        const data = await res.json();
-        alert('❌ Error: ' + data.error);
-      }
-    } catch (e) {
-      alert('❌ Error de conexión');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Guardar';
-    }
+      if (res.ok) { alert('✅ Contraseña actualizada'); cerrarModalPass(); }
+      else { const d = await res.json(); alert('❌ Error: ' + d.error); }
+    } catch (e) { alert('❌ Error de conexión'); }
+    finally { btn.disabled = false; btn.textContent = 'Guardar'; }
   };
 
   window.eliminarUsuario = async (id, nombre) => {
-    if (!confirm(`¿Seguro que quieres eliminar permanentemente a ${nombre}?`)) return;
-
+    if (!confirm(`¿Eliminar permanentemente a ${nombre}?`)) return;
     try {
       const res = await fetch(`${window.API_URL}/usuarios/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+        method: 'DELETE', headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
-
       if (res.ok) {
         alert('✅ Usuario eliminado');
         usuariosCache = usuariosCache.filter(u => u.id !== id);
         renderListaModal();
         loadAdminStats();
-      } else {
-        const data = await res.json();
-        alert('❌ Error: ' + data.error);
-      }
-    } catch (e) {
-      alert('❌ Error de conexión');
-    }
+      } else { const d = await res.json(); alert('❌ Error: ' + d.error); }
+    } catch (e) { alert('❌ Error de conexión'); }
   };
 
-  // --- FIN LOGICA GESTION ---
-
-  // Inicializar radio buttons
+  // Radio tabs
   setTimeout(() => {
-    const radioTabs = document.querySelectorAll('.radio-tab');
-    radioTabs.forEach(tab => {
-      tab.parentElement.onclick = () => {
-        tab.previousElementSibling.checked = true;
-      };
+    document.querySelectorAll('.radio-tab').forEach(tab => {
+      tab.parentElement.onclick = () => { tab.previousElementSibling.checked = true; };
     });
   }, 100);
 
-  // Cargar datos
+  // Scroll elements
+  window.scrollToDsEmergencias = () => {
+    const el = document.getElementById('section-emergencias');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.scrollToActivityFeed = () => {
+    const el = document.getElementById('activityFeedContainer');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Initial calls and socket setup
   loadAdminStats();
   loadAdminEmergencias();
-  loadEdificiosParaAlertas();
-
-  if (typeof renderAnnouncementsWidget === 'function') {
-    renderAnnouncementsWidget('announcementsWidget');
-  }
+  loadEdificiosParaDashboard();
+  setupOnlineUsersSocket();
 
   setTimeout(() => {
     const form = document.getElementById('alertaForm');
-    if (form) {
-      form.onsubmit = (e) => {
-        e.preventDefault();
-        enviarAlertaAdmin();
-      };
-    }
+    if (form) form.onsubmit = (e) => { e.preventDefault(); enviarAlertaAdmin(); };
   }, 100);
 }
 
-window.scrollToEmergencias = () => {
-  const el = document.getElementById('section-emergencias');
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-};
-
-async function loadEdificiosParaAlertas() {
-  try {
-    const response = await fetch(`${window.API_URL}/edificios/public`);
-    const edificios = await response.json();
-    const select = document.getElementById('edificioAlerta');
-    if (select && Array.isArray(edificios)) {
-      edificios.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e.id;
-        opt.textContent = `🏢 ${e.nombre}`;
-        select.appendChild(opt);
-      });
-    }
-  } catch (error) {
-    console.warn('Error al cargar edificios para el modal de alertas:', error);
-  }
-}
-
-let _loadingStats = false;
-async function loadAdminStats() {
-  if (_loadingStats) return;
-  _loadingStats = true;
-  try {
-    const [resUsers, resEdificios] = await Promise.all([
-      fetch(`${window.API_URL}/usuarios`, {
-        headers: { 'Authorization': `Bearer ${window.appState.token}` }
-      }),
-      fetch(`${window.API_URL}/edificios/public`)
-    ]);
-
-    const users = await resUsers.json();
-    const edificios = await resEdificios.json();
-
-    const resPendientes = await fetch(`${window.API_URL}/usuarios/pendientes`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
-    const pendientes = await resPendientes.json();
-    const countPendingEl = document.getElementById('count-pending');
-    if (countPendingEl) countPendingEl.textContent = Array.isArray(pendientes) ? pendientes.length : 0;
-
-    const countsGlobal = { residente: 0, limpieza: 0, vigilante: 0, gerente: 0, medico: 0, entretenimiento: 0 };
-    const statsPorEdificio = {};
-
-    // Deduplicar edificios por nombre para mostrar una sola fila por condominio
-    const edificiosUnicos = Array.isArray(edificios)
-      ? edificios.filter((e, idx, arr) => arr.findIndex(x => x.nombre === e.nombre) === idx)
-      : [];
-
-    // Mapear TODOS los IDs (incluyendo duplicados) a su nombre de edificio
-    const idToNombre = {};
-    if (Array.isArray(edificios)) {
-      edificios.forEach(e => { idToNombre[e.id] = e.nombre; });
-    }
-
-    // Conteo de personal por nombre de edificio
-    const statsPorNombre = {};
-    edificiosUnicos.forEach(e => {
-      statsPorNombre[e.nombre] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0 };
-    });
-
-    if (Array.isArray(users)) {
-      users.forEach(u => {
-        if (countsGlobal.hasOwnProperty(u.rol)) countsGlobal[u.rol]++;
-
-        // Buscar por nombre del edificio usando el mapa de IDs
-        const nombreEdificio = idToNombre[u.edificio_id];
-        if (nombreEdificio && statsPorNombre[nombreEdificio]) {
-          if (statsPorNombre[nombreEdificio].hasOwnProperty(u.rol)) {
-            statsPorNombre[nombreEdificio][u.rol]++;
-          }
-        }
-      });
-    }
-
-    Object.keys(countsGlobal).forEach(rol => {
-      const el = document.getElementById(`count-${rol}`);
-      if (el) el.textContent = countsGlobal[rol];
-    });
-
-    const buildingsContainer = document.getElementById('edificiosStatsContainer');
-    if (buildingsContainer) {
-
-      if (edificiosUnicos.length === 0) {
-        buildingsContainer.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.3);">No hay edificios registrados</p>';
-      } else {
-        const headerHtml = `
-          <div class="building-stat-row" style="background:transparent;">
-            <div style="font-size:0.6rem;font-weight:900;color:rgba(255,255,255,0.35);text-transform:uppercase;">Condominio</div>
-            <div class="building-stat-header">Res</div>
-            <div class="building-stat-header">Lim</div>
-            <div class="building-stat-header">Rec</div>
-            <div class="building-stat-header">Med</div>
-            <div class="building-stat-header">Ger</div>
-          </div>`;
-
-        const rowsHtml = edificiosUnicos.map(e => {
-          const stat = statsPorNombre[e.nombre] || { residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0 };
-          return `
-          <div class="building-stat-row">
-            <div style="font-size:0.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e2e8f0;">🏢 ${e.nombre}</div>
-            <div class="building-stat-value">${stat.residente}</div>
-            <div class="building-stat-value" style="color:#c084fc;">${stat.limpieza}</div>
-            <div class="building-stat-value" style="color:#fb7185;">${stat.entretenimiento}</div>
-            <div class="building-stat-value" style="color:#10b981;">${stat.medico}</div>
-            <div class="building-stat-value" style="color:#fbbf24;">${stat.gerente}</div>
-          </div>`;
-        }).join('');
-
-        buildingsContainer.innerHTML = headerHtml + rowsHtml;
-      }
-    }
-  } catch (error) {
-    console.warn('Error al cargar stats de usuarios:', error);
-  } finally {
-    _loadingStats = false;
-  }
-}
-
-async function loadAdminEmergencias() {
-  try {
-    const response = await fetch(`${window.API_URL}/emergencias/activas`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
-    const emergencias = await response.json();
-    const container = document.getElementById('adminEmergenciasList');
-    const count = document.getElementById('adminEmergenciasCount');
-
-    if (count) count.textContent = Array.isArray(emergencias) ? emergencias.length : 0;
-    if (!container) return;
-
-    if (!Array.isArray(emergencias) || emergencias.length === 0) {
-      container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.3);padding:1.5rem;background:rgba(244,63,94,0.05);border-radius:14px;border:1px solid rgba(244,63,94,0.1);">✅ Sin alertas activas</p>';
-      return;
-    }
-
-    container.innerHTML = emergencias.map(e => `
-      <div class="fade-in" style="padding:1rem;background:rgba(244,63,94,0.07);border-radius:14px;border:1px solid rgba(244,63,94,0.2);margin-bottom:0.75rem;border-left:4px solid #f43f5e;">
-        <div class="flex justify-between items-start mb-2">
-          <span style="font-weight:800;font-size:0.95rem;color:#fff;">📍 Dpto. ${e.usuario_apartamento || 'N/A'}</span>
-          <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);background:rgba(244,63,94,0.1);padding:2px 8px;border-radius:6px;">${new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-        <p style="font-size:0.85rem;color:#fecdd3;margin-bottom:0.5rem;line-height:1.5;">${e.descripcion}</p>
-        <p style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin:0;">👤 ${e.usuario_nombre} ${e.usuario_telefono ? `· 📞 ${e.usuario_telefono}` : ''}</p>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error al cargar emergencias:', error);
-  }
-}
-
+// ── MODAL ALERTS ──────────────────────────────────────
 window.showAlertaModal = () => {
   const modal = document.getElementById('alertaModal');
   if (modal) modal.classList.remove('hidden');
@@ -655,6 +487,285 @@ window.closeAlertaModal = () => {
   if (form) form.reset();
 };
 
+window.scrollToEmergencias = () => {
+  const el = document.getElementById('section-emergencias');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
+
+// ── DATA LOADERS ──────────────────────────────────────
+async function loadEdificiosParaDashboard() {
+  try {
+    const response = await fetch(`${window.API_URL}/edificios/public`);
+    const edificios = await response.json();
+
+    // Filtrar duplicados por nombre por si acaso
+    const edificiosUnicos = Array.isArray(edificios)
+      ? edificios.filter((e, i, a) => a.findIndex(x => x.nombre === e.nombre) === i) : [];
+
+    // Llenar select de alertas
+    const selectAlerta = document.getElementById('edificioAlerta');
+    if (selectAlerta && Array.isArray(edificiosUnicos)) {
+      selectAlerta.innerHTML = '<option value="global">🌍 Todos los edificios (Global)</option>';
+      edificiosUnicos.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `🏢 ${e.nombre}`;
+        selectAlerta.appendChild(opt);
+      });
+    }
+
+    // Llenar select de dashboard
+    const selectDash = document.getElementById('dashboardEdificioSelector');
+    if (selectDash && Array.isArray(edificiosUnicos)) {
+      selectDash.innerHTML = '<option value="all">🌍 Todos los edificios</option>';
+      edificiosUnicos.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `🏢 ${e.nombre}`;
+        selectDash.appendChild(opt);
+      });
+    }
+  } catch (error) { console.warn('Error al cargar edificios:', error); }
+}
+
+let currentOnlineUsers = [];
+
+function setupOnlineUsersSocket() {
+  const socket = window.appState?.socket;
+  if (!socket) {
+    // Try again in 1 second if socket not yet ready
+    setTimeout(setupOnlineUsersSocket, 1000);
+    return;
+  }
+
+  socket.off('usuarios_en_linea_global');
+  // Escuchar actualización de usuarios en línea (como admin recibimos el global)
+  socket.on('usuarios_en_linea_global', (users) => {
+    currentOnlineUsers = users;
+    renderOnlineUsers();
+  });
+
+  // Request an initial update immediately
+  // The backend sends the list on connection - but if we set up listener late,
+  // emit a ping to trigger a resend from other users connecting after
+  renderOnlineUsers();
+}
+
+function renderOnlineUsers() {
+  const list = document.getElementById('onlineUsersList');
+  const badge = document.getElementById('onlineCountBadge');
+  const selectedEdificio = document.getElementById('dashboardEdificioSelector')?.value || 'all';
+
+  if (!list) return;
+
+  // Filtrar por edificio seleccionado
+  const filtered = selectedEdificio === 'all'
+    ? currentOnlineUsers
+    : currentOnlineUsers.filter(u => u.edificio_id == selectedEdificio);
+
+  badge.textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--sb-muted);font-size:0.8rem;opacity:0.6;">No hay otros usuarios en línea</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(u => `
+    <div style="display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+      <div style="position: relative;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: white;">
+          ${u.nombre.charAt(0).toUpperCase()}
+        </div>
+        <div style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #22c55e; border: 2px solid #0f172a; border-radius: 50%;"></div>
+      </div>
+      <div style="flex: 1; overflow: hidden;">
+        <div style="font-size: 0.85rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${u.nombre}</div>
+        <div style="font-size: 0.7rem; color: var(--sb-muted); display: flex; align-items: center; gap: 5px;">
+          <span class="badge" style="padding: 1px 6px; font-size: 0.6rem; background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2);">
+            ${u.rol.charAt(0).toUpperCase() + u.rol.slice(1)}
+          </span>
+          ${u.email}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+let _loadingStats = false;
+async function loadAdminStats(edificioId = 'all') {
+  if (_loadingStats) return;
+  _loadingStats = true;
+  const loader = document.getElementById('statsLoader');
+  if (loader) loader.style.display = 'block';
+
+  try {
+    const queryParams = edificioId !== 'all' ? `?edificio_id=${edificioId}` : '';
+
+    // Mostrar/Ocultar el card de desglose
+    const statsCard = document.getElementById('edificiosStatsCard');
+    if (statsCard) {
+      statsCard.style.display = edificioId === 'all' ? 'block' : 'none';
+    }
+
+    // Re-renderizar usuarios en línea con el nuevo filtro
+    renderOnlineUsers();
+
+    const [resUsers, resEdificios] = await Promise.all([
+      fetch(`${window.API_URL}/usuarios${queryParams}`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } }),
+      fetch(`${window.API_URL}/edificios/public`)
+    ]);
+    const users = await resUsers.json();
+    const edificios = await resEdificios.json();
+
+    const resPend = await fetch(`${window.API_URL}/usuarios/pendientes${queryParams}`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const pendientes = await resPend.json();
+
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('count-pending', Array.isArray(pendientes) ? pendientes.length : 0);
+
+    const counts = { residente: 0, limpieza: 0, vigilante: 0, gerente: 0, medico: 0, entretenimiento: 0 };
+    const idToNombre = {};
+    if (Array.isArray(edificios)) edificios.forEach(e => { idToNombre[e.id] = e.nombre; });
+
+    let edificiosFiltrados = Array.isArray(edificios)
+      ? edificios.filter((e, i, a) => a.findIndex(x => x.nombre === e.nombre) === i) : [];
+
+    if (edificioId !== 'all') {
+      edificiosFiltrados = edificiosFiltrados.filter(e => e.id.toString() === edificioId.toString());
+    }
+
+    const statsPorNombre = {};
+    edificiosFiltrados.forEach(e => {
+      statsPorNombre[e.nombre] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0, emergencias: 0 };
+    });
+
+    // Role pills in card
+    ['residente', 'vigilante', 'medico', 'limpieza', 'entretenimiento', 'gerente'].forEach(r => {
+      setEl(`pr-${r}`, counts[r]);
+    });
+
+    // Cargar reportes para el insight
+    try {
+      const resRep = await fetch(`${window.API_URL}/solicitudes`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+      const reports = await resRep.json();
+      setEl('insight-reports', Array.isArray(reports) ? reports.length : 0);
+    } catch (e) { console.warn('Error loading reports for insight', e); }
+
+    if (Array.isArray(users)) {
+      users.forEach(u => {
+        if (counts.hasOwnProperty(u.rol)) counts[u.rol]++;
+        const nb = idToNombre[u.edificio_id];
+        if (nb && statsPorNombre[nb] && statsPorNombre[nb].hasOwnProperty(u.rol)) {
+          statsPorNombre[nb][u.rol]++;
+        }
+      });
+    }
+
+    let numEmergencias = 0;
+    // Cargar emergencias para el desglose por edificio
+    try {
+      const resEmeList = await fetch(`${window.API_URL}/emergencias/activas`, {
+        headers: { 'Authorization': `Bearer ${window.appState.token}` }
+      });
+      const emes = await resEmeList.json();
+      if (Array.isArray(emes)) {
+        numEmergencias = emes.length;
+        setEl('adminEmergenciasCount', numEmergencias);
+        emes.forEach(eme => {
+          const nb = idToNombre[eme.edificio_id];
+          if (nb && statsPorNombre[nb]) statsPorNombre[nb].emergencias++;
+        });
+      }
+    } catch (e) { console.warn('Error loading emergencies for breakdown', e); }
+
+    // Stat cards header
+    setEl('count-residente', counts.residente);
+    setEl('count-vigilante', counts.vigilante);
+
+    // Insight card values
+    setEl('insight-pending', Array.isArray(pendientes) ? pendientes.length : 0);
+    setEl('insight-emergencies', numEmergencias);
+
+    // Welcome message update
+    const welcomeMsg = document.getElementById('dashboardWelcomeMsg');
+    if (welcomeMsg) {
+      if (numEmergencias > 0) {
+        welcomeMsg.innerHTML = `<span style="color:#f87171;font-weight:700;">⚠️ Atención:</span> Hay ${numEmergencias} emergencia${numEmergencias > 1 ? 's' : ''} activa${numEmergencias > 1 ? 's' : ''} ahora.`;
+      } else if (Array.isArray(pendientes) && pendientes.length > 0) {
+        welcomeMsg.innerHTML = `<span style="color:#fbbf24;font-weight:700;">🔹 Tareas:</span> Tienes ${pendientes.length} usuario${pendientes.length > 1 ? 's' : ''} esperando aprobación.`;
+      } else {
+        welcomeMsg.innerHTML = `<span style="color:#4ade80;font-weight:700;">✅ Todo bajo control:</span> No se requieren acciones inmediatas.`;
+      }
+    }
+
+    // Edificios table
+    const bc = document.getElementById('edificiosStatsContainer');
+    if (bc) {
+      if (edificiosFiltrados.length === 0) {
+        bc.innerHTML = '<p style="text-align:center;color:var(--sb-muted);padding:1rem;">No hay edificios registrados</p>';
+      } else {
+        bc.innerHTML = `
+          <table class="ds-table">
+            <thead>
+              <tr>
+                <th>Condominio</th>
+                <th>Res</th><th>Per</th><th>Eme</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${edificiosFiltrados.map(e => {
+          const s = statsPorNombre[e.nombre] || {};
+          const totalPersonal = (s.limpieza || 0) + (s.vigilante || 0) + (s.medico || 0) + (s.entretenimiento || 0) + (s.gerente || 0);
+          return `<tr>
+                  <td style="font-weight:600;">🏢 ${e.nombre}</td>
+                  <td>${s.residente || 0}</td>
+                  <td style="color:#3b82f6;">${totalPersonal}</td>
+                  <td style="color:#f87171;">${s.emergencias || 0}</td>
+                </tr>`;
+        }).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+  } catch (error) { console.warn('Error stats admin:', error); }
+  finally {
+    _loadingStats = false;
+    if (loader) loader.style.display = 'none';
+  }
+}
+
+async function loadAdminEmergencias() {
+  try {
+    const response = await fetch(`${window.API_URL}/emergencias/activas`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const emergencias = await response.json();
+    const container = document.getElementById('adminEmergenciasList');
+    const count = document.getElementById('adminEmergenciasCount');
+    if (count) count.textContent = Array.isArray(emergencias) ? emergencias.length : 0;
+    if (!container) return;
+    if (!Array.isArray(emergencias) || emergencias.length === 0) {
+      container.innerHTML = '<p style="text-align:center;color:var(--sb-muted);padding:1.5rem;">✅ Sin alertas críticas activas</p>';
+      return;
+    }
+    container.innerHTML = emergencias.map(e => `
+      <div class="ds-emergency-item fade-in">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <span style="font-weight:700;font-size:0.9rem;color:var(--sb-text);">📍 Dpto. ${e.usuario_apartamento || 'N/A'}</span>
+          <span style="font-size:0.68rem;color:var(--sb-muted);">${new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+        <p style="font-size:0.82rem;color:#fecaca;margin-bottom:4px;line-height:1.5;">${e.descripcion}</p>
+        <p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">👤 ${e.usuario_nombre}${e.usuario_telefono ? ` · 📞 ${e.usuario_telefono}` : ''}</p>
+      </div>
+    `).join('');
+  } catch (error) { console.error('Error emergencias:', error); }
+}
+
 async function enviarAlertaAdmin() {
   const edificio_id_val = document.getElementById('edificioAlerta').value;
   const tipo = document.querySelector('input[name="tipoAlerta"]:checked').value;
@@ -662,16 +773,13 @@ async function enviarAlertaAdmin() {
   const mensaje = document.getElementById('mensajeAlerta').value;
   const btn = document.getElementById('btnEnviarAlerta');
   const edificio_id = edificio_id_val === 'global' ? null : edificio_id_val;
-
   try {
     if (btn) { btn.disabled = true; btn.innerText = 'Enviando...'; }
-
     const response = await fetch(`${window.API_URL}/alertas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.appState.token}` },
       body: JSON.stringify({ tipo, titulo, mensaje, edificio_id })
     });
-
     if (response.ok) {
       alert('✅ Comunicado enviado correctamente');
       closeAlertaModal();
@@ -680,9 +788,6 @@ async function enviarAlertaAdmin() {
       const data = await response.json();
       alert('❌ Error: ' + (data.error || 'No se pudo enviar'));
     }
-  } catch (error) {
-    alert('❌ Error de conexión al servidor');
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerText = 'Enviar Comunicado'; }
-  }
+  } catch (error) { alert('❌ Error de conexión al servidor'); }
+  finally { if (btn) { btn.disabled = false; btn.innerText = 'Enviar Comunicado'; } }
 }

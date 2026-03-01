@@ -1,517 +1,390 @@
 // =====================================================
-// DASHBOARD RESIDENTE - Vista principal para residentes
+// DASHBOARD RESIDENTE - Sidebar Desktop Layout
 // =====================================================
-
-import { initAnnouncements, renderAnnouncementsWidget } from '../utils/announcements.js';
+import { renderAnnouncementsWidget } from '../utils/announcements.js';
+import { renderSidebarLayout } from '../utils/sidebar-layout.js';
 
 export function renderDashboardResidente(container) {
   const user = window.appState.user;
   const baseUrl = window.API_URL.replace('/api', '');
-  const getFotoUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `${baseUrl}${normalizedPath}`;
-  };
+  const getFotoUrl = (p) => { if (!p) return null; if (p.startsWith('http')) return p; return `${baseUrl}${p.startsWith('/') ? p : '/' + p}`; };
 
-  container.innerHTML = `
-    <div class="page">
-      <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+  const navItems = [
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-residente' },
+    { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
+    { key: 'medica', icon: '🏥', label: 'Atención Médica', onClick: "window.navigateTo('/solicitudes',{tipo:'medica'})" },
+    { key: 'limpieza', icon: '🧹', label: 'Limpieza', onClick: "window.navigateTo('/solicitudes',{tipo:'limpieza'})" },
+    { key: 'eventos', icon: '🎉', label: 'Eventos', onClick: "window.navigateTo('/solicitudes',{tipo:'entretenimiento'})" },
+    { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
+    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
+    { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
+  ];
 
-        <div class="container">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-4">
-              <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: var(--glass-bg); border: 2px solid var(--glass-border); padding: 3px; box-shadow: var(--shadow-md); position: relative;">
-                <div style="width: 100%; height: 100%; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
-                  ${user.foto_perfil ? `<img src="${getFotoUrl(user.foto_perfil)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=''; this.parentElement.innerHTML='👤'">` : '👤'}
-                </div>
-              </div>
-              <div>
-                <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.7); margin-bottom: 0.25rem;">${user.rol === 'admin' ? 'Administrador' : 'Bienvenido Residente'}</p>
-                <h1 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1;">${user.nombre}</h1>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
-                   <span class="badge" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.1); font-size: 0.65rem;">📍 Dpto ${user.apartamento || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-            <button onclick="logout()" class="btn btn-ghost" style="padding: 0.6rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.05);">
-               🚪
-            </button>
-          </div>
+  const main = renderSidebarLayout(container, {
+    role: 'residente',
+    activeNav: 'dashboard',
+    pageTitle: `Bienvenido`,
+    pageSubtitle: user.nombre,
+    breadcrumb: 'Dashboard',
+    navItems,
+  });
+
+  main.innerHTML += `
+    <!-- INFO BAR -->
+    <div style="display:flex;align-items:center;gap:10px;background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:8px;padding:10px 16px;margin-bottom:18px;flex-wrap:wrap;">
+      ${user.apartamento ? `<span style="font-size:0.78rem;font-weight:600;color:var(--sb-text);">📍 DPTO ${user.apartamento}</span><span style="color:var(--sb-border);">•</span>` : ''}
+      <span style="font-size:0.78rem;color:var(--sb-muted);">Edificio ${user.edificio_nombre || 'A'}</span>
+    </div>
+
+    <!-- ESTADO DE PAGO -->
+    <div id="paymentStatusWidget" style="margin-bottom:16px;"></div>
+
+    <!-- AVISOS -->
+    <div class="ds-card" style="margin-bottom:16px;">
+      <div class="ds-card-header">
+        <p class="ds-card-title">Avisos</p>
+        <a href="#" style="font-size:0.72rem;color:#58a6ff;text-decoration:none;" onclick="return false;">Ver todos →</a>
+      </div>
+      <div id="announcementsWidget"></div>
+    </div>
+
+    <!-- ACCIONES RÁPIDAS -->
+    <div class="ds-card" style="margin-bottom:16px;">
+      <div class="ds-card-header"><p class="ds-card-title">Acciones Rápidas</p></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        ${[
+      { icon: '❤️', label: 'Médica', action: "showSolicitudModal('medica')", color: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)' },
+      { icon: '🧹', label: 'Limpieza', action: "showSolicitudModal('limpieza')", color: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
+      { icon: '📅', label: 'Eventos', action: "showSolicitudModal('entretenimiento')", color: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)' },
+      { icon: '💳', label: 'Mis Pagos', action: "document.getElementById('paymentStatusWidget')?.scrollIntoView({behavior:'smooth'})", color: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.2)' },
+    ].map(a => `
+          <button onclick="${a.action}" style="background:${a.color};border:1px solid ${a.border};border-radius:10px;padding:22px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:inherit;transition:filter 0.15s,transform 0.15s;width:100%;" onmouseover="this.style.filter='brightness(1.2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">
+            <span style="font-size:1.8rem;">${a.icon}</span>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--sb-text);">${a.label}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- FLOATING SOS BUTTON -->
+    <button id="sosFab" onclick="window.showSosWarning()" title="Enviar alerta de emergencia"
+      style="position:fixed;bottom:28px;right:28px;z-index:1000;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 20px rgba(239,68,68,0.5);animation:sosPulse 2s infinite;">
+      🆘
+    </button>
+    <style>
+      @keyframes sosPulse {
+        0%,100%{box-shadow:0 4px 20px rgba(239,68,68,0.5);}
+        50%{box-shadow:0 4px 32px rgba(239,68,68,0.85),0 0 0 10px rgba(239,68,68,0.12);}
+      }
+    </style>
+
+    <!-- SOS WARNING MODAL -->
+    <div id="sosWarningModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+      <div style="background:#161b22;border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:28px 24px;width:100%;max-width:420px;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:14px;">🚨</div>
+        <h2 style="font-size:1rem;font-weight:700;color:#f87171;margin:0 0 14px;">Alerta de Emergencia</h2>
+        <p style="font-size:0.85rem;color:#e6edf3;line-height:1.7;margin:0 0 20px;">
+          Estimado usuario, si presenta una emergencia por favor envíe su alerta por este medio.<br><br>
+          <strong style="color:#fbbf24;">⚠️ Solo para situaciones importantes.</strong><br>
+          El personal será notificado de inmediato.
+        </p>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('sosWarningModal').style.display='none'" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#7d8590;border-radius:8px;padding:11px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+          <button onclick="window.confirmarEmergencia()" style="flex:1.5;background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;color:white;border-radius:8px;padding:11px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Enviar Alerta Ahora</button>
         </div>
       </div>
+    </div>
 
-      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
 
-        <!-- Widget de Estado de Pago -->
-        <div id="paymentStatusWidget" class="fade-in"></div>
+    <!-- MIS SOLICITUDES -->
+    <div class="ds-card" style="margin-bottom:16px;">
+      <div class="ds-card-header">
+        <p class="ds-card-title">Mis Solicitudes</p>
+        <button onclick="window.navigateTo('/solicitudes')" style="background:rgba(31,111,235,0.12);border:1px solid rgba(31,111,235,0.25);color:#58a6ff;border-radius:6px;padding:4px 10px;font-size:0.72rem;cursor:pointer;font-family:inherit;">Ver todas →</button>
+      </div>
+      <div id="solicitudesList"><div class="loading-spinner" style="margin:1.5rem auto;"></div></div>
+    </div>
 
-        <div class="grid grid-2 gap-3 mt-4" style="align-items: stretch; margin-bottom: var(--spacing-md);">
+    <!-- DELIVERY -->
+    <div class="ds-card" id="deliveryContainer">
+      <div class="ds-card-header">
+        <p class="ds-card-title" style="color:#fbbf24;">🍕 Delivery y Restaurantes</p>
+      </div>
+      <div id="deliveryList" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="loading-spinner" style="margin:1.5rem auto;"></div>
+      </div>
+    </div>
 
-          <!-- Avisos Importantes -->
-          <div id="announcementsWidget"></div>
-
-          <!-- Acciones rápidas -->
-          <div class="card fade-in" style="margin: 0; display: flex; flex-direction: column;">
-            <h2 class="card-title">Acciones Rápidas</h2>
-            <div class="grid grid-2 gap-2 mt-2" style="flex: 1;">
-              <button class="btn btn-primary" onclick="showSolicitudModal('medica')" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem;">
-                <span style="font-size: 1.5rem;">🏥</span>
-                <span>Médica</span>
-              </button>
-              <button class="btn btn-primary" onclick="showSolicitudModal('limpieza')" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem;">
-                <span style="font-size: 1.5rem;">🧹</span>
-                <span>Limpieza</span>
-              </button>
-              <button class="btn btn-primary" onclick="showSolicitudModal('entretenimiento')" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem;">
-                <span style="font-size: 1.5rem;">🎉</span>
-                <span>Eventos</span>
-              </button>
-              <!-- MODIFICADO: Ahora llama a activarEmergencia() en vez de tel:911 -->
-              <button class="btn btn-secondary" onclick="activarEmergencia()" style="flex-direction: column; padding: 1rem; height: auto; font-size: 0.8rem; background: var(--danger);">
-                <span style="font-size: 1.5rem;">🚑</span>
-                <span>Emergencia</span>
-              </button>
-            </div>
-          </div>
+    <!-- MODAL SOLICITUD -->
+    <div id="solicitudModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+      <div style="background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:12px;padding:24px;width:100%;max-width:460px;max-height:85vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <h2 id="modalTitle" style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0;">Solicitud</h2>
+          <button onclick="closeSolicitudModal()" style="background:rgba(255,255,255,0.07);border:1px solid var(--sb-border);width:30px;height:30px;border-radius:6px;color:var(--sb-muted);font-size:1.1rem;cursor:pointer;">×</button>
         </div>
-
-        <!-- Centro de Mensajes -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.1s;">
-          <h2 class="card-title">Comunicación</h2>
-          <div class="grid grid-1 gap-2" id="messageCenter">
-            <button class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center;" onclick="openChatVigilante()">
-              <span>💬 Chat con Vigilancia</span>
-              <span class="badge badge-success" style="font-size: 0.6rem;">En línea</span>
-            </button>
-            <div id="medicChatContainer"></div>
-          </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:5px;font-weight:600;">Descripción del problema</label>
+          <textarea class="form-input" id="descripcion" rows="3" placeholder="Escribe aquí los detalles..." required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);resize:none;"></textarea>
         </div>
-
-        <!-- Mis solicitudes recientes -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.2s;">
-          <h2 class="card-title">Mis Solicitudes</h2>
-          <div id="solicitudesList">
-            <div class="loading-spinner" style="margin: 2rem auto;"></div>
-          </div>
-        </div>
-
-        <!-- Delivery y Restaurantes -->
-        <div class="card mt-3 fade-in" style="animation-delay: 0.3s; background: rgba(255, 138, 0, 0.05); border: 1px solid rgba(255, 138, 0, 0.2);">
-          <h2 class="card-title" style="color: var(--warning); display: flex; align-items: center; gap: 0.75rem; font-size: 1.1rem; margin-bottom: 1rem;">
-            <span>🍕</span> Delivery y Restaurantes
-          </h2>
-
-          <div id="deliveryList" class="grid grid-1 gap-2">
-            <div style="padding: 1.25rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--warning)'; this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='translateX(0)'">
-              <div>
-                <p style="font-weight: 600; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.25rem;">🍕 Pizza Express</p>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Entrega en 30 min • Especialistas en artesanal</p>
-              </div>
-              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(251, 191, 36, 0.1); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.3); font-family: inherit; font-weight: 600; padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
-                📞 Llamar
-              </a>
-            </div>
-
-            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
-              <div>
-                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍱 Chifa Central</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Comida oriental • Menú del día disponible</p>
-              </div>
-              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
-                📞 Llamar
-              </a>
-            </div>
-            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
-              <div>
-                <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">🍗 Pollería El Sabor</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Pollo a la brasa • Sabor tradicional</p>
-              </div>
-              <a href="tel:xxxxxxx" class="btn btn-sm" style="background: rgba(255, 138, 0, 0.1); color: #ff8a00; border: 1px solid rgba(255, 138, 0, 0.3); font-family: monospace; font-weight: 700;">
-                📞 Llamar
-              </a>
-            </div>
-          </div>
+        <input type="hidden" id="tipoSolicitud">
+        <div id="camposAdicionales"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button type="button" class="btn btn-ghost" style="flex:1;" onclick="closeSolicitudModal()">Cancelar</button>
+          <button type="button" id="btnEnviarSolicitud" class="btn btn-primary" style="flex:1.5;" onclick="window.enviarSolicitud()">Enviar Solicitud</button>
         </div>
       </div>
-
-      <!-- MODAL DE SOLICITUDES (Corrigiendo error "no funciona ningun boton") -->
-      <div id="solicitudModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-        <div class="card" style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
-          <div class="flex justify-between items-center mb-4">
-            <h2 id="modalTitle" class="card-title" style="margin: 0;">Solicitud</h2>
-            <button onclick="closeSolicitudModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">×</button>
-          </div>
-          
-          <form id="solicitudForm">
-            <input type="hidden" id="tipoSolicitud">
-            
-            <div class="form-group">
-              <label class="form-label">Descripción del problema o necesidad</label>
-              <textarea class="form-input" id="descripcion" rows="4" placeholder="Escribe aquí los detalles..." required></textarea>
-            </div>
-            
-            <div id="camposAdicionales"></div>
-            
-            <div class="flex gap-2 mt-4">
-              <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeSolicitudModal()">Cancelar</button>
-              <button type="submit" class="btn btn-primary" style="flex: 1;">Enviar Solicitud</button>
-            </div>
-          </form>
-        </div>
-      </div>
-      <!-- Bottom Navigation -->
-      <nav class="bottom-nav">
-        <a href="#" class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span>Inicio</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/solicitudes'); return false;">
-          <span class="nav-icon">📋</span>
-          <span>Solicitudes</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
-          <span class="nav-icon">👤</span>
-          <span>Perfil</span>
-        </a>
-      </nav>
     </div>
   `;
 
-  // Cargar datos
   loadSolicitudes();
-  loadPaymentStatus(); // <-- NUEVO
+  loadPaymentStatus();
+  loadDeliveryServices();
   checkMedicalChatContext();
-
-  // Inicializar avisos
-  if (typeof renderAnnouncementsWidget === 'function') {
-    renderAnnouncementsWidget('announcementsWidget');
-  }
+  if (typeof renderAnnouncementsWidget === 'function') renderAnnouncementsWidget('announcementsWidget');
 }
 
-// Funciones auxiliares
+// ── MODALS / LOGIC ─────────────────────────────────
 window.showSolicitudModal = (tipo) => {
   const modal = document.getElementById('solicitudModal');
   const title = document.getElementById('modalTitle');
   const tipoInput = document.getElementById('tipoSolicitud');
   const camposAdicionales = document.getElementById('camposAdicionales');
-
-  if (!modal) {
-    console.error('❌ Error: El modal de solicitudes no se encontró en el DOM');
-    return;
-  }
-
+  if (!modal) return;
   tipoInput.value = tipo;
-
-  const titulos = {
-    'medica': '🏥 Atención Médica',
-    'limpieza': '🧹 Solicitud de Limpieza',
-    'entretenimiento': '🎉 Agendar Entretenimiento'
-  };
-
-  title.textContent = titulos[tipo];
-
-  // Campos adicionales según tipo
+  title.textContent = { medica: '🏥 Atención Médica', limpieza: '🧹 Solicitud de Limpieza', entretenimiento: '🎉 Agendar Evento' }[tipo] || 'Solicitud';
   if (tipo === 'entretenimiento') {
     camposAdicionales.innerHTML = `
-      <div class="form-group">
-        <label class="form-label">Fecha del evento</label>
-        <input type="date" class="form-input" id="fecha" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Hora</label>
-        <input type="time" class="form-input" id="hora" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Número de invitados</label>
-        <input type="number" class="form-input" id="invitados" min="1" required>
-      </div>
-      <div class="form-group">
-        <label class="form-checkbox">
-          <input type="checkbox" id="conAlcohol">
-          <span>¿Con alcohol?</span>
-        </label>
-      </div>
-    `;
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Fecha del evento</label><input type="date" class="form-input" id="fecha" required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Hora</label><input type="time" class="form-input" id="hora" required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Número de invitados</label><input type="number" class="form-input" id="invitados" min="1" required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>`;
   } else if (tipo === 'limpieza') {
     camposAdicionales.innerHTML = `
-      <div class="form-group">
-        <label class="form-label">Área a limpiar</label>
-        <select class="form-select" id="area" required>
-          <option value="">Seleccionar...</option>
-          <option value="apartamento">Mi apartamento</option>
-          <option value="salon">Salón de eventos</option>
-          <option value="piscina">Área de piscina</option>
-          <option value="gimnasio">Gimnasio</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Fecha preferida</label>
-        <input type="date" class="form-input" id="fechaPreferida">
-      </div>
-    `;
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Área a limpiar</label><select class="form-select" id="area" required style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"><option value="">Seleccionar...</option><option value="apartamento">Mi apartamento</option><option value="salon">Salón de eventos</option><option value="piscina">Área de piscina</option><option value="gimnasio">Gimnasio</option></select></div>
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Fecha preferida</label><input type="date" class="form-input" id="fechaPreferida" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>`;
   } else {
     camposAdicionales.innerHTML = `
-      <div class="form-group">
-        <label class="form-label">Nivel de urgencia</label>
-        <select class="form-select" id="urgencia" required>
-          <option value="baja">Baja</option>
-          <option value="media">Media</option>
-          <option value="alta">Alta</option>
-        </select>
-      </div>
-    `;
+      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Urgencia</label><select class="form-select" id="urgencia" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"><option value="baja">Baja</option><option value="media" selected>Media</option><option value="alta">Alta</option></select></div>`;
   }
-
-  modal.classList.remove('hidden');
-
-  const form = document.getElementById('solicitudForm');
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    await enviarSolicitud();
-  };
+  // Clear previous description
+  const desc = document.getElementById('descripcion');
+  if (desc) desc.value = '';
+  modal.style.display = 'flex';
 };
 
 window.closeSolicitudModal = () => {
   const modal = document.getElementById('solicitudModal');
   if (modal) {
-    modal.classList.add('hidden');
-    document.getElementById('solicitudForm').reset();
+    modal.style.display = 'none';
+    const desc = document.getElementById('descripcion');
+    if (desc) desc.value = '';
+    const campos = document.getElementById('camposAdicionales');
+    if (campos) campos.innerHTML = '';
   }
 };
 
-async function enviarSolicitud() {
-  const tipo = document.getElementById('tipoSolicitud').value;
-  const descripcion = document.getElementById('descripcion').value;
-  const detalles = {};
-
-  if (tipo === 'entretenimiento') {
-    detalles.fecha = document.getElementById('fecha').value;
-    detalles.hora = document.getElementById('hora').value;
-    detalles.invitados = document.getElementById('invitados').value;
-    detalles.con_alcohol = document.getElementById('conAlcohol').checked;
-  } else if (tipo === 'limpieza') {
-    detalles.area = document.getElementById('area').value;
-    detalles.fecha_preferida = document.getElementById('fechaPreferida')?.value;
+window.enviarSolicitud = async () => {
+  const tipo = document.getElementById('tipoSolicitud')?.value;
+  const descripcion = document.getElementById('descripcion')?.value?.trim();
+  if (!descripcion) {
+    showModalMsg('⚠️ Por favor escribe una descripción del problema.', '#fbbf24');
+    return;
   }
-
+  const detalles = {};
+  if (tipo === 'entretenimiento') { detalles.fecha = document.getElementById('fecha')?.value; detalles.hora = document.getElementById('hora')?.value; detalles.invitados = document.getElementById('invitados')?.value; }
+  else if (tipo === 'limpieza') { detalles.area = document.getElementById('area')?.value; detalles.fecha_preferida = document.getElementById('fechaPreferida')?.value; }
+  const prioridad = document.getElementById('urgencia')?.value || 'media';
+  const btn = document.getElementById('btnEnviarSolicitud');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
   try {
-    const prioridad = document.getElementById('urgencia')?.value || 'media';
-    const body = { tipo, descripcion, detalles, prioridad };
-
     const response = await fetch(`${window.API_URL}/solicitudes`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.appState.token}`
-      },
-      body: JSON.stringify(body)
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.appState.token}` },
+      body: JSON.stringify({ tipo, descripcion, detalles, prioridad })
     });
-
     if (response.ok) {
-      const data = await response.json();
-      alert('✅ Solicitud enviada correctamente.');
-      closeSolicitudModal();
+      // Show a prominent in-modal success screen
+      const successMsg = {
+        medica: '🏥 Su solicitud médica fue enviada exitosamente.\n\nPor favor espere al médico de turno — recibirá atención en breve. Puede chatear con el médico desde la sección de mensajes.',
+        limpieza: '🧹 Su solicitud de limpieza fue enviada.\n\nNuestro personal la atenderá pronto.',
+        entretenimiento: '🎉 Su solicitud de evento fue registrada.\n\nEl equipo de entretenimiento confirmará los detalles.'
+      }[tipo] || '✅ Solicitud enviada correctamente.';
+      showSuccessModal(successMsg);
       loadSolicitudes();
-
-      // Notificar vía socket si es médica
-      if (tipo === 'medica' && window.appState.socket) {
-        window.appState.socket.emit('nueva_solicitud', data);
-      }
+      if (tipo === 'medica' && window.appState.socket) window.appState.socket.emit('nueva_solicitud', await response.json().catch(() => ({})));
     } else {
-      const errorData = await response.json();
-      alert('❌ Error: ' + (errorData.error || 'No se pudo enviar la solicitud'));
+      const d = await response.json().catch(() => ({}));
+      showModalMsg('❌ ' + (d.error || 'No se pudo enviar la solicitud. Intenta de nuevo.'), '#f87171');
     }
   } catch (error) {
-    console.error('Error de conexión:', error);
-    alert('❌ Error de conexión con el servidor');
+    showModalMsg('⚠️ Sin conexión con el servidor. Verifica que el backend esté activo e intenta de nuevo.', '#fbbf24');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Solicitud'; }
   }
+};
+
+function showModalMsg(msg, color = '#f87171') {
+  // Show inline error/warning message above the send button
+  let msgEl = document.getElementById('solicitudMsgBar');
+  if (!msgEl) {
+    msgEl = document.createElement('div');
+    msgEl.id = 'solicitudMsgBar';
+    const btn = document.getElementById('btnEnviarSolicitud');
+    if (btn?.parentElement) btn.parentElement.insertAdjacentElement('beforebegin', msgEl);
+  }
+  msgEl.style.cssText = `background:rgba(255,255,255,0.05);border:1px solid ${color}33;border-left:3px solid ${color};border-radius:6px;padding:10px 12px;margin-bottom:12px;font-size:0.78rem;color:${color};white-space:pre-wrap;line-height:1.5;`;
+  msgEl.textContent = msg;
+  setTimeout(() => { if (msgEl.parentElement) msgEl.remove(); }, 6000);
 }
+
+function showSuccessModal(msg) {
+  const modal = document.getElementById('solicitudModal');
+  if (!modal) return;
+  const inner = modal.querySelector('div');
+  if (!inner) return;
+  inner.innerHTML = `
+    <div style="text-align:center;padding:16px 0;">
+      <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+      <p style="font-size:0.88rem;font-weight:600;color:#4ade80;margin:0 0 12px;">¡Solicitud Enviada!</p>
+      <p style="font-size:0.82rem;color:var(--sb-text);line-height:1.6;margin:0 0 20px;white-space:pre-wrap;">${msg}</p>
+      <button onclick="window.closeSolicitudModal()" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:8px;padding:10px 24px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">
+        Entendido
+      </button>
+    </div>
+  `;
+}
+
+window.showSosWarning = () => {
+  const m = document.getElementById('sosWarningModal');
+  if (m) m.style.display = 'flex';
+};
+
+window.confirmarEmergencia = () => {
+  const m = document.getElementById('sosWarningModal');
+  if (m) m.style.display = 'none';
+  const user = window.appState.user;
+  if (window.appState.socket?.connected) {
+    window.appState.socket.emit('nueva_emergencia', {
+      tipo: 'medica',
+      descripcion: 'EMERGENCIA: Residente requiere atención inmediata.',
+      ubicacion: `Dpto ${user.apartamento || '?'}`
+    });
+    // Show confirmation inside the FAB area
+    const fab = document.getElementById('sosFab');
+    if (fab) {
+      fab.style.animation = 'none';
+      fab.style.background = 'linear-gradient(135deg,#16a34a,#15803d)';
+      fab.textContent = '✅';
+      setTimeout(() => {
+        fab.style.background = 'linear-gradient(135deg,#ef4444,#b91c1c)';
+        fab.textContent = '🆘';
+        fab.style.animation = 'sosPulse 2s infinite';
+      }, 4000);
+    }
+    alert('✅ Alerta enviada. El personal ha sido notificado.');
+  } else {
+    alert('⚠️ Sin conexión. Contacta directamente a la vigilancia.');
+  }
+};
+
 
 async function loadSolicitudes() {
   try {
-    const response = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
+    const response = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
     const solicitudes = await response.json();
     const container = document.getElementById('solicitudesList');
-
     if (!container) return;
-
-    if (!solicitudes || solicitudes.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes solicitudes</p>';
-      return;
-    }
-
+    if (!solicitudes || solicitudes.length === 0) { container.innerHTML = '<p style="text-align:center;color:var(--sb-muted);padding:1.5rem 0;font-size:0.82rem;">No tienes solicitudes activas</p>'; return; }
+    const eColor = { pendiente: '#fbbf24', en_proceso: '#38bdf8', completada: '#4ade80' };
     container.innerHTML = solicitudes.slice(0, 3).map(s => `
-      <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
-        <div class="flex justify-between items-center mb-1">
-          <span style="font-weight: 600;">${getTipoIcon(s.tipo)} ${getTipoNombre(s.tipo)}</span>
-          <span class="badge badge-${getEstadoColor(s.estado)}">${s.estado}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--sb-border);">
+        <div>
+          <p style="font-size:0.82rem;font-weight:600;color:var(--sb-text);margin:0 0 2px;">${{ medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' }[s.tipo] || '📋'} ${{ medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Eventos' }[s.tipo] || s.tipo}</p>
+          <p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">${s.descripcion?.substring(0, 55)}${(s.descripcion?.length || 0) > 55 ? '...' : ''}</p>
         </div>
-        <p style="font-size: 0.875rem; color: var(--text-secondary);">${s.descripcion}</p>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
-          ${new Date(s.fecha_solicitud).toLocaleDateString()}
-        </p>
+        <span style="background:rgba(255,255,255,0.06);color:${eColor[s.estado] || '#7d8590'};border-radius:20px;padding:2px 8px;font-size:0.62rem;font-weight:600;white-space:nowrap;margin-left:10px;">${s.estado}</span>
       </div>
     `).join('');
-  } catch (error) {
-    console.error('Error al cargar solicitudes:', error);
-  }
-}
-
-function getTipoIcon(tipo) {
-  const icons = { medica: '🏥', limpieza: '🧹', entretenimiento: '🎉' };
-  return icons[tipo] || '📋';
-}
-
-function getTipoNombre(tipo) {
-  const nombres = { medica: 'Médica', limpieza: 'Limpieza', entretenimiento: 'Entretenimiento' };
-  return nombres[tipo] || tipo;
-}
-
-function getEstadoColor(estado) {
-  const colores = {
-    pendiente: 'warning',
-    en_proceso: 'info',
-    completada: 'success',
-    pagado: 'success',
-    vencido: 'danger'
-  };
-  return colores[estado] || 'info';
+  } catch (error) { console.error('Error solicitudes:', error); }
 }
 
 window.activarEmergencia = () => {
   const user = window.appState.user;
-  if (confirm('🚨 ¿Confirmas que deseas activar la EMERGENCIA MÉDICA? Se notificará al personal médico inmediatamente.')) {
-    if (window.appState.socket && window.appState.socket.connected) {
-      window.appState.socket.emit('nueva_emergencia', {
-        tipo: 'medica',
-        descripcion: 'EMERGENCIA CRÍTICA: El residente requiere atención inmediata.',
-        ubicacion: `Dpto ${user.apartamento || 'Desconocida'}`
-      });
-      alert('✅ Emergencia médica activada. El personal médico ha sido notificado y acudirá a tu dpto.');
-    } else {
-      alert('⚠️ Error: No hay conexión en tiempo real con el servidor. Reintenta o contacta directo a vigilancia.');
-    }
+  if (confirm('🚨 ¿Confirmas activar EMERGENCIA? Se notificará al personal inmediatamente.')) {
+    if (window.appState.socket?.connected) { window.appState.socket.emit('nueva_emergencia', { tipo: 'medica', descripcion: 'EMERGENCIA CRÍTICA: Residente requiere atención inmediata.', ubicacion: `Dpto ${user.apartamento || '?'}` }); alert('✅ Emergencia activada. El personal ha sido notificado.'); }
+    else { alert('⚠️ Sin conexión. Contacta directo a vigilancia.'); }
   }
 };
 
 window.openChatVigilante = async () => {
   try {
-    const response = await fetch(`${window.API_URL}/usuarios/vigilantes`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
+    const response = await fetch(`${window.API_URL}/usuarios/vigilantes`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
     const vigilantes = await response.json();
-
-    if (vigilantes && vigilantes.length > 0) {
-      const v = vigilantes[0];
-      window.navigateTo('/chat', { userId: v.id, userName: v.nombre });
-    } else {
-      alert('⚠️ No hay vigilantes disponibles en este momento');
-    }
-  } catch (error) {
-    console.error('Error al abrir chat:', error);
-    alert('❌ Error al conectar con el servicio de chat');
-  }
+    if (vigilantes?.length > 0) window.navigateTo('/chat', { userId: vigilantes[0].id, userName: vigilantes[0].nombre });
+    else alert('⚠️ No hay vigilantes disponibles en este momento');
+  } catch (error) { alert('❌ Error al conectar con el chat'); }
 };
 
-window.openChatMedico = (userId, userName) => {
-  window.navigateTo('/chat', { userId, userName });
-};
+window.openChatMedico = (userId, userName) => window.navigateTo('/chat', { userId, userName });
 
 async function checkMedicalChatContext() {
   const medicContainer = document.getElementById('medicChatContainer');
   if (!medicContainer) return;
-
   try {
-    // 1. Buscar si hay una emergencia médica activa del usuario
-    const resEmergencias = await fetch(`${window.API_URL}/emergencias/activas`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
-    const emergencias = await resEmergencias.json();
-    const miEmergencia = emergencias.find(e => e.usuario_id === window.appState.user.id && e.tipo === 'medica');
-
-    // 2. Buscar si hay una solicitud médica pendiente o en proceso
-    const resSolicitudes = await fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, {
-      headers: { 'Authorization': `Bearer ${window.appState.token}` }
-    });
-    const solicitudes = await resSolicitudes.json();
-    const miSolicitud = solicitudes.find(s => s.tipo === 'medica' && (s.estado === 'pendiente' || s.estado === 'en_proceso'));
-
-    if (miEmergencia || miSolicitud) {
-      // Buscar al médico del edificio
-      const resMedicos = await fetch(`${window.API_URL}/usuarios/medicos`, {
-        headers: { 'Authorization': `Bearer ${window.appState.token}` }
-      });
+    const [resE, resS] = await Promise.all([
+      fetch(`${window.API_URL}/emergencias/activas`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } }),
+      fetch(`${window.API_URL}/solicitudes/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } })
+    ]);
+    const emergencias = await resE.json();
+    const solicitudes = await resS.json();
+    if (emergencias.find(e => e.usuario_id === window.appState.user.id && e.tipo === 'medica') || solicitudes.find(s => s.tipo === 'medica' && (s.estado === 'pendiente' || s.estado === 'en_proceso'))) {
+      const resMedicos = await fetch(`${window.API_URL}/usuarios/medicos`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
       const medicos = await resMedicos.json();
-
-      if (medicos && medicos.length > 0) {
-        const medico = medicos[0];
-        medicContainer.innerHTML = `
-          <button class="btn btn-primary mt-2" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #6366f1;" onclick="openChatMedico(${medico.id}, '${medico.nombre}')">
-            <span>👨‍⚕️ Chat con Médico (${medico.nombre})</span>
-            <span class="badge badge-success" style="font-size: 0.6rem; background: rgba(255,255,255,0.2);">ACTIVO</span>
-          </button>
-        `;
+      if (medicos?.length > 0) {
+        const m = medicos[0];
+        medicContainer.innerHTML = `<button onclick="openChatMedico(${m.id},'${m.nombre}')" style="width:100%;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;border-radius:8px;padding:10px 14px;margin-top:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;font-weight:500;font-family:inherit;">👨‍⚕️ Chat con Médico (${m.nombre})<span style="background:rgba(74,222,128,0.2);color:#4ade80;border-radius:10px;padding:1px 7px;font-size:0.6rem;">ACTIVO</span></button>`;
       }
     }
-  } catch (error) {
-    console.error('Error al verificar contexto médico:', error);
-  }
+  } catch (error) { console.error('Error contexto médico:', error); }
 }
 
 async function loadPaymentStatus() {
   const widget = document.getElementById('paymentStatusWidget');
   if (!widget) return;
-
   try {
-    // Endpoint correcto: /api/pagos/mis-pagos
-    const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, {
+    const response = await fetch(`${window.API_URL}/pagos/mis-pagos`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
+    const pagos = await response.json();
+    const ahora = new Date();
+    const pagadoEsteMes = Array.isArray(pagos) && pagos.some(p => { const f = new Date(p.fecha_pago); return f.getMonth() === ahora.getMonth() && f.getFullYear() === ahora.getFullYear() && p.estado === 'pagado'; });
+    const mes = ahora.toLocaleString('es-ES', { month: 'long' });
+    widget.innerHTML = pagadoEsteMes
+      ? `<div style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.2);border-left:3px solid #4ade80;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;"><span style="font-size:1.2rem;">🌟</span><div><p style="font-size:0.82rem;font-weight:700;color:#4ade80;margin:0 0 2px;">¡Estás al día!</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Pagos de ${mes} al corriente.</p></div></div>`
+      : `<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;"><span style="font-size:1.2rem;">💳</span><div><p style="font-size:0.82rem;font-weight:700;color:#fbbf24;margin:0 0 2px;">Aviso de Pago</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Recuerda regularizar tu pago de ${mes}.</p></div></div>`;
+  } catch (error) { console.error('Error estado de pago:', error); }
+}
+
+async function loadDeliveryServices() {
+  const listEl = document.getElementById('deliveryList');
+  if (!listEl) return;
+  try {
+    const response = await fetch(`${window.API_URL}/delivery`, {
       headers: { 'Authorization': `Bearer ${window.appState.token}` }
     });
-    const pagos = await response.json();
-
-    const ahora = new Date();
-    const mesActual = ahora.getMonth();
-    const anioActual = ahora.getFullYear();
-
-    const pagadoEsteMes = pagos && Array.isArray(pagos) && pagos.some(p => {
-      const fecha = new Date(p.fecha_pago);
-      // Las fechas de la base de datos a veces vienen con desfase de zona horaria
-      // Comparamos mes y año del objeto Date
-      return fecha.getMonth() === mesActual &&
-        fecha.getFullYear() === anioActual &&
-        p.estado === 'pagado';
-    });
-
-    if (pagadoEsteMes) {
-      widget.innerHTML = `
-        <div class="card fade-in" style="background: var(--bg-secondary); border: 1px solid var(--success); padding: 1.25rem; box-shadow: var(--shadow-lg); border-left: 5px solid var(--success);">
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4));">🌟</div>
-            <div>
-              <h3 style="color: var(--success); font-weight: 700; margin-bottom: 0.25rem; font-size: 1.1rem;">¡Estás al día!</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Usted está al día con sus pagos de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong>. ¡Gracias por su puntualidad! 🎉</p>
-            </div>
-          </div>
-        </div>
-      `;
-    } else {
-      widget.innerHTML = `
-        <div class="card fade-in" style="background: var(--bg-secondary); border: 1px solid var(--warning); padding: 1.25rem; box-shadow: var(--shadow-lg); border-left: 5px solid var(--warning);">
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));">💳</div>
-            <div>
-              <h3 style="color: var(--warning); font-weight: 700; margin-bottom: 0.25rem; font-size: 1.1rem;">Aviso de Pago</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Recuerda regularizar tu pago de <strong>${new Date().toLocaleString('es-ES', { month: 'long' })}</strong> para mantener el edificio en óptimas condiciones. 😊</p>
-            </div>
-          </div>
-        </div>
-      `;
+    const services = await response.json();
+    if (services.length === 0) {
+      document.getElementById('deliveryContainer').style.display = 'none';
+      return;
     }
-  } catch (error) {
-    console.error('Error al cargar estado de pago:', error);
+    listEl.innerHTML = services.map(s => `
+      <div style="background:var(--sb-card);border:1px solid var(--sb-border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <p style="font-size:0.85rem;font-weight:600;color:var(--sb-text);margin:0 0 2px;">${s.nombre}</p>
+          <p style="font-size:0.72rem;color:var(--sb-muted);margin:0;">${s.descripcion || ''}</p>
+        </div>
+        <a href="tel:${s.telefono}" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;text-decoration:none;">📞 Llamar</a>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Error al cargar delivery:', e);
+    listEl.innerHTML = '<p style="color:#f87171;font-size:0.7rem;text-align:center;">Error al cargar</p>';
   }
 }

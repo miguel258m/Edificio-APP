@@ -2,288 +2,241 @@
 // GESTIÓN DE USUARIOS - Vista para aprobar y asignar roles
 // =====================================================
 
+import { renderSidebarLayout } from '../utils/sidebar-layout.js';
+
 export function renderGestionUsuarios(container) {
   const user = window.appState.user;
 
-  container.innerHTML = `
-    <div class="page">
-      <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 3rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md);">
+  // Nav items del sidebar (Igual que en el dashboard para consistencia)
+  const navItems = [
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-admin' },
+    { key: 'usuarios', icon: '👥', label: 'Gestión Usuarios', path: '/gestion-usuarios', badge: '' },
+    { key: 'reportes', icon: '📋', label: 'Reportes', path: '/solicitudes' },
+    { key: 'alertas', icon: '🔔', label: 'Alertas', onClick: 'showAlertaModal()' },
+    { key: 'perfil', icon: '⚙️', label: 'Mi Perfil', path: '/perfil' },
+  ];
 
-        <div class="container">
-          <div class="flex justify-between items-center">
-            <div>
-              <h1 style="font-size: 1.5rem; font-weight: 700; color: white;">👥 Gestión de Usuarios</h1>
-              <p style="font-size: 0.875rem; opacity: 0.9; color: white;">Aprobar y asignar roles</p>
-            </div>
-            <button onclick="window.history.back()" class="btn btn-ghost" style="padding: 0.5rem; color: white;">
-              ←
-            </button>
-          </div>
-        </div>
-      </div>
+  const main = renderSidebarLayout(container, {
+    role: 'admin',
+    activeNav: 'usuarios',
+    pageTitle: 'Gestión de Usuarios',
+    pageSubtitle: 'Aprobar nuevos registros y gestionar roles del personal',
+    breadcrumb: 'Usuarios',
+    navItems,
+  });
 
-      <div class="container" style="position: relative; z-index: 10; padding-top: var(--spacing-lg);">
-
-        <!-- Tabs -->
-        <div class="card mb-4" style="padding: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);">
-          <div class="flex gap-3">
-
-            <button class="btn btn-sm tab-btn active" data-tab="pendientes">
-              Pendientes <span class="badge badge-warning" id="countPendientes">0</span>
-            </button>
-            <button class="btn btn-sm tab-btn" data-tab="aprobados">
-              Aprobados
-            </button>
-          </div>
-        </div>
-
-        <!-- Lista de usuarios pendientes -->
-        <div id="tabPendientes" class="tab-content">
-          <div id="usuariosPendientesList">
-            <div class="loading-spinner" style="margin: 2rem auto;"></div>
-          </div>
-        </div>
-
-        <!-- Lista de usuarios aprobados -->
-        <div id="tabAprobados" class="tab-content hidden">
-          <div id="usuariosAprobadosList">
-            <div class="loading-spinner" style="margin: 2rem auto;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Navigation -->
-      <nav class="bottom-nav">
-        <a href="#" class="nav-item" onclick="goToDashboard(); return false;">
-          <span class="nav-icon">🏠</span>
-          <span>Inicio</span>
-        </a>
-        <a href="#" class="nav-item active">
-          <span class="nav-icon">👥</span>
-          <span>Usuarios</span>
-        </a>
-        <a href="#" class="nav-item" onclick="window.navigateTo('/perfil'); return false;">
-          <span class="nav-icon">👤</span>
-          <span>Perfil</span>
-        </a>
-      </nav>
+  // Inyectar el contenido de la gestión de usuarios
+  main.innerHTML = `
+    <!-- Filtro para Admin -->
+    <div id="adminFilterContainer" style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; background: var(--sb-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--sb-border);">
+      <span style="font-size: 0.85rem; color: var(--sb-muted); font-weight: 600;">📍 Filtrar por Edificio:</span>
+      <select id="edificioFilter" style="background: var(--sb-surface); border: 1px solid var(--sb-border); color: var(--sb-text); border-radius: 8px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; outline: none; min-width: 200px;">
+        <option value="all">🌍 Todos los edificios</option>
+      </select>
     </div>
 
-    <!-- Modal para asignar rol -->
-    <div id="asignarRolModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div class="card" style="max-width: 400px; width: 100%;">
-        <h2 class="card-title">Asignar Rol</h2>
-        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;" id="modalUsuarioNombre"></p>
-        
-        <div class="form-group">
-          <label class="form-label">Seleccionar rol</label>
-          <select class="form-input" id="nuevoRol" required>
-            <option value="">Selecciona un rol</option>
-            <option value="limpieza">🧹 Personal de Limpieza</option>
-            <option value="vigilante">👮 Vigilante</option>
-            <option value="gerente">📊 Gerente</option>
-            <option value="medico">👨‍⚕️ Personal Médico</option>
-            <option value="entretenimiento">🎭 Personal de Entretenimiento</option>
-            <option value="residente">🏠 Residente</option>
+    <!-- Tabs Estilo Premium -->
+    <div class="ds-card" style="margin-bottom: 20px; padding: 10px;">
+      <div style="display: flex; gap: 10px;">
+        <button class="ds-tab-btn active" data-tab="pendientes" id="btnTabPendientes">
+          Pendientes <span class="badge badge-warning" id="countPendientes" style="margin-left: 5px;">0</span>
+        </button>
+        <button class="ds-tab-btn" data-tab="aprobados" id="btnTabAprobados">
+          Aprobados
+        </button>
+      </div>
+    </div>
 
+    <!-- Contenido de las Tabs -->
+    <div id="tabPendientes" class="tab-content">
+      <div id="usuariosPendientesList" class="ds-user-grid">
+        <div class="loading-spinner" style="margin: 4rem auto;"></div>
+      </div>
+    </div>
+
+    <div id="tabAprobados" class="tab-content hidden">
+      <div id="usuariosAprobadosList" class="ds-user-grid">
+        <div class="loading-spinner" style="margin: 4rem auto;"></div>
+      </div>
+    </div>
+
+    <!-- Modal para asignar rol (Estilo similar al de alertas) -->
+    <div id="asignarRolModal" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+      <div style="background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:12px;padding:24px;max-width:400px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.7);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+          <h2 style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0;">🎯 Asignar Rol</h2>
+          <button onclick="cerrarModalRol()" style="background:rgba(255,255,255,0.07);border:1px solid var(--sb-border);width:30px;height:30px;border-radius:6px;cursor:pointer;color:var(--sb-muted);font-size:1.1rem;display:flex;align-items:center;justify-content:center;">×</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--sb-muted); margin-bottom: 20px;" id="modalUsuarioNombre"></p>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:8px;font-weight:600;">Seleccionar nuevo rol</label>
+          <select id="nuevoRol" style="width:100%; background:var(--sb-card); border:1px solid var(--sb-border); color:var(--sb-text); padding:10px; border-radius:8px; outline:none;">
+            <option value="">Selecciona un rol...</option>
+            <option value="residente">🏠 Residente</option>
+            <option value="vigilante">🛡️ Vigilante</option>
+            <option value="gerente">📊 Gerente</option>
+            <option value="medico">🩺 Médico</option>
+            <option value="limpieza">🧹 Limpieza</option>
+            <option value="entretenimiento">🎭 Recreación</option>
           </select>
         </div>
 
-        <div class="flex gap-2 mt-3">
-          <button class="btn btn-ghost flex-1" onclick="cerrarModalRol()">
-            Cancelar
-          </button>
-          <button class="btn btn-primary flex-1" onclick="confirmarAsignacion()">
-            Asignar
-          </button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="cerrarModalRol()" style="flex:1;">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmarAsignacion()" style="flex:1.5;">Confirmar</button>
         </div>
       </div>
     </div>
+
+    <style>
+      .ds-user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+      .ds-tab-btn { background: transparent; border: none; color: var(--sb-muted); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+      .ds-tab-btn.active { background: rgba(59,130,246,0.1); color: #3b82f6; }
+      .ds-tab-btn:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--sb-text); }
+      .ds-user-card { background: var(--sb-card); border-radius: 12px; border: 1px solid var(--sb-border); padding: 16px; transition: transform 0.2s, border-color 0.2s; }
+      .ds-user-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
+      .ds-user-initials { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; }
+    </style>
   `;
 
   let currentTab = 'pendientes';
   let usuarioSeleccionado = null;
+  let currentEdificioFilter = 'all';
 
-  // Tabs
-  const tabButtons = document.querySelectorAll('.tab-btn');
-  tabButtons.forEach(btn => {
-    btn.onclick = () => {
-      currentTab = btn.dataset.tab;
-      tabButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  // Cargar edificios para el filtro
+  loadEdificios();
 
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-      document.getElementById(`tab${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}`).classList.remove('hidden');
-
-      if (currentTab === 'pendientes') {
-        loadUsuariosPendientes();
-      } else {
-        loadUsuariosAprobados();
+  async function loadEdificios() {
+    try {
+      const response = await fetch(`${window.API_URL}/edificios/public`);
+      const edificios = await response.json();
+      const select = document.getElementById('edificioFilter');
+      if (select && Array.isArray(edificios)) {
+        const edificiosUnicos = edificios.filter((e, i, a) => a.findIndex(x => x.nombre === e.nombre) === i);
+        select.innerHTML = '<option value="all">🌍 Todos los edificios</option>';
+        edificiosUnicos.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = `🏢 ${e.nombre}`;
+          select.appendChild(opt);
+        });
       }
+
+      select.onchange = (e) => {
+        currentEdificioFilter = e.target.value;
+        refreshData();
+      };
+    } catch (error) { console.error('Error al cargar edificios:', error); }
+  }
+
+  // Lógica de Tabs
+  const btns = { pendientes: document.getElementById('btnTabPendientes'), aprobados: document.getElementById('btnTabAprobados') };
+  Object.keys(btns).forEach(key => {
+    btns[key].onclick = () => {
+      currentTab = key;
+      Object.values(btns).forEach(b => b.classList.remove('active'));
+      btns[key].classList.add('active');
+
+      document.getElementById('tabPendientes').classList.toggle('hidden', currentTab !== 'pendientes');
+      document.getElementById('tabAprobados').classList.toggle('hidden', currentTab !== 'aprobados');
+
+      refreshData();
     };
   });
 
-  loadUsuariosPendientes();
+  function refreshData() {
+    if (currentTab === 'pendientes') loadUsuariosPendientes();
+    else loadUsuariosAprobados();
+  }
+
+  refreshData();
 
   async function loadUsuariosPendientes() {
+    const list = document.getElementById('usuariosPendientesList');
+    list.innerHTML = '<div class="loading-spinner" style="margin: 4rem auto;"></div>';
     try {
-      console.log('Fetching pending users from:', `${window.API_URL}/usuarios/pendientes`);
-      const response = await fetch(`${window.API_URL}/usuarios/pendientes`, {
-        headers: { 'Authorization': `Bearer ${window.appState.token}` }
-      });
+      let url = `${window.API_URL}/usuarios/pendientes`;
+      if (currentEdificioFilter !== 'all') url += `?edificio_id=${currentEdificioFilter}`;
 
-      console.log('Response status:', response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response NOT OK:', errorText);
-        throw new Error(`Server returned ${response.status}: ${errorText}`);
-      }
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
+      const usuarios = await res.json();
 
-      const usuarios = await response.json();
-      console.log('Pending users received:', usuarios);
-      const container = document.getElementById('usuariosPendientesList');
-      if (document.getElementById('countPendientes')) {
-        document.getElementById('countPendientes').textContent = usuarios.length;
-      }
+      document.getElementById('countPendientes').textContent = usuarios.length;
 
       if (usuarios.length === 0) {
-        container.innerHTML = `
-          <div class="card text-center" style="padding: 3rem;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
-            <p style="color: var(--text-muted);">No hay usuarios pendientes</p>
-          </div>
-        `;
+        list.innerHTML = `<div class="ds-card" style="grid-column: 1/-1; text-align:center; padding: 3rem; color: var(--sb-muted);">✅ No hay solicitudes pendientes</div>`;
         return;
       }
 
-      container.innerHTML = usuarios.map(u => `
-        <div class="card mb-3 fade-in">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1">
-              <h3 style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">${u.nombre}</h3>
-              <p style="font-size: 0.875rem; color: var(--text-muted);">${u.email}</p>
-              <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
-                ${u.apartamento ? `
-                  <span style="color: var(--success); font-weight: 700; font-size: 0.7rem; display: flex; align-items: center; gap: 0.25rem;">
-                    🏠 SOLICITUD RESIDENTE (Dpto ${u.apartamento})
-                  </span>
-                ` : `
-                  <span style="color: var(--primary); font-weight: 700; font-size: 0.7rem; display: flex; align-items: center; gap: 0.25rem;">
-                    👷 SOLICITUD DE PERSONAL (Sin Dpto)
-                  </span>
-                `}
-                <span style="font-size: 0.7rem; color: var(--text-muted);">
-                  📍 Edificio: ${u.edificio_nombre || 'No especificado'}
-                </span>
-                <span style="font-size: 0.65rem; color: var(--text-muted);">
-                  📅 Registrado: ${new Date(u.created_at).toLocaleDateString('es-ES')}
-                </span>
-              </div>
+      list.innerHTML = usuarios.map(u => `
+        <div class="ds-user-card fade-in">
+          <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 15px;">
+            <div class="ds-user-initials">${u.nombre[0].toUpperCase()}</div>
+            <div style="flex: 1; overflow: hidden;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${u.nombre}</h3>
+              <p style="font-size: 0.78rem; color: var(--sb-muted); margin: 2px 0;">${u.email}</p>
             </div>
-            <span class="badge badge-warning">Pendiente</span>
+          </div>
+          
+          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 0.7rem; color: var(--sb-muted); margin-bottom: 4px;">TIPO DE SOLICITUD</div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: ${u.apartamento ? '#3b82f6' : '#a78bfa'};">
+              ${u.apartamento ? `🏠 Residente (Dpto ${u.apartamento})` : '👷 Personal Administrativo/Staff'}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--sb-muted); margin-top: 8px; display: flex; align-items: center; gap: 4px;">
+              📍 ${u.edificio_nombre || 'Edificio no especificado'}
+            </div>
           </div>
 
-          ${u.telefono ? `<p style="font-size: 0.875rem; margin-bottom: 0.5rem;">📞 ${u.telefono}</p>` : ''}
-
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-primary btn-sm flex-1" onclick="abrirModalAsignar(${u.id}, '${u.nombre}')">
-              ✅ Aprobar y Asignar Rol
-            </button>
-            ${u.apartamento ? `
-              <button class="btn btn-success btn-sm flex-1" onclick="aprobarUsuarioDirecto(${u.id})">
-                🏠 Aprobar Residente (Dpto ${u.apartamento})
-              </button>
-            ` : ''}
-            <button class="btn btn-danger btn-sm" onclick="rechazarUsuario(${u.id})">
-              ❌
-            </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.75rem;" onclick="abrirModalAsignar(${u.id}, '${u.nombre}')">Asignar Rol</button>
+            ${u.apartamento ? `<button class="btn btn-success btn-sm" style="flex: 1; font-size: 0.75rem;" onclick="aprobarUsuarioDirecto(${u.id})">Aprobar</button>` : ''}
+            <button class="btn btn-danger btn-sm" style="padding: 0 12px;" onclick="rechazarUsuario(${u.id})">🗑️</button>
           </div>
         </div>
       `).join('');
-
-    } catch (error) {
-      console.error('Error:', error);
-      document.getElementById('usuariosPendientesList').innerHTML = `
-        <div class="card" style="padding: 2rem; text-align: center; color: var(--danger);">
-          <p>❌ Error al cargar usuarios</p>
-          <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.8;">${error.message}</p>
-        </div>
-      `;
-    }
+    } catch (e) { list.innerHTML = `<p style="color:#f87171; text-align:center; grid-column:1/-1;">Error al cargar datos</p>`; }
   }
 
   async function loadUsuariosAprobados() {
+    const list = document.getElementById('usuariosAprobadosList');
+    list.innerHTML = '<div class="loading-spinner" style="margin: 4rem auto;"></div>';
     try {
-      console.log('Fetching approved users...');
-      const response = await fetch(`${window.API_URL}/usuarios/aprobados`, {
-        headers: { 'Authorization': `Bearer ${window.appState.token}` }
-      });
+      let url = `${window.API_URL}/usuarios/aprobados`;
+      if (currentEdificioFilter !== 'all') url += `?edificio_id=${currentEdificioFilter}`;
 
-      console.log('Aprobados status:', response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Aprobados error text:', errorText);
-        throw new Error(errorText);
-      }
-
-      const usuarios = await response.json();
-      console.log('Aprobados received:', usuarios);
-      const container = document.getElementById('usuariosAprobadosList');
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
+      const usuarios = await res.json();
 
       if (usuarios.length === 0) {
-        container.innerHTML = `
-          <div class="card text-center" style="padding: 3rem;">
-            <p style="color: var(--text-muted);">No hay usuarios aprobados</p>
-          </div>
-        `;
+        list.innerHTML = `<div class="ds-card" style="grid-column: 1/-1; text-align:center; padding: 3rem; color: var(--sb-muted);">No hay usuarios aprobados</div>`;
         return;
       }
 
-      container.innerHTML = usuarios.map(u => `
-        <div class="card mb-3">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 style="font-weight: 600; font-size: 1rem;">${u.nombre}</h3>
-              <p style="font-size: 0.875rem; color: var(--text-muted);">${u.email}</p>
+      list.innerHTML = usuarios.map(u => `
+        <div class="ds-user-card fade-in">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div class="ds-user-initials" style="width: 34px; height: 34px; font-size: 0.85rem;">${u.nombre[0].toUpperCase()}</div>
+              <div>
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: white; margin: 0;">${u.nombre}</h4>
+                <p style="font-size: 0.75rem; color: var(--sb-muted); margin: 0;">${u.email}</p>
+              </div>
             </div>
-            <span class="badge badge-${getRolColor(u.rol)}">${getRolLabel(u.rol)}</span>
+            <span class="badge" style="background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); font-size: 0.65rem;">
+              ${getRolLabel(u.rol)}
+            </span>
           </div>
         </div>
       `).join('');
-
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    } catch (e) { list.innerHTML = `<p style="color:#f87171; text-align:center; grid-column:1/-1;">Error al cargar datos</p>`; }
   }
 
   window.abrirModalAsignar = (userId, nombre) => {
     usuarioSeleccionado = userId;
     document.getElementById('modalUsuarioNombre').textContent = `Usuario: ${nombre}`;
     document.getElementById('asignarRolModal').classList.remove('hidden');
-  };
-
-  window.aprobarUsuarioDirecto = async (userId) => {
-    if (!confirm('¿Aprobar este residente?')) return;
-    try {
-      const response = await fetch(`${window.API_URL}/usuarios/${userId}/aprobar`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${window.appState.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ aprobado: true })
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Error al aprobar');
-
-      showToast('✅ Usuario aprobado');
-      loadUsuariosPendientes();
-    } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Error: ' + error.message);
-    }
   };
 
   window.cerrarModalRol = () => {
@@ -293,99 +246,48 @@ export function renderGestionUsuarios(container) {
 
   window.confirmarAsignacion = async () => {
     const nuevoRol = document.getElementById('nuevoRol').value;
-    if (!nuevoRol) {
-      alert('Selecciona un rol');
-      return;
-    }
-
+    if (!nuevoRol) return alert('Selecciona un rol');
     try {
-      const response = await fetch(`${window.API_URL}/usuarios/${usuarioSeleccionado}/asignar-rol`, {
+      const res = await fetch(`${window.API_URL}/usuarios/${usuarioSeleccionado}/asignar-rol`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${window.appState.token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${window.appState.token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ rol: nuevoRol })
       });
+      if (res.ok) {
+        alert('✅ Rol asignado correctamente');
+        cerrarModalRol();
+        loadUsuariosPendientes();
+      } else { alert('❌ Error al asignar rol'); }
+    } catch (e) { alert('❌ Error de conexión'); }
+  };
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Error al asignar rol');
-
-      showToast('✅ Rol asignado correctamente');
-      cerrarModalRol();
-      loadUsuariosPendientes();
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Error: ' + error.message);
-    }
+  window.aprobarUsuarioDirecto = async (userId) => {
+    if (!confirm('¿Aprobar este residente?')) return;
+    try {
+      const res = await fetch(`${window.API_URL}/usuarios/${userId}/aprobar`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${window.appState.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aprobado: true })
+      });
+      if (res.ok) { alert('✅ Residente aprobado'); loadUsuariosPendientes(); }
+      else { alert('❌ Error al aprobar'); }
+    } catch (e) { alert('❌ Error de conexión'); }
   };
 
   window.rechazarUsuario = async (userId) => {
-    if (!confirm('¿Rechazar este usuario? Esta acción eliminará su registro permanentemente.')) return;
-
+    if (!confirm('¿Rechazar este usuario? Se eliminará permanentemente.')) return;
     try {
-      const response = await fetch(`${window.API_URL}/usuarios/${userId}`, {
+      const res = await fetch(`${window.API_URL}/usuarios/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Error al rechazar');
-
-      showToast('✅ Usuario rechazado y cuenta eliminada');
-      loadUsuariosPendientes();
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Error: ' + error.message);
-    }
+      if (res.ok) { alert('✅ Solicitud rechazada'); loadUsuariosPendientes(); }
+      else { alert('❌ Error al eliminar'); }
+    } catch (e) { alert('❌ Error de conexión'); }
   };
-
-  window.goToDashboard = () => {
-    const dashboards = {
-      'residente': '/dashboard-residente',
-      'vigilante': '/dashboard-vigilante',
-      'admin': '/dashboard-admin',
-      'limpieza': '/dashboard-limpieza',
-      'gerente': '/dashboard-gerente',
-      'medico': '/dashboard-medico',
-      'entretenimiento': '/dashboard-entretenimiento'
-    };
-    window.navigateTo(dashboards[user.rol] || '/dashboard-residente');
-  };
-
-  function getRolColor(rol) {
-    const colores = {
-      limpieza: 'success',
-      vigilante: 'primary',
-      gerente: 'info',
-      medico: 'danger',
-      entretenimiento: 'warning',
-      residente: 'secondary'
-    };
-
-    return colores[rol] || 'secondary';
-  }
 
   function getRolLabel(rol) {
-    const labels = {
-      limpieza: 'Personal de Limpieza',
-      vigilante: 'Vigilante',
-      gerente: 'Gerente',
-      medico: 'Personal Médico',
-      entretenimiento: 'Personal de Entretenimiento',
-      residente: 'Residente'
-    };
-
+    const labels = { limpieza: 'Limpieza', vigilante: 'Vigilante', gerente: 'Gerente', medico: 'Médico', entretenimiento: 'Recreación', residente: 'Residente' };
     return labels[rol] || rol;
-  }
-
-  function showToast(mensaje) {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 9999;';
-    toast.textContent = mensaje;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
   }
 }

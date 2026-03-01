@@ -95,6 +95,38 @@ router.patch('/:id/atender', async (req, res) => {
 });
 
 // =====================================================
+// PATCH /api/emergencias/:id/cerrar - Vigilante cierra la emergencia
+// =====================================================
+router.patch('/:id/cerrar', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Permitir vigilante y admin
+        if (req.user.rol !== 'vigilante' && req.user.rol !== 'admin') {
+            return res.status(403).json({ error: 'No tienes permisos para cerrar emergencias' });
+        }
+
+        const result = await pool.query(
+            `UPDATE emergencias 
+             SET estado = 'resuelta', atendida_at = CURRENT_TIMESTAMP, atendido_por = $1
+             WHERE id = $2 AND estado IN ('activa', 'atendida')
+             RETURNING *`,
+            [req.user.id, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Emergencia no encontrada o ya resuelta' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al cerrar emergencia:', error);
+        res.status(500).json({ error: 'Error al cerrar emergencia' });
+    }
+});
+
+// =====================================================
 // PATCH /api/emergencias/:id/resolver - Finalizar la atención médica
 // =====================================================
 router.patch('/:id/resolver', async (req, res) => {

@@ -1,43 +1,53 @@
-// =====================================================
-// CHAT VIEW - Pantalla de conversación
-// =====================================================
+import { renderSidebarLayout } from '../utils/sidebar-layout.js';
 
 export function renderChat(container, targetUserId, targetUserName) {
   const user = window.appState.user;
   const token = window.appState.token;
 
-  container.innerHTML = `
-    <div class="page" style="display: flex; flex-direction: column; height: 100vh; background: var(--bg-primary);">
-      <!-- Header Premium -->
-      <div style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); padding: 2rem 0; border-bottom: 1px solid var(--glass-border); box-shadow: var(--shadow-md); display: flex; align-items: center;">
-        <div class="container" style="display: flex; align-items: center; gap: 1rem;">
-          <button onclick="window.history.back()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer;">←</button>
-          <div style="flex: 1;">
-            <h2 style="font-size: 1.125rem; font-weight: 600; margin: 0;">${targetUserName}</h2>
-            <p id="chatStatus" style="font-size: 0.75rem; color: var(--success); margin: 0; opacity: 0.9;">En línea</p>
-          </div>
-        </div>
-      </div>
+  // Determinar navItems y rol para el layout
+  const isResidente = user.rol === 'residente';
+  const navItems = isResidente ? [
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-residente' },
+    { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
+    { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
+    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
+    { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
+  ] : [
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: `/${user.rol === 'admin' ? 'dashboard-admin' : 'dashboard-gerente'}` },
+    { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
+    { key: 'solicitudes', icon: '📋', label: 'Solicitudes', path: '/solicitudes' },
+    { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
+  ];
 
+  const main = renderSidebarLayout(container, {
+    role: user.rol,
+    activeNav: 'chat',
+    pageTitle: `💬 Chat con ${targetUserName}`,
+    pageSubtitle: 'Comunicación en tiempo real',
+    breadcrumb: 'Chat',
+    navItems,
+  });
 
+  main.innerHTML = `
+    <div style="display: flex; flex-direction: column; height: calc(100vh - 180px); background: var(--sb-surface); border: 1px solid var(--sb-border); border-radius: 12px; overflow: hidden;">
       <!-- Messages Area -->
-      <div id="messagesArea" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+      <div id="messagesArea" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
         <div class="loading-spinner" style="margin: auto;"></div>
       </div>
 
       <!-- Typing Indicator -->
-      <div id="typingIndicator" style="padding: 0 1rem; font-size: 0.75rem; color: var(--text-muted); height: 1rem;"></div>
+      <div id="typingIndicator" style="padding: 0 1.5rem; font-size: 0.75rem; color: var(--sb-muted); height: 1.2rem;"></div>
 
       <!-- Input Area -->
-      <form id="chatForm" style="padding: 1rem; background: var(--bg-secondary); border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+      <form id="chatForm" style="padding: 1.2rem; background: rgba(0,0,0,0.2); border-top: 1px solid var(--sb-border); display: flex; gap: 0.8rem;">
         <input 
           type="text" 
           id="messageInput" 
           placeholder="Escribe un mensaje..." 
-          style="flex: 1; padding: 0.75rem; border-radius: var(--radius-full); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);"
+          style="flex: 1; padding: 0.8rem 1.2rem; border-radius: 8px; border: 1px solid var(--sb-border); background: var(--sb-card); color: var(--sb-text); font-family: inherit; font-size: 0.9rem;"
           autocomplete="off"
         >
-        <button type="submit" class="btn btn-primary" style="border-radius: var(--radius-full); padding: 0.75rem 1.25rem;">
+        <button type="submit" class="btn btn-primary" style="padding: 0; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-radius: 8px;">
           ✈️
         </button>
       </form>

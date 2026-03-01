@@ -184,4 +184,109 @@ router.patch('/toggle-estado', requireRole('gerente', 'admin'), async (req, res)
     }
 });
 
+// =====================================================
+// METODOS DE PAGO
+// =====================================================
+
+// GET /api/pagos/metodos - Obtener métodos de pago (Residentes/Gerente)
+router.get('/metodos', async (req, res) => {
+    try {
+        const edificio_id = req.user.edificio_id;
+        const { solo_activos } = req.query;
+
+        let query = 'SELECT * FROM metodos_pago WHERE edificio_id = $1';
+        const params = [edificio_id];
+
+        if (solo_activos === 'true') {
+            query += ' AND activo = true';
+        }
+
+        query += ' ORDER BY created_at DESC';
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+
+    } catch (error) {
+        console.error('Error al obtener métodos de pago:', error);
+        res.status(500).json({ error: 'Error al obtener métodos de pago' });
+    }
+});
+
+// POST /api/pagos/metodos - Crear método de pago (Gerente/Admin)
+router.post('/metodos', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const { tipo, detalles } = req.body;
+        const edificio_id = req.user.edificio_id;
+
+        if (!tipo || !detalles) {
+            return res.status(400).json({ error: 'Tipo y detalles son requeridos' });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO metodos_pago (edificio_id, tipo, detalles)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [edificio_id, tipo, detalles]
+        );
+
+        res.status(201).json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al crear método de pago:', error);
+        res.status(500).json({ error: 'Error al crear método de pago' });
+    }
+});
+
+// PATCH /api/pagos/metodos/:id - Actualizar método de pago (Gerente/Admin)
+router.patch('/metodos/:id', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tipo, detalles, activo } = req.body;
+        const edificio_id = req.user.edificio_id;
+
+        const result = await pool.query(
+            `UPDATE metodos_pago 
+             SET tipo = COALESCE($1, tipo), 
+                 detalles = COALESCE($2, detalles), 
+                 activo = COALESCE($3, activo)
+             WHERE id = $4 AND edificio_id = $5
+             RETURNING *`,
+            [tipo, detalles, activo, id, edificio_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Método de pago no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error al actualizar método de pago:', error);
+        res.status(500).json({ error: 'Error al actualizar método de pago' });
+    }
+});
+
+// DELETE /api/pagos/metodos/:id - Eliminar método de pago (Gerente/Admin)
+router.delete('/metodos/:id', requireRole('gerente', 'admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const edificio_id = req.user.edificio_id;
+
+        const result = await pool.query(
+            'DELETE FROM metodos_pago WHERE id = $1 AND edificio_id = $2 RETURNING *',
+            [id, edificio_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Método de pago no encontrado' });
+        }
+
+        res.json({ message: 'Método de pago eliminado correctamente' });
+
+    } catch (error) {
+        console.error('Error al eliminar método de pago:', error);
+        res.status(500).json({ error: 'Error al eliminar método de pago' });
+    }
+});
+
 export default router;
