@@ -6,6 +6,19 @@ export function renderChat(container, targetUserId, targetUserName) {
 
   // Determinar navItems y rol para el layout
   const isResidente = user.rol === 'residente';
+
+  // Mapa de rol a dashboard correcto
+  const dashboardMap = {
+    residente: '/dashboard-residente',
+    vigilante: '/dashboard-vigilante',
+    admin: '/dashboard-admin',
+    limpieza: '/dashboard-limpieza',
+    gerente: '/dashboard-gerente',
+    medico: '/dashboard-medico',
+    entretenimiento: '/dashboard-entretenimiento'
+  };
+  const myDashboard = dashboardMap[user.rol] || '/';
+
   const navItems = isResidente ? [
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-residente' },
     { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
@@ -13,7 +26,7 @@ export function renderChat(container, targetUserId, targetUserName) {
     { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
   ] : [
-    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: `/${user.rol === 'admin' ? 'dashboard-admin' : 'dashboard-gerente'}` },
+    { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: myDashboard },
     { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
     { key: 'solicitudes', icon: '📋', label: 'Solicitudes', path: '/solicitudes' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
