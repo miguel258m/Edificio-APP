@@ -1,41 +1,59 @@
-// Service Worker para PWA
-const CACHE_NAME = 'edificio-app-v2';
+// Service Worker para PWA - Network-first para actualizaciones rápidas
+const CACHE_NAME = 'edificio-app-v4';
 const urlsToCache = [
     '/',
-    '/index.html',
-    '/src/main.js',
-    '/src/styles/main.css'
+    '/index.html'
 ];
 
-// Instalación
+// Instalación - forzar activación inmediata
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(urlsToCache))
     );
 });
 
-// Activación
+// Activación - limpiar caches viejos inmediatamente
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
+                        console.log('🗑️ Eliminando cache viejo:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-// Fetch
+// Fetch - Network-first: siempre intentar la red primero
 self.addEventListener('fetch', (event) => {
+    // NUNCA cachear llamadas API
+    if (event.request.url.includes('/api/')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // Para todo lo demás: network-first con fallback a cache
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                return response || fetch(event.request);
+                // Guardar copia fresca en cache
+                if (response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Sin red: servir desde cache
+                return caches.match(event.request);
             })
     );
 });
