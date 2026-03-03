@@ -141,7 +141,7 @@ export function renderDashboardLimpieza(container) {
         let detalles = s.detalles;
         if (typeof detalles === 'string') { try { detalles = JSON.parse(detalles); } catch (e) { detalles = {}; } }
         const zona = detalles?.area ? (aLabel[detalles.area] || detalles.area) : `Dpto ${s.usuario_apartamento || 'N/A'}`;
-        const fecha = new Date(s.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
+        const fecha = new Date(s.fecha_solicitud).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
 
         return `
         <div class="ds-task-card fade-in" style="background: rgba(255,255,255,0.02); border: 1px solid var(--sb-border); border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.2s;">
@@ -151,7 +151,8 @@ export function renderDashboardLimpieza(container) {
                 <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">${zona}</span>
                 <span style="font-size: 0.65rem; color: var(--sb-muted);">${fecha}</span>
               </div>
-              <p style="font-size:0.9rem; font-weight:700; color:var(--sb-text); margin:0;">${s.descripcion}</p>
+              <p style="font-size:0.9rem; font-weight:700; color:white; margin:0;">${s.descripcion}</p>
+              <p style="font-size:0.75rem; color:var(--sb-muted); margin:4px 0 0;">👤 ${s.usuario_nombre} · ${s.usuario_apartamento ? `Dpto ${s.usuario_apartamento}` : 'Personal'}</p>
             </div>
             <span class="ds-badge" style="background: ${eColor[s.estado]}20; color: ${eColor[s.estado]}; border: 1px solid ${eColor[s.estado]}30;">
               ${eLabel[s.estado] || s.estado}

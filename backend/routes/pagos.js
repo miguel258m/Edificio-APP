@@ -226,7 +226,7 @@ router.post('/metodos', requireRole('gerente', 'admin'), async (req, res) => {
             `INSERT INTO metodos_pago (edificio_id, tipo, detalles)
              VALUES ($1, $2, $3)
              RETURNING *`,
-            [edificio_id, tipo, detalles]
+            [edificio_id, tipo, JSON.stringify(detalles || {})]
         );
 
         res.status(201).json(result.rows[0]);

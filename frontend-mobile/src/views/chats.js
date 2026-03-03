@@ -122,22 +122,26 @@ export function renderChats(container) {
           const vRes = await fetch(`${window.API_URL}/usuarios/vigilantes`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          const vigilantes = await vRes.json();
-          if (vigilantes.length > 0) {
-            const v = vigilantes[0];
-            const existe = allConversaciones.find(c => c.usuario_id === v.id);
-            if (!existe) {
-              allConversaciones.unshift({
-                usuario_id: v.id,
-                nombre: `${v.nombre}`,
-                ultimo_mensaje: 'Chat con seguridad',
-                ultima_fecha: null,
-                no_leidos: 0,
-                is_default: true
-              });
+          if (vRes.ok) {
+            const vigilantes = await vRes.json();
+            if (Array.isArray(vigilantes) && vigilantes.length > 0) {
+              const v = vigilantes[0];
+              const existe = allConversaciones.find(c => c.usuario_id === v.id);
+              if (!existe) {
+                allConversaciones.unshift({
+                  usuario_id: v.id,
+                  nombre: `${v.nombre}`,
+                  ultimo_mensaje: 'Chat con seguridad',
+                  ultima_fecha: null,
+                  no_leidos: 0,
+                  is_default: true
+                });
+              }
             }
           }
-        } catch (err) { console.error('Error al cargar vigilantes por defecto:', err); }
+        } catch (err) {
+          console.warn('⚠️ No se pudo cargar el chat de vigilancia por defecto:', err);
+        }
       }
 
       renderConvList(allConversaciones);
