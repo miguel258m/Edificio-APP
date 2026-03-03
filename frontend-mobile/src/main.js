@@ -31,13 +31,14 @@ window.appState = {
 // Configuración de la API
 // Priorizamos la variable de entorno de Vite si existe
 const VITE_API_URL = import.meta.env.VITE_API_URL;
-const PRODUCTION_API_URL = 'https://edificio-backend-production.up.railway.app/api';
-const LOCAL_API_URL = `http://${window.location.hostname}:3000/api`;
+const PRODUCTION_API_URL = 'https://edificio-backend-production.up.railway.app';
+const LOCAL_API_URL = `http://${window.location.hostname}:3000`;
 
 // Detectamos si estamos en un entorno local
 const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('172.') ||
     window.location.hostname.startsWith('10.') ||
     window.location.hostname.endsWith('.local');
 
@@ -47,9 +48,6 @@ let baseApiUrl = VITE_API_URL;
 if (!baseApiUrl) {
     if (isLocal) {
         baseApiUrl = LOCAL_API_URL;
-    } else if (window.location.hostname.endsWith('.railway.app')) {
-        // Auto-detectar backend de Railway si estamos en Railway
-        baseApiUrl = 'https://edificio-backend-production.up.railway.app/api';
     } else {
         baseApiUrl = PRODUCTION_API_URL;
     }
