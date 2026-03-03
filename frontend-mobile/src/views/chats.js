@@ -298,10 +298,6 @@ export function renderChats(container) {
     window.appState.socket.on('nuevo_mensaje', (msg) => {
       // Update conv list
       const ci = document.querySelector(`.conv-item[data-id="${msg.remitente_id}"]`);
-      if (ci) {
-        const lastMsg = ci.querySelector('p:last-of-type');
-        if (lastMsg) lastMsg.textContent = msg.contenido;
-      }
       // Append to active chat
       if (
         (msg.remitente_id === activeUserId && msg.destinatario_id === user.id) ||
@@ -310,11 +306,33 @@ export function renderChats(container) {
         appendMessage(msg);
         const msgs = document.getElementById('messagesArea');
         msgs.scrollTop = msgs.scrollHeight;
+
+        // If it's a new message for current open chat, mark as read
+        if (msg.remitente_id === activeUserId) {
+          fetch(`${window.API_URL}/mensajes/conversacion/${activeUserId}/leer`, {
+            method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }
+          }).catch(console.error);
+        }
+      }
+
+      // Always update conv list or re-fetch if new
+      if (!ci) {
+        loadConversaciones();
       } else {
-        // Show dot on conv item for the sender
-        const item = document.querySelector(`.conv-item[data-id="${msg.remitente_id}"]`);
-        if (item && !item.classList.contains('active-conv')) {
-          const avatar = item.querySelector('div[style*="border-radius:50%"]');
+        const lastMsg = ci.querySelector('p:last-of-type');
+        if (lastMsg) lastMsg.textContent = msg.contenido;
+
+        // Update time if possible
+        const timeEl = ci.querySelector('span[style*="font-size:0.65rem"]');
+        if (timeEl) timeEl.textContent = 'Ahora';
+
+        // Reorder list: move this item to top
+        const items = document.getElementById('convItems');
+        if (items) items.prepend(ci);
+
+        // Show dot on conv item if not currently open
+        if (msg.remitente_id !== activeUserId && msg.remitente_id !== user.id) {
+          const avatar = ci.querySelector('div[style*="border-radius:50%"]');
           if (avatar && !avatar.querySelector('span')) {
             avatar.insertAdjacentHTML('beforeend', '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#f87171;border-radius:50%;border:2px solid #161b22;"></span>');
           }

@@ -416,7 +416,7 @@ async function loadEmergenciasMedicas() {
         ${isAttending ? `<p style="font-size:0.7rem;color:#38bdf8;margin:0 0 10px;font-weight:600;">👨‍⚕️ ${isMine ? 'Tú (Ahora)' : e.medico_nombre || 'otro médico'}</p>` : ''}
         <div style="display:flex;gap:8px;">
           ${!isAttending ? `<button onclick="tomarEmergencia(${e.id})" style="flex:1;background:#f87171;color:white;border:none;border-radius:8px;padding:7px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">🚑 Tomar Alerta</button>` : ''}
-          ${isMine ? `<button onclick="abrirChat(${e.usuario_id},'${e.usuario_nombre}')" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;border-radius:8px;padding:7px 12px;cursor:pointer;">💬</button><button onclick="resolverEmergencia(${e.id})" style="flex:1;background:#4ade80;color:white;border:none;border-radius:8px;padding:7px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">✅ Finalizar</button>` : ''}
+          ${isMine ? `<button onclick="abrirChat(${e.usuario_id},'${e.usuario_nombre?.replace(/'/g, "\\'")}')" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;border-radius:8px;padding:7px 12px;cursor:pointer;">💬</button><button onclick="resolverEmergencia(${e.id})" style="flex:1;background:#4ade80;color:white;border:none;border-radius:8px;padding:7px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">✅ Finalizar</button>` : ''}
           ${isAttending && !isMine ? `<p style="color:var(--sb-muted);text-align:center;width:100%;font-size:0.72rem;margin:0;">En atención por otro médico...</p>` : ''}
         </div>
       </div>`;
@@ -441,9 +441,9 @@ async function loadSolicitudesMedicas() {
           <span style="background:rgba(255,255,255,0.06);color:${s.estado === 'pendiente' ? '#fbbf24' : '#38bdf8'};border-radius:20px;padding:2px 7px;font-size:0.6rem;font-weight:600;">${s.estado === 'pendiente' ? 'NUEVA' : 'ATENDIENDO'}</span>
         </div>
         <p style="font-size:0.82rem;font-weight:500;color:var(--sb-text);margin:0 0 2px;">${s.usuario_nombre} <span style="color:var(--sb-muted);">(Dpto ${s.usuario_apartamento})</span></p>
-        <p style="font-size:0.7rem;color:var(--sb-muted);margin:0 0 8px;line-height:1.4;">${s.descripcion?.substring(0, 70)}${(s.descripcion?.length || 0) > 70 ? '...' : ''}</p>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:6px 0 10px;line-height:1.5;background:rgba(255,255,255,0.03);padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);">${s.descripcion}</p>
         <div style="display:flex;gap:8px;">
-          <button onclick="abrirChat(${s.usuario_id},'${s.usuario_nombre}')" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;border-radius:6px;padding:6px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:inherit;">💬 Chat</button>
+          <button onclick="abrirChat(${s.usuario_id},'${s.usuario_nombre?.replace(/'/g, "\\'")}')" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;transition:all 0.2s;">💬 Chat</button>
           <button onclick="actualizarSolicitudMedica(${s.id},'${s.estado === 'pendiente' ? 'en_proceso' : 'completada'}')" style="flex:1;background:${s.estado === 'pendiente' ? 'rgba(99,102,241,0.1)' : 'rgba(74,222,128,0.1)'};border:1px solid ${s.estado === 'pendiente' ? 'rgba(99,102,241,0.25)' : 'rgba(74,222,128,0.25)'};color:${s.estado === 'pendiente' ? '#818cf8' : '#4ade80'};border-radius:6px;padding:6px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:inherit;">${s.estado === 'pendiente' ? '🩺 Iniciar' : '✅ Finalizar'}</button>
         </div>
       </div>
