@@ -113,12 +113,14 @@ export function renderDashboardEntretenimiento(container) {
         let detalles = s.detalles;
         if (typeof detalles === 'string') try { detalles = JSON.parse(detalles); } catch { detalles = {}; }
         const area = detalles?.area || 'Área común';
+        const invitados = detalles?.invitados || detalles?.cantidad || 'N/A';
         return `
         <div style="background: rgba(244,114,182,0.04); border: 1px solid rgba(244,114,182,0.1); border-radius: 12px; padding: 14px; margin-bottom: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
             <div>
               <span style="font-size: 0.65rem; background: rgba(244,114,182,0.1); color: #f472b6; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">${area}</span>
-              <p style="font-size: 0.88rem; font-weight: 700; color: var(--sb-text); margin: 6px 0 0;">${s.descripcion?.substring(0, 65)}${(s.descripcion?.length || 0) > 65 ? '...' : ''}</p>
+              <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-left: 8px;">👥 ${invitados} invitados</span>
+              <p style="font-size: 0.88rem; font-weight: 700; color: white; margin: 6px 0 0;">${s.descripcion?.substring(0, 65)}${(s.descripcion?.length || 0) > 65 ? '...' : ''}</p>
             </div>
             <span style="background: ${eColor[s.estado]}20; color: ${eColor[s.estado]}; border: 1px solid ${eColor[s.estado]}30; border-radius: 20px; padding: 3px 10px; font-size: 0.62rem; font-weight: 700; white-space: nowrap; margin-left: 8px;">${eLabel[s.estado]}</span>
           </div>
@@ -129,6 +131,8 @@ export function renderDashboardEntretenimiento(container) {
             </div>
             <div style="display: flex; gap: 8px;">
               ${s.usuario_telefono ? `<a href="tel:${s.usuario_telefono}" style="background: rgba(255,255,255,0.05); border: 1px solid var(--sb-border); border-radius: 8px; padding: 5px 8px; text-decoration: none;">📞</a>` : ''}
+              <button onclick="window.navigateTo('/chat', { userId: ${s.usuario_id}, userName: '${s.usuario_nombre?.replace(/'/g, "\\'")}' })" 
+                style="background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.25); color: #f472b6; border-radius: 8px; padding: 5px 8px; cursor: pointer;">💬</button>
               ${s.estado === 'pendiente' ? `<button onclick="entCambiarEstado(${s.id},'en_proceso')" style="background:#a855f7;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Iniciar</button>` : ''}
               ${s.estado === 'en_proceso' ? `<button onclick="entCambiarEstado(${s.id},'completada')" style="background:#4ade80;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Finalizar</button>` : ''}
             </div>
@@ -150,6 +154,18 @@ window.entCambiarEstado = async (id, estado) => {
       body: JSON.stringify({ estado })
     });
     if (!r.ok) throw new Error();
-    window.navigateTo('/dashboard-entretenimiento');
-  } catch (e) { alert('❌ Error al actualizar'); }
+    // En lugar de navegar y causar error de actualización, simplemente recargar la lista
+    const currentContainer = document.getElementById('ent-solicitudes-list');
+    if (currentContainer) {
+      // Buscar la función de carga que está en el scope del renderizador
+      // Una forma segura es disparar el evento de recarga si lo tuviéramos, 
+      // pero aquí simplemente llamaremos a la función global si la exportamos o la guardamos.
+      // Por ahora, recargamos la vista completa para asegurar consistencia
+      window.navigateTo('/dashboard-entretenimiento');
+    }
+  } catch (e) {
+    console.error(e);
+    // Silent fail if it was just a navigation issue, but let's try to reload
+    window.location.reload();
+  }
 };

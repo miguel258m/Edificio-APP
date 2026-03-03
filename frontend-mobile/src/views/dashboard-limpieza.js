@@ -151,12 +151,15 @@ export function renderDashboardLimpieza(container) {
                 <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">${zona}</span>
                 <span style="font-size: 0.65rem; color: var(--sb-muted);">${fecha}</span>
               </div>
-              <p style="font-size:0.9rem; font-weight:700; color:white; margin:0;">${s.descripcion}</p>
-              <p style="font-size:0.75rem; color:var(--sb-muted); margin:4px 0 0;">👤 ${s.usuario_nombre} · ${s.usuario_apartamento ? `Dpto ${s.usuario_apartamento}` : 'Personal'}</p>
-            </div>
+              <p style="font-size:0.82rem;font-weight:500;color:var(--sb-text);margin:0 0 2px;">${s.usuario_nombre} <span style="color:var(--sb-muted);">(Dpto ${s.usuario_apartamento})</span></p>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:6px 0 10px;line-height:1.5;background:rgba(255,255,255,0.03);padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);">${s.descripcion}</p>
+        <div style="display:flex;gap:8px;">
             <span class="ds-badge" style="background: ${eColor[s.estado]}20; color: ${eColor[s.estado]}; border: 1px solid ${eColor[s.estado]}30;">
               ${eLabel[s.estado] || s.estado}
             </span>
+            <button onclick="window.navigateTo('/chat', { userId: ${s.usuario_id}, userName: '${s.usuario_nombre?.replace(/'/g, "\\'")}' })" 
+                style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size:0.75rem; font-weight:700; font-family:inherit;">💬 Chat</button>
+          </div>
           </div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; border-top: 1px solid var(--sb-border); padding-top: 12px; margin-top: 4px;">
@@ -168,7 +171,9 @@ export function renderDashboardLimpieza(container) {
             </div>
             
             <div style="display:flex; gap:8px;">
-              ${s.usuario_telefono ? `<a href="tel:${s.usuario_telefono}" class="btn" style="padding: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--sb-border);">📞</a>` : ''}
+              ${s.usuario_telefono ? `<a href="tel:${s.usuario_telefono}" class="btn" style="padding: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--sb-border); text-decoration: none;">📞</a>` : ''}
+              <button onclick="window.navigateTo('/chat', { userId: ${s.usuario_id}, userName: '${s.usuario_nombre?.replace(/'/g, "\\'")}' })" 
+                style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; border-radius: 8px; padding: 6px 10px; cursor: pointer;">💬</button>
               
               ${s.estado === 'pendiente' ? `
                 <button onclick="cambiarEstado(${s.id},'en_proceso')" 
