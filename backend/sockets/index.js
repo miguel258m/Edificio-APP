@@ -79,8 +79,21 @@ export function setupSocketHandlers(io) {
 
                 mensaje.remitente_nombre = userResult.rows[0].nombre;
 
-                // Emitir el mensaje al destinatario (o a la sala del edificio para simplificar)
+                // Emitir el mensaje a la sala del edificio del remitente
                 io.to(`edificio_${socket.user.edificio_id}`).emit('nuevo_mensaje', mensaje);
+
+                // También emitir directamente al destinatario por si está en otro edificio
+                // o para garantizar la entrega
+                const destResult = await pool.query(
+                    'SELECT edificio_id FROM usuarios WHERE id = $1',
+                    [destinatario_id]
+                );
+                if (destResult.rows.length > 0) {
+                    const destEdificio = destResult.rows[0].edificio_id;
+                    if (destEdificio !== socket.user.edificio_id) {
+                        io.to(`edificio_${destEdificio}`).emit('nuevo_mensaje', mensaje);
+                    }
+                }
 
             } catch (error) {
                 console.error('Error al enviar mensaje:', error);

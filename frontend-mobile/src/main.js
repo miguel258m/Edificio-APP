@@ -87,6 +87,29 @@ window.navigateTo = (path, params = {}) => {
     router();
 };
 
+// Función global para refrescar la vista actual
+window.refrescarVista = () => {
+    const btn = document.querySelector('.ds-header-refresh .refresh-icon');
+    if (btn) btn.classList.add('spinning');
+    router();
+    setTimeout(() => { if (btn) btn.classList.remove('spinning'); }, 600);
+};
+
+// Limpieza de listeners y funciones de dashboard al navegar
+function cleanupCurrentView() {
+    if (window.appState.socket) {
+        // Remover listeners de dashboards para evitar que se combinen
+        window.appState.socket.off('nueva_emergencia');
+        window.appState.socket.off('emergencia_actualizada');
+        window.appState.socket.off('nueva_solicitud');
+    }
+    // Limpiar modales huérfanos
+    ['nuevoAvisoModal', 'residentesModal', 'metodosPagoModal', 'deliveryModal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    });
+}
+
 // Router con manejo de errores
 function router() {
     try {
@@ -99,6 +122,8 @@ function router() {
             return;
         }
 
+        // ─ CLEANUP: eliminar listeners y modales del dashboard anterior ─
+        cleanupCurrentView();
         app.innerHTML = '';
 
         if (path === '/chat') {

@@ -124,7 +124,7 @@ export function renderDashboardGerente(container) {
 
   // Inicializar avisos
   initAnnouncements(container);
-  renderAnnouncementsWidget('announcementsWidget');
+  renderAnnouncementsWidget('gr-announcementsWidget');
 
   // Cargar datos
   loadSolicitudes();

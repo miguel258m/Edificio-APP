@@ -56,13 +56,13 @@ export function renderDashboardMedico(container) {
 
     <!-- TABS -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;" class="fade-in">
-      <button id="tabAlertas" onclick="switchMedicoView('alertas')" style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">🏥 Alertas Activas</button>
-      <button id="tabCalendario" onclick="switchMedicoView('calendario')" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 Calendario</button>
-      <button id="tabHistorial" onclick="switchMedicoView('historial')" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;">📜 Mi Historial</button>
+      <button id="md-tabAlertas" onclick="switchMedicoView('alertas')" style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">🏥 Alertas Activas</button>
+      <button id="md-tabCalendario" onclick="switchMedicoView('calendario')" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;">📅 Calendario</button>
+      <button id="md-tabHistorial" onclick="switchMedicoView('historial')" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;">📜 Mi Historial</button>
     </div>
 
     <!-- VISTA ALERTAS -->
-    <div id="viewAlertas" class="ds-grid-2 fade-in">
+    <div id="md-viewAlertas" class="ds-grid-2 fade-in">
       <!-- Emergencias -->
       <div class="ds-card">
         <div class="ds-card-header">
@@ -81,17 +81,17 @@ export function renderDashboardMedico(container) {
     </div>
 
     <!-- VISTA HISTORIAL -->
-    <div id="viewHistorial" class="hidden fade-in">
+    <div id="md-viewHistorial" class="hidden fade-in">
       <div class="ds-card">
         <div class="ds-card-header">
           <p class="ds-card-title" style="color:#4ade80;">✅ Mis Atenciones Finalizadas</p>
         </div>
-        <div id="historialList"><div class="loading-spinner" style="margin:2rem auto;"></div></div>
+        <div id="md-historialList"><div class="loading-spinner" style="margin:2rem auto;"></div></div>
       </div>
     </div>
 
     <!-- VISTA CALENDARIO -->
-    <div id="viewCalendario" class="hidden fade-in">
+    <div id="md-viewCalendario" class="hidden fade-in">
       <div class="ds-grid-2">
         <!-- Calendario -->
         <div class="ds-card">
@@ -99,12 +99,12 @@ export function renderDashboardMedico(container) {
             <p class="ds-card-title">📅 Agenda</p>
             <div style="display:flex;gap:8px;align-items:center;">
               <button id="calPrev" onclick="navegarCalendario(-1)" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:1rem;">‹</button>
-              <span id="calMesLabel" style="font-size:0.82rem;font-weight:700;color:var(--sb-text);white-space:nowrap;"></span>
+              <span id="md-calMesLabel" style="font-size:0.82rem;font-weight:700;color:var(--sb-text);white-space:nowrap;"></span>
               <button id="calNext" onclick="navegarCalendario(1)" style="background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:1rem;">›</button>
             </div>
           </div>
-          <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:4px 0;"></div>
-          <div id="calDayPanel" style="margin-top:12px;border-top:1px solid var(--sb-border);padding-top:12px;min-height:80px;"></div>
+          <div id="md-calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:4px 0;"></div>
+          <div id="md-calDayPanel" style="margin-top:12px;border-top:1px solid var(--sb-border);padding-top:12px;min-height:80px;"></div>
         </div>
 
         <!-- Panel lateral -->
@@ -113,35 +113,35 @@ export function renderDashboardMedico(container) {
             <p class="ds-card-title">📋 Próximas Citas</p>
             <button onclick="abrirModalCita()" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);color:#818cf8;border-radius:8px;padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">+ Nueva Cita</button>
           </div>
-          <div id="citasProximas"><div class="loading-spinner" style="margin:2rem auto;"></div></div>
+          <div id="md-citasProximas"><div class="loading-spinner" style="margin:2rem auto;"></div></div>
         </div>
       </div>
     </div>
 
     <!-- MODAL NUEVA CITA -->
-    <div id="citaModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
+    <div id="md-citaModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);">
       <div style="background:var(--sb-surface);border:1px solid var(--sb-border);border-radius:14px;padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-          <h2 id="citaModalTitle" style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0;">📅 Nueva Cita</h2>
+          <h2 id="md-citaModalTitle" style="font-size:1rem;font-weight:700;color:var(--sb-text);margin:0;">📅 Nueva Cita</h2>
           <button onclick="cerrarModalCita()" style="background:rgba(255,255,255,0.07);border:1px solid var(--sb-border);width:30px;height:30px;border-radius:6px;color:var(--sb-muted);font-size:1.1rem;cursor:pointer;">×</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Título *</label><input type="text" id="citaTitulo" class="form-input" placeholder="Ej: Control de presión" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
+          <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Título *</label><input type="text" id="md-citaTitulo" class="form-input" placeholder="Ej: Control de presión" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
           <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Residente</label>
-            <select id="citaResidente" class="form-select" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);">
+            <select id="md-citaResidente" class="form-select" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);">
               <option value="">— Sin asignar —</option>
             </select>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Fecha *</label><input type="date" id="citaFecha" class="form-input" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
-            <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Hora *</label><input type="time" id="citaHora" class="form-input" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
+            <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Fecha *</label><input type="date" id="md-citaFecha" class="form-input" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
+            <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Hora *</label><input type="time" id="md-citaHora" class="form-input" style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);"></div>
           </div>
-          <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Notas</label><textarea id="citaDescripcion" class="form-input" rows="2" placeholder="Observaciones opcionales..." style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);resize:none;"></textarea></div>
+          <div><label style="font-size:0.75rem;color:var(--sb-muted);display:block;margin-bottom:4px;font-weight:600;">Notas</label><textarea id="md-citaDescripcion" class="form-input" rows="2" placeholder="Observaciones opcionales..." style="background:var(--sb-card);border:1px solid var(--sb-border);color:var(--sb-text);resize:none;"></textarea></div>
           <div style="display:flex;gap:10px;margin-top:4px;">
             <button type="button" class="btn btn-ghost" onclick="cerrarModalCita()" style="flex:1;">Cancelar</button>
-            <button type="button" id="btnGuardarCita" onclick="guardarCita()" class="btn btn-primary" style="flex:1.5;">Guardar Cita</button>
+            <button type="button" id="md-btnGuardarCita" onclick="guardarCita()" class="btn btn-primary" style="flex:1.5;">Guardar Cita</button>
           </div>
-          <div id="citaMsg" style="display:none;"></div>
+          <div id="md-citaMsg" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -161,15 +161,15 @@ export function renderDashboardMedico(container) {
 }
 
 window.switchMedicoView = (view) => {
-  const tabA = document.getElementById('tabAlertas');
-  const tabH = document.getElementById('tabHistorial');
-  const tabC = document.getElementById('tabCalendario');
-  const vA = document.getElementById('viewAlertas');
-  const vH = document.getElementById('viewHistorial');
-  const vC = document.getElementById('viewCalendario');
+  const tabA = document.getElementById('md-tabAlertas');
+  const tabH = document.getElementById('md-tabHistorial');
+  const tabC = document.getElementById('md-tabCalendario');
+  const vA = document.getElementById('md-viewAlertas');
+  const vH = document.getElementById('md-viewHistorial');
+  const vC = document.getElementById('md-viewCalendario');
   if (!vA) return;
 
-  const TABS = { tabAlertas: tabA, tabHistorial: tabH, tabCalendario: tabC };
+  const TABS = { 'md-tabAlertas': tabA, 'md-tabHistorial': tabH, 'md-tabCalendario': tabC };
   const VIEWS = { alertas: vA, historial: vH, calendario: vC };
   const STYLES = {
     active: { alertas: 'rgba(248,113,113,0.12)', historial: 'rgba(74,222,128,0.12)', calendario: 'rgba(99,102,241,0.12)' },
@@ -186,7 +186,7 @@ window.switchMedicoView = (view) => {
   const activeView = VIEWS[view];
   if (activeView) activeView.classList.remove('hidden');
 
-  const tabKey = 'tab' + view.charAt(0).toUpperCase() + view.slice(1);
+  const tabKey = 'md-tab' + view.charAt(0).toUpperCase() + view.slice(1);
   const tab = TABS[tabKey];
   if (tab) tab.style.cssText = `background:${STYLES.active[view]};border:1px solid ${STYLES.border[view]};color:${STYLES.color[view]};border-radius:10px;padding:9px 20px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;`;
 
@@ -209,8 +209,8 @@ window.navegarCalendario = (delta) => {
 };
 
 function renderCalendario() {
-  const grid = document.getElementById('calendarGrid');
-  const label = document.getElementById('calMesLabel');
+  const grid = document.getElementById('md-calendarGrid');
+  const label = document.getElementById('md-calMesLabel');
   if (!grid) return;
 
   const DIAS = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
@@ -261,7 +261,7 @@ window.selectCalDay = (dateStr) => {
 };
 
 function showDayPanel(dateStr) {
-  const panel = document.getElementById('calDayPanel');
+  const panel = document.getElementById('md-calDayPanel');
   if (!panel) return;
   const citas = _allCitas.filter(c => c.fecha?.substring(0, 10) === dateStr);
   const [y, m, d] = dateStr.split('-');
@@ -298,7 +298,7 @@ async function loadCitas() {
 }
 
 function renderCitasProximas() {
-  const el = document.getElementById('citasProximas');
+  const el = document.getElementById('md-citasProximas');
   if (!el) return;
   const hoy = new Date().toISOString().substring(0, 10);
   const proximas = _allCitas.filter(c => c.fecha?.substring(0, 10) >= hoy).slice(0, 8);
@@ -327,7 +327,7 @@ async function cargarResidenetsSelector() {
   try {
     const r = await fetch(`${window.API_URL}/citas/residentes`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
     const residentes = await r.json();
-    const sel = document.getElementById('citaResidente');
+    const sel = document.getElementById('md-citaResidente');
     if (!sel || !Array.isArray(residentes)) return;
     sel.innerHTML = '<option value="">— Sin asignar —</option>' + residentes.map(u =>
       `<option value="${u.id}">${u.nombre}${u.apartamento ? ' (Dpto ' + u.apartamento + ')' : ''}</option>`).join('');
@@ -335,27 +335,27 @@ async function cargarResidenetsSelector() {
 }
 
 window.abrirModalCita = (fecha = '') => {
-  const modal = document.getElementById('citaModal');
+  const modal = document.getElementById('md-citaModal');
   if (!modal) return;
-  document.getElementById('citaTitulo').value = '';
-  document.getElementById('citaFecha').value = fecha || new Date().toISOString().substring(0, 10);
-  document.getElementById('citaHora').value = '09:00';
-  document.getElementById('citaDescripcion').value = '';
-  const msg = document.getElementById('citaMsg');
+  document.getElementById('md-citaTitulo').value = '';
+  document.getElementById('md-citaFecha').value = fecha || new Date().toISOString().substring(0, 10);
+  document.getElementById('md-citaHora').value = '09:00';
+  document.getElementById('md-citaDescripcion').value = '';
+  const msg = document.getElementById('md-citaMsg');
   if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
   cargarResidenetsSelector();
   modal.classList.remove('hidden');
 };
-window.cerrarModalCita = () => document.getElementById('citaModal')?.classList.add('hidden');
+window.cerrarModalCita = () => document.getElementById('md-citaModal')?.classList.add('hidden');
 
 window.guardarCita = async () => {
-  const titulo = document.getElementById('citaTitulo')?.value?.trim();
-  const fecha = document.getElementById('citaFecha')?.value;
-  const hora = document.getElementById('citaHora')?.value;
-  const descripcion = document.getElementById('citaDescripcion')?.value?.trim();
-  const residente_id = document.getElementById('citaResidente')?.value || null;
-  const msg = document.getElementById('citaMsg');
-  const btn = document.getElementById('btnGuardarCita');
+  const titulo = document.getElementById('md-citaTitulo')?.value?.trim();
+  const fecha = document.getElementById('md-citaFecha')?.value;
+  const hora = document.getElementById('md-citaHora')?.value;
+  const descripcion = document.getElementById('md-citaDescripcion')?.value?.trim();
+  const residente_id = document.getElementById('md-citaResidente')?.value || null;
+  const msg = document.getElementById('md-citaMsg');
+  const btn = document.getElementById('md-btnGuardarCita');
 
   if (!titulo || !fecha || !hora) {
     if (msg) { msg.textContent = '⚠️ Título, fecha y hora son requeridos'; msg.style.cssText = 'display:block;color:#fbbf24;font-size:0.78rem;padding:8px;background:rgba(251,191,36,0.08);border-radius:6px;'; }
@@ -452,7 +452,7 @@ async function loadSolicitudesMedicas() {
 }
 
 async function loadHistorialPersonal() {
-  const container = document.getElementById('historialList');
+  const container = document.getElementById('md-historialList');
   if (!container) return;
   container.innerHTML = '<div class="loading-spinner" style="margin:2rem auto;"></div>';
   try {
