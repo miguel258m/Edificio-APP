@@ -23,6 +23,7 @@ export function renderChat(container, targetUserId, targetUserName) {
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-residente' },
     { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
     { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
+    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
   ] : [
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: myDashboard },

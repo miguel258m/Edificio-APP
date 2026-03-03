@@ -72,7 +72,34 @@ router.post('/', async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
             [req.user.id, residente_id || null, req.user.edificio_id, titulo, descripcion || null, fecha, hora]
         );
-        res.status(201).json(result.rows[0]);
+
+        const cita = result.rows[0];
+
+        // ── Crear Notificación para el residente ──────────────────
+        if (residente_id) {
+            const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+            const tituloNotif = '📅 Nueva cita agendada';
+            const mensajeNotif = `El doctor ${req.user.nombre} ha agendado una cita contigo: "${titulo}" para el día ${fechaFormateada} a las ${hora?.substring(0, 5)}.`;
+
+            await pool.query(
+                `INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo, data)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [residente_id, tituloNotif, mensajeNotif, 'cita', JSON.stringify({ cita_id: cita.id })]
+            ).catch(e => console.error('Error al crear notificación:', e));
+
+            // Emitir vía socket si está disponible
+            const io = req.app.get('io');
+            if (io) {
+                io.to(`user_${residente_id}`).emit('notificacion', {
+                    titulo: tituloNotif,
+                    mensaje: mensajeNotif,
+                    tipo: 'cita',
+                    created_at: new Date()
+                });
+            }
+        }
+
+        res.status(201).json(cita);
     } catch (e) {
         console.error('Error citas POST:', e);
         res.status(500).json({ error: 'Error al crear cita' });
