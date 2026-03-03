@@ -115,42 +115,46 @@ router.get('/conversaciones', async (req, res) => {
         const currentUserId = req.user.id;
 
         const result = await pool.query(
-            `SELECT DISTINCT
-                CASE 
-                    WHEN remitente_id = $1 THEN destinatario_id
-                    ELSE remitente_id
-                END AS usuario_id,
+            `WITH partners AS (
+                SELECT DISTINCT
+                    CASE 
+                        WHEN remitente_id = $1 THEN destinatario_id
+                        ELSE remitente_id
+                    END AS partner_id
+                FROM mensajes
+                WHERE remitente_id = $1 OR destinatario_id = $1
+            ),
+            last_msgs AS (
+                SELECT DISTINCT ON (p.partner_id)
+                    p.partner_id,
+                    m.contenido,
+                    m.created_at,
+                    m.remitente_id
+                FROM partners p
+                JOIN mensajes m ON 
+                    (m.remitente_id = $1 AND m.destinatario_id = p.partner_id)
+                    OR (m.remitente_id = p.partner_id AND m.destinatario_id = $1)
+                ORDER BY p.partner_id, m.created_at DESC
+            ),
+            unread AS (
+                SELECT 
+                    remitente_id AS partner_id,
+                    COUNT(*) AS no_leidos
+                FROM mensajes
+                WHERE destinatario_id = $1 AND leido = false
+                GROUP BY remitente_id
+            )
+            SELECT 
+                p.partner_id AS usuario_id,
                 u.nombre,
-                (
-                    SELECT contenido 
-                    FROM mensajes 
-                    WHERE (remitente_id = $1 AND destinatario_id = usuario_id) 
-                       OR (remitente_id = usuario_id AND destinatario_id = $1)
-                    ORDER BY created_at DESC 
-                    LIMIT 1
-                ) AS ultimo_mensaje,
-                (
-                    SELECT created_at 
-                    FROM mensajes 
-                    WHERE (remitente_id = $1 AND destinatario_id = usuario_id) 
-                       OR (remitente_id = usuario_id AND destinatario_id = $1)
-                    ORDER BY created_at DESC 
-                    LIMIT 1
-                ) AS ultima_fecha,
-                (
-                    SELECT COUNT(*) 
-                    FROM mensajes 
-                    WHERE remitente_id = usuario_id 
-                      AND destinatario_id = $1 
-                      AND leido = false
-                ) AS no_leidos
-            FROM mensajes m
-            JOIN usuarios u ON u.id = CASE 
-                WHEN m.remitente_id = $1 THEN m.destinatario_id
-                ELSE m.remitente_id
-            END
-            WHERE remitente_id = $1 OR destinatario_id = $1
-            ORDER BY ultima_fecha DESC`,
+                lm.contenido AS ultimo_mensaje,
+                lm.created_at AS ultima_fecha,
+                COALESCE(ur.no_leidos, 0) AS no_leidos
+            FROM partners p
+            JOIN usuarios u ON u.id = p.partner_id
+            LEFT JOIN last_msgs lm ON lm.partner_id = p.partner_id
+            LEFT JOIN unread ur ON ur.partner_id = p.partner_id
+            ORDER BY lm.created_at DESC NULLS LAST`,
             [currentUserId]
         );
 
