@@ -52,14 +52,15 @@ router.get('/', requireRole('admin', 'vigilante'), async (req, res) => {
     `;
 
         const params = [];
+        const { rol, edificio_id } = req.query;
 
         // Si no es admin, filtrar por su propio edificio
         if (req.user.rol !== 'admin') {
             params.push(req.user.edificio_id);
             query += ` AND edificio_id = $${params.length}`;
-        } else if (req.query.edificio_id) {
+        } else if (edificio_id) {
             // Si es admin y mandó edificio_id, filtrar por ese
-            params.push(req.query.edificio_id);
+            params.push(edificio_id);
             query += ` AND edificio_id = $${params.length}`;
         }
 
