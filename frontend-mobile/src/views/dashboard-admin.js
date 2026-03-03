@@ -641,11 +641,6 @@ async function loadAdminStats(edificioId = 'all') {
       statsPorNombre[e.nombre] = { nombre: e.nombre, residente: 0, limpieza: 0, entretenimiento: 0, medico: 0, gerente: 0, vigilante: 0, emergencias: 0 };
     });
 
-    // Role pills in card
-    ['residente', 'vigilante', 'medico', 'limpieza', 'entretenimiento', 'gerente'].forEach(r => {
-      setEl(`pr-${r}`, counts[r]);
-    });
-
     // Cargar reportes para el insight
     try {
       const resRep = await fetch(`${window.API_URL}/solicitudes`, {
@@ -664,6 +659,11 @@ async function loadAdminStats(edificioId = 'all') {
         }
       });
     }
+
+    // Role pills in card (Move after loop)
+    ['residente', 'vigilante', 'medico', 'limpieza', 'entretenimiento', 'gerente'].forEach(r => {
+      setEl(`pr-${r}`, counts[r]);
+    });
 
     let numEmergencias = 0;
     // Cargar emergencias para el desglose por edificio
