@@ -23,7 +23,6 @@ export function renderChat(container, targetUserId, targetUserName) {
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-residente' },
     { key: 'chat', icon: '💬', label: 'Chat', path: '/chats' },
     { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
-    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
   ] : [
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: myDashboard },
@@ -74,6 +73,31 @@ export function renderChat(container, targetUserId, targetUserName) {
 
   // Cargar historial
   loadHistory();
+  checkChatStatus();
+
+  async function checkChatStatus() {
+    try {
+      const res = await fetch(`${window.API_URL}/mensajes/check-active-chat/${targetUserId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.active === false) {
+        // Chat desactivado (Consulta Médica Finalizada)
+        const titleEl = main.querySelector('.ds-page-title');
+        if (titleEl) titleEl.innerHTML = `💬 Chat con ${targetUserName} <span style="font-size:0.65rem; background:#f87171; color:white; padding:2px 8px; border-radius:10px; margin-left:10px; vertical-align:middle;">FINALIZADO</span>`;
+
+        const sub = main.querySelector('.ds-page-subtitle');
+        if (sub) sub.textContent = 'La consulta médica ha terminado. No se pueden enviar más mensajes.';
+
+        document.getElementById('messageInput').disabled = true;
+        document.getElementById('messageInput').placeholder = 'Consulta finalizada. Solicita una nueva para hablar.';
+        const btn = chatForm.querySelector('button');
+        if (btn) btn.disabled = true;
+      }
+    } catch (e) {
+      console.error('Error checking chat status:', e);
+    }
+  }
 
   // Manejar envío de mensaje
   chatForm.onsubmit = (e) => {

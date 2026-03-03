@@ -30,6 +30,7 @@ import alertasRoutes from './routes/alertas.js';
 import edificiosRoutes from './routes/edificios.js';
 import deliveryRoutes from './routes/delivery.js';
 import citasRoutes from './routes/citas.js';
+import notificacionesRoutes from './routes/notificaciones.js';
 
 import { setupSocketHandlers } from './sockets/index.js';
 import { initDatabase } from './scripts/init-production-db.js';
@@ -129,6 +130,7 @@ app.use('/api/alertas', alertasRoutes);
 app.use('/api/edificios', edificiosRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/citas', citasRoutes);
+app.use('/api/notificaciones', notificacionesRoutes);
 
 // Endpoint temporal para inicializar la base de datos en producción
 app.get('/api/init-db', async (req, res) => {

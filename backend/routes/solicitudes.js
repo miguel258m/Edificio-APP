@@ -146,7 +146,8 @@ router.patch('/:id/estado', requireRole('admin', 'vigilante', 'limpieza', 'medic
             query += ', fecha_atencion = CURRENT_TIMESTAMP, atendido_por = $2';
             params.push(req.user.id);
         } else if (estado === 'completada') {
-            query += ', fecha_completada = CURRENT_TIMESTAMP';
+            query += ', fecha_completada = CURRENT_TIMESTAMP, atendido_por = $2';
+            params.push(req.user.id);
         }
 
         query += ` WHERE id = $${params.length + 1} RETURNING *`;

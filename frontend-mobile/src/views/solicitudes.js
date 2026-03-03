@@ -21,7 +21,6 @@ export function renderSolicitudes(container, tipoFiltro = null) {
     { key: 'limpieza', icon: '🧹', label: 'Limpieza', onClick: "window.navigateTo('/solicitudes',{tipo:'limpieza'})" },
     { key: 'eventos', icon: '🎉', label: 'Eventos', onClick: "window.navigateTo('/solicitudes',{tipo:'entretenimiento'})" },
     { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
-    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
   ] : [
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: dashboardPath },

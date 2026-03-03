@@ -143,10 +143,10 @@ router.patch('/:id/resolver', async (req, res) => {
 
         const result = await pool.query(
             `UPDATE emergencias 
-             SET estado = 'resuelta'
+             SET estado = 'resuelta', atendido_por = $2
              WHERE id = $1
              RETURNING *`,
-            [id]
+            [id, req.user.id]
         );
 
         res.json(result.rows[0]);

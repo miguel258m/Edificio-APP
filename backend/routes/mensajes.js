@@ -166,4 +166,53 @@ router.get('/conversaciones', async (req, res) => {
     }
 });
 
+// =====================================================
+// GET /api/mensajes/check-active-chat/:targetUserId
+// =====================================================
+router.get('/check-active-chat/:targetUserId', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const targetUserId = req.params.targetUserId;
+        const userRol = req.user.rol;
+
+        // Si uno es médico y el otro residente, verificar contexto
+        const targetUserRes = await pool.query('SELECT rol FROM usuarios WHERE id = $1', [targetUserId]);
+        if (targetUserRes.rows.length === 0) return res.json({ active: true });
+
+        const targetRol = targetUserRes.rows[0].rol;
+        const isDoctorResidentPair = (userRol === 'medico' && targetRol === 'residente') || (userRol === 'residente' && targetRol === 'medico');
+
+        if (!isDoctorResidentPair) {
+            return res.json({ active: true });
+        }
+
+        const medico_id = userRol === 'medico' ? userId : targetUserId;
+        const residente_id = userRol === 'residente' ? userId : targetUserId;
+
+        // Buscar emergencia activa
+        const emerg = await pool.query(
+            `SELECT 1 FROM emergencias 
+             WHERE usuario_id = $1 AND tipo = 'medica' AND estado IN ('activa', 'atendida')`,
+            [residente_id]
+        );
+
+        if (emerg.rows.length > 0) return res.json({ active: true });
+
+        // Buscar solicitud médica activa
+        const solic = await pool.query(
+            `SELECT 1 FROM solicitudes 
+             WHERE usuario_id = $1 AND tipo = 'medica' AND estado IN ('pendiente', 'en_proceso')`,
+            [residente_id]
+        );
+
+        if (solic.rows.length > 0) return res.json({ active: true });
+
+        res.json({ active: false });
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error checking chat status' });
+    }
+});
+
 export default router;

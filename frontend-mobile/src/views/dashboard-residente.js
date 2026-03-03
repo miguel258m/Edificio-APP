@@ -16,7 +16,6 @@ export function renderDashboardResidente(container) {
     { key: 'limpieza', icon: '🧹', label: 'Limpieza', onClick: "window.navigateTo('/solicitudes',{tipo:'limpieza'})" },
     { key: 'eventos', icon: '🎉', label: 'Eventos', onClick: "window.navigateTo('/solicitudes',{tipo:'entretenimiento'})" },
     { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
-    { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
     { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
   ];
 
@@ -35,6 +34,9 @@ export function renderDashboardResidente(container) {
       ${user.apartamento ? `<span style="font-size:0.78rem;font-weight:600;color:var(--sb-text);">📍 DPTO ${user.apartamento}</span><span style="color:var(--sb-border);">•</span>` : ''}
       <span style="font-size:0.78rem;color:var(--sb-muted);">Edificio ${user.edificio_nombre || 'A'}</span>
     </div>
+
+    <!-- NOTIFICACIONES PERSONALES -->
+    <div id="personalNotificationsWidget" style="margin-bottom:16px;"></div>
 
     <!-- ESTADO DE PAGO -->
     <div id="paymentStatusWidget" style="margin-bottom:16px;"></div>
@@ -70,7 +72,6 @@ export function renderDashboardResidente(container) {
       { icon: '❤️', label: 'Médica', action: "showSolicitudModal('medica')", color: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)' },
       { icon: '🧹', label: 'Limpieza', action: "showSolicitudModal('limpieza')", color: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
       { icon: '📅', label: 'Eventos', action: "showSolicitudModal('entretenimiento')", color: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)' },
-      { icon: '💳', label: 'Mis Pagos', action: "document.getElementById('paymentStatusWidget')?.scrollIntoView({behavior:'smooth'})", color: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.2)' },
     ].map(a => `
           <button onclick="${a.action}" style="background:${a.color};border:1px solid ${a.border};border-radius:10px;padding:22px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:inherit;transition:filter 0.15s,transform 0.15s;width:100%;" onmouseover="this.style.filter='brightness(1.2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">
             <span style="font-size:1.8rem;">${a.icon}</span>
@@ -153,9 +154,56 @@ export function renderDashboardResidente(container) {
   loadSolicitudes();
   loadPaymentStatus();
   loadDeliveryServices();
+  loadPersonalNotifications();
   checkMedicalChatContext();
   if (typeof renderAnnouncementsWidget === 'function') renderAnnouncementsWidget('announcementsWidget');
+
+  // Notificaciones en tiempo real
+  if (window.appState.socket) {
+    window.appState.socket.off('notificacion');
+    window.appState.socket.on('notificacion', (n) => {
+      loadPersonalNotifications();
+      // Reproducir sonido o vibración opcional
+    });
+  }
 }
+
+async function loadPersonalNotifications() {
+  const widget = document.getElementById('personalNotificationsWidget');
+  if (!widget) return;
+  try {
+    const res = await fetch(`${window.API_URL}/notificaciones`, {
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    const notifs = await res.json();
+    const noLeidas = notifs.filter(n => !n.leida);
+    if (noLeidas.length === 0) {
+      widget.innerHTML = '';
+      return;
+    }
+
+    widget.innerHTML = noLeidas.map(n => `
+      <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); border-left:3px solid #3b82f6; border-radius:10px; padding:12px; margin-bottom:8px; display:flex; align-items:flex-start; gap:10px; animation: slideIn 0.3s ease-out;">
+        <div style="font-size:1.2rem;">🔔</div>
+        <div style="flex:1;">
+          <p style="font-size:0.8rem; font-weight:700; color:white; margin:0 0 3px;">${n.titulo}</p>
+          <p style="font-size:0.75rem; color:var(--sb-muted); margin:0 0 8px; line-height:1.4;">${n.mensaje}</p>
+          <button onclick="window.marcarNotifLeida(${n.id})" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#7d8590; border-radius:6px; padding:4px 10px; font-size:0.65rem; cursor:pointer; font-family:inherit;">Entendido</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { console.error('Error loadNotifications:', e); }
+}
+
+window.marcarNotifLeida = async (id) => {
+  try {
+    const res = await fetch(`${window.API_URL}/notificaciones/${id}/leida`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${window.appState.token}` }
+    });
+    if (res.ok) loadPersonalNotifications();
+  } catch (e) { }
+};
 
 // ── MODALS / LOGIC ─────────────────────────────────
 window.showSolicitudModal = (tipo) => {
@@ -371,8 +419,8 @@ async function loadPaymentStatus() {
     const pagadoEsteMes = Array.isArray(pagos) && pagos.some(p => { const f = new Date(p.fecha_pago); return f.getMonth() === ahora.getMonth() && f.getFullYear() === ahora.getFullYear() && p.estado === 'pagado'; });
     const mes = ahora.toLocaleString('es-ES', { month: 'long' });
     widget.innerHTML = pagadoEsteMes
-      ? `<div style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.2);border-left:3px solid #4ade80;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;"><span style="font-size:1.2rem;">🌟</span><div><p style="font-size:0.82rem;font-weight:700;color:#4ade80;margin:0 0 2px;">¡Estás al día!</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Pagos de ${mes} al corriente.</p></div></div>`
-      : `<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;"><span style="font-size:1.2rem;">💳</span><div><p style="font-size:0.82rem;font-weight:700;color:#fbbf24;margin:0 0 2px;">Aviso de Pago</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Recuerda regularizar tu pago de ${mes}.</p></div></div>`;
+      ? `<div onclick="window.navigateTo('/pago-metodos')" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.2);border-left:3px solid #4ade80;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;"><span style="font-size:1.2rem;">🌟</span><div><p style="font-size:0.82rem;font-weight:700;color:#4ade80;margin:0 0 2px;">¡Estás al día!</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Pagos de ${mes} al corriente.</p></div></div>`
+      : `<div onclick="window.navigateTo('/pago-metodos')" style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;"><span style="font-size:1.2rem;">💳</span><div><p style="font-size:0.82rem;font-weight:700;color:#fbbf24;margin:0 0 2px;">Aviso de Pago</p><p style="font-size:0.7rem;color:var(--sb-muted);margin:0;">Recuerda regularizar tu pago de ${mes}.</p></div></div>`;
   } catch (error) { console.error('Error estado de pago:', error); }
 }
 

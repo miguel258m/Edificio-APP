@@ -307,7 +307,8 @@ function renderCitasProximas() {
     return;
   }
   el.innerHTML = proximas.map(c => {
-    const fecha = new Date(c.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    const fechaRaw = c.fecha ? (typeof c.fecha === 'string' ? c.fecha.substring(0, 10) : new Date(c.fecha).toISOString().substring(0, 10)) : '';
+    const fecha = fechaRaw ? new Date(fechaRaw + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'N/A';
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--sb-border);margin-bottom:8px;background:rgba(255,255,255,0.02);">
         <div style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0;min-width:48px;">

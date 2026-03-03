@@ -13,7 +13,6 @@ export function renderPagoMetodos(container) {
         { key: 'limpieza', icon: '🧹', label: 'Limpieza', onClick: "window.navigateTo('/solicitudes',{tipo:'limpieza'})" },
         { key: 'eventos', icon: '🎉', label: 'Eventos', onClick: "window.navigateTo('/solicitudes',{tipo:'entretenimiento'})" },
         { key: 'solicitudes', icon: '📋', label: 'Mis Solicitudes', path: '/solicitudes' },
-        { key: 'pagos', icon: '💳', label: 'Mis Pagos', path: '/pago-metodos' },
         { key: 'perfil', icon: '⚙️', label: 'Perfil', path: '/perfil' },
     ];
 
@@ -65,8 +64,10 @@ export function renderPagoMetodos(container) {
             }
 
             listEl.innerHTML = metodos.map(m => {
-                const d = m.detalles || {};
-                let detalleHtml = '';
+                let d = m.detalles || {};
+                if (typeof d === 'string') {
+                    try { d = JSON.parse(d); } catch (e) { d = {}; }
+                }
 
                 // Formatear detalles según el tipo
                 const t = m.tipo.toLowerCase();

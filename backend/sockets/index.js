@@ -58,8 +58,32 @@ export function setupSocketHandlers(io) {
             try {
                 const { destinatario_id, contenido } = data;
 
-                // Se ha removido la restricción estricta de chat médico-residente
-                // para permitir la comunicación libre solicitada por el administrador.
+                // ── RESTRICCIÓN MÉDICO-RESIDENTE ──────────────────
+                // Si uno es médico y el otro residente, verificar si hay interacción activa
+                try {
+                    const targetRes = await pool.query('SELECT rol FROM usuarios WHERE id = $1', [destinatario_id]);
+                    if (targetRes.rows.length > 0) {
+                        const sRol = socket.user.rol;
+                        const tRol = targetRes.rows[0].rol;
+                        const isDoctorResident = (sRol === 'medico' && tRol === 'residente') || (sRol === 'residente' && tRol === 'medico');
+
+                        if (isDoctorResident) {
+                            const resID = sRol === 'residente' ? socket.user.id : destinatario_id;
+                            const activeCheck = await pool.query(
+                                `SELECT 1 FROM emergencias WHERE usuario_id = $1 AND tipo = 'medica' AND estado IN ('activa', 'atendida')
+                                 UNION
+                                 SELECT 1 FROM solicitudes WHERE usuario_id = $1 AND tipo = 'medica' AND estado IN ('pendiente', 'en_proceso')`,
+                                [resID]
+                            );
+
+                            if (activeCheck.rows.length === 0) {
+                                return socket.emit('error_mensaje', {
+                                    message: 'El chat médico está FINALIZADO. Para hablar de nuevo, el médico debe agendar una cita o el residente debe solicitar una consulta.'
+                                });
+                            }
+                        }
+                    }
+                } catch (err) { console.error('Error restricted chat socket:', err); }
 
                 // Guardar mensaje en la base de datos
                 const result = await pool.query(
