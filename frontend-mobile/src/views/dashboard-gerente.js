@@ -9,11 +9,11 @@ export function renderDashboardGerente(container) {
 
   const navItems = [
     { key: 'dashboard', icon: '🏠', label: 'Dashboard', path: '/dashboard-gerente' },
-    { key: 'avisos', icon: '📢', label: 'Publicar Aviso', onClick: 'abrirNuevoAviso()' },
-    { key: 'residentes', icon: '👥', label: 'Residentes', onClick: 'verResidentes()' },
-    { key: 'delivery', icon: '🍕', label: 'Gestionar Delivery', onClick: 'gestionarDelivery()' },
+    { key: 'avisos', icon: '📢', label: 'Publicar Aviso', onClick: 'gr_abrirNuevoAviso()' },
+    { key: 'residentes', icon: '👥', label: 'Residentes', onClick: 'gr_verResidentes()' },
+    { key: 'delivery', icon: '🍕', label: 'Gestionar Delivery', onClick: 'gr_gestionarDelivery()' },
     { key: 'seguridad', icon: '👮', label: 'Vigilante', path: '/chats' },
-    { key: 'metodos_pago', icon: '💳', label: 'Métodos de Pago', onClick: 'gestionarMetodosPago()' },
+    { key: 'metodos_pago', icon: '💳', label: 'Métodos de Pago', onClick: 'gr_gestionarMetodosPago()' },
     { key: 'perfil', icon: '⚙️', label: 'Mi Perfil', path: '/perfil' },
   ];
 
@@ -32,22 +32,22 @@ export function renderDashboardGerente(container) {
     <div class="ds-stats-grid">
       <div class="ds-stat-card blue">
         <div class="ds-stat-label">📋 Total Reportes</div>
-        <div class="ds-stat-value" id="totalSolicitudes">0</div>
+        <div class="ds-stat-value" id="gr-totalSolicitudes">0</div>
         <div class="ds-stat-sub">Solicitudes del edificio</div>
       </div>
       <div class="ds-stat-card amber">
         <div class="ds-stat-label">⏳ Pendientes</div>
-        <div class="ds-stat-value" id="pendientes">0</div>
+        <div class="ds-stat-value" id="gr-pendientes">0</div>
         <div class="ds-stat-sub">Sin atender</div>
       </div>
       <div class="ds-stat-card green">
         <div class="ds-stat-label">✅ Completadas</div>
-        <div class="ds-stat-value" id="completadas">0</div>
+        <div class="ds-stat-value" id="gr-completadas">0</div>
         <div class="ds-stat-sub">Resueltas</div>
       </div>
       <div class="ds-stat-card red">
         <div class="ds-stat-label">🚨 Emergencias</div>
-        <div class="ds-stat-value" id="emergenciasCount">0</div>
+        <div class="ds-stat-value" id="gr-emergenciasCount">0</div>
         <div class="ds-stat-sub">Activas ahora</div>
       </div>
     </div>
@@ -58,22 +58,22 @@ export function renderDashboardGerente(container) {
         <p class="ds-card-title">Acciones Rápidas</p>
       </div>
       <div class="ds-grid-4" style="gap:10px;">
-        <div class="ds-action-card" onclick="abrirNuevoAviso()">
+        <div class="ds-action-card" onclick="gr_abrirNuevoAviso()">
           <div class="ds-action-icon">📢</div>
           <p class="ds-action-title">Publicar Aviso</p>
           <p class="ds-action-desc">Comunicar a todos</p>
         </div>
-        <div class="ds-action-card" onclick="verResidentes()">
+        <div class="ds-action-card" onclick="gr_verResidentes()">
           <div class="ds-action-icon">👥</div>
           <p class="ds-action-title">Residentes</p>
           <p class="ds-action-desc">Ver estado de pagos</p>
         </div>
-        <div id="btnGestionarDelivery" class="ds-action-card" onclick="gestionarDelivery()">
+        <div id="gr-btnGestionarDelivery" class="ds-action-card" onclick="gr_gestionarDelivery()">
           <div class="ds-action-icon">🍕</div>
           <p class="ds-action-title">Delivery</p>
           <p class="ds-action-desc">Nombres y Números</p>
         </div>
-        <div class="ds-action-card" onclick="window.contactarVigilante()">
+        <div class="ds-action-card" onclick="window.gr_contactarVigilante()">
           <div class="ds-action-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">👮</div>
           <p class="ds-action-title">Vigilancia</p>
           <p class="ds-action-desc">Chat con seguridad</p>
@@ -87,11 +87,11 @@ export function renderDashboardGerente(container) {
     </div>
 
     <!-- ===== EMERGENCIAS ACTIVAS ===== -->
-    <div id="emergenciasAlert" class="ds-card hidden" style="border-left:3px solid #f87171;margin-bottom:20px;">
+    <div id="gr-emergenciasAlert" class="ds-card hidden" style="border-left:3px solid #f87171;margin-bottom:20px;">
       <div class="ds-card-header">
         <p class="ds-card-title" style="color:#f87171;">🚨 Emergencias Activas</p>
       </div>
-      <div id="emergenciasList"></div>
+      <div id="gr-emergenciasList"></div>
     </div>
 
     <!-- ===== AVISOS + SOLICITUDES ===== -->
@@ -99,9 +99,9 @@ export function renderDashboardGerente(container) {
       <div class="ds-card">
         <div class="ds-card-header">
           <p class="ds-card-title">Avisos del Edificio</p>
-          <button onclick="abrirNuevoAviso()" style="background:rgba(31,111,235,0.15);border:1px solid rgba(31,111,235,0.3);color:#58a6ff;border-radius:6px;padding:5px 12px;font-size:0.75rem;cursor:pointer;font-family:inherit;">+ Publicar</button>
+          <button onclick="gr_abrirNuevoAviso()" style="background:rgba(31,111,235,0.15);border:1px solid rgba(31,111,235,0.3);color:#58a6ff;border-radius:6px;padding:5px 12px;font-size:0.75rem;cursor:pointer;font-family:inherit;">+ Publicar</button>
         </div>
-        <div id="announcementsWidget"></div>
+        <div id="gr-announcementsWidget"></div>
       </div>
 
       <div class="ds-card">
@@ -113,7 +113,7 @@ export function renderDashboardGerente(container) {
             <button class="filter-btn-ds" data-filter="completada" style="font-size:0.72rem;padding:4px 10px;border-radius:6px;border:1px solid var(--sb-border);background:var(--sb-card);color:var(--sb-muted);cursor:pointer;font-family:inherit;">Completadas</button>
           </div>
         </div>
-        <div id="solicitudesList" style="max-height:400px;overflow-y:auto;">
+        <div id="gr-solicitudesList" style="max-height:400px;overflow-y:auto;">
           <div class="loading-spinner" style="margin:2rem auto;"></div>
         </div>
       </div>
@@ -157,11 +157,11 @@ export function renderDashboardGerente(container) {
       }
 
       const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-      setEl('totalSolicitudes', solicitudes.length);
-      setEl('pendientes', solicitudes.filter(s => s.estado === 'pendiente').length);
-      setEl('completadas', solicitudes.filter(s => s.estado === 'completada').length);
+      setEl('gr-totalSolicitudes', solicitudes.length);
+      setEl('gr-pendientes', solicitudes.filter(s => s.estado === 'pendiente').length);
+      setEl('gr-completadas', solicitudes.filter(s => s.estado === 'completada').length);
 
-      const listEl = document.getElementById('solicitudesList');
+      const listEl = document.getElementById('gr-solicitudesList');
       if (solicitudes.length === 0) {
         listEl.innerHTML = '<p style="text-align:center;color:var(--sb-muted);padding:2rem;">No hay solicitudes</p>';
         return;
@@ -181,7 +181,7 @@ export function renderDashboardGerente(container) {
       `).join('');
     } catch (error) {
       console.error('Error al cargar solicitudes:', error);
-      document.getElementById('solicitudesList').innerHTML = '<p style="color:#f87171;text-align:center;padding:2rem;">❌ Error</p>';
+      document.getElementById('gr-solicitudesList').innerHTML = '<p style="color:#f87171;text-align:center;padding:2rem;">❌ Error</p>';
     }
   }
 
@@ -191,9 +191,9 @@ export function renderDashboardGerente(container) {
         headers: { 'Authorization': `Bearer ${window.appState.token}` }
       });
       const emergencies = await response.json();
-      const alertBox = document.getElementById('emergenciasAlert');
-      const list = document.getElementById('emergenciasList');
-      const count = document.getElementById('emergenciasCount');
+      const alertBox = document.getElementById('gr-emergenciasAlert');
+      const list = document.getElementById('gr-emergenciasList');
+      const count = document.getElementById('gr-emergenciasCount');
       if (count) count.textContent = emergencies.length;
       if (emergencies.length > 0) {
         alertBox.classList.remove('hidden');

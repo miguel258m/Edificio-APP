@@ -58,42 +58,8 @@ export function setupSocketHandlers(io) {
             try {
                 const { destinatario_id, contenido } = data;
 
-                // Restricción: Médicos solo chatean si hay alerta activa
-                if (socket.user.rol === 'medico' || socket.user.rol === 'residente') {
-                    // Obtener rol del otro usuario
-                    const otherUserResult = await pool.query(
-                        'SELECT rol FROM usuarios WHERE id = $1',
-                        [destinatario_id]
-                    );
-
-                    const otherUser = otherUserResult.rows[0];
-                    if (otherUser) {
-                        const isMedicInvolved = socket.user.rol === 'medico' || otherUser.rol === 'medico';
-                        const isResidentInvolved = socket.user.rol === 'residente' || otherUser.rol === 'residente';
-
-                        if (isMedicInvolved && isResidentInvolved) {
-                            const residentId = socket.user.rol === 'residente' ? socket.user.id : destinatario_id;
-
-                            // Verificar si hay una emergencia médica activa
-                            const alertCheck = await pool.query(
-                                "SELECT id FROM emergencias WHERE usuario_id = $1 AND edificio_id = $2 AND tipo = 'medica' AND estado = 'activa'",
-                                [residentId, socket.user.edificio_id]
-                            );
-
-                            // Verificar si hay una solicitud médica pendiente o en proceso
-                            const requestCheck = await pool.query(
-                                "SELECT id FROM solicitudes WHERE usuario_id = $1 AND edificio_id = $2 AND tipo = 'medica' AND estado IN ('pendiente', 'en_proceso')",
-                                [residentId, socket.user.edificio_id]
-                            );
-
-                            if (alertCheck.rows.length === 0 && requestCheck.rows.length === 0) {
-                                return socket.emit('error_mensaje', {
-                                    message: 'El chat con el médico solo está permitido si tienes una emergencia o solicitud médica activa.'
-                                });
-                            }
-                        }
-                    }
-                }
+                // Se ha removido la restricción estricta de chat médico-residente
+                // para permitir la comunicación libre solicitada por el administrador.
 
                 // Guardar mensaje en la base de datos
                 const result = await pool.query(

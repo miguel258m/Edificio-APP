@@ -105,6 +105,9 @@ export function renderSidebarLayout(container, opts = {}) {
             <span class="ds-breadcrumb-current">${opts.breadcrumb || opts.pageTitle || 'Dashboard'}</span>
           </div>
           <div class="ds-header-right">
+            <button class="ds-header-refresh" onclick="window.refrescarVista()" title="Refrescar vista">
+              <span class="refresh-icon">🔄</span>
+            </button>
             <span class="ds-header-time" id="dsHeaderTime"></span>
             <div class="ds-header-avatar" onclick="window.navigateTo('/perfil')">${avatarContent}</div>
           </div>

@@ -39,12 +39,12 @@ export function renderDashboardMedico(container) {
     <div class="ds-stats-grid fade-in">
       <div class="ds-stat-card" style="border-color: rgba(248,113,113,0.15); background: rgba(248,113,113,0.04);">
         <div class="ds-stat-label" style="color: #f87171;">🚨 Emergencias</div>
-        <div class="ds-stat-value" id="emergenciasCount" style="color: #f87171;">0</div>
+        <div class="ds-stat-value" id="md-emergenciasCount" style="color: #f87171;">0</div>
         <div class="ds-stat-sub">activas ahora</div>
       </div>
       <div class="ds-stat-card" style="border-color: rgba(129,140,248,0.15); background: rgba(99,102,241,0.04);">
         <div class="ds-stat-label" style="color: #818cf8;">🩺 Consultas</div>
-        <div class="ds-stat-value" id="solicitudesCount" style="color: #818cf8;">0</div>
+        <div class="ds-stat-value" id="md-solicitudesCount" style="color: #818cf8;">0</div>
         <div class="ds-stat-sub">en espera</div>
       </div>
       <div class="ds-stat-card" style="border-color: rgba(56,189,248,0.15); background: rgba(56,189,248,0.04);">
@@ -68,7 +68,7 @@ export function renderDashboardMedico(container) {
         <div class="ds-card-header">
           <p class="ds-card-title" style="color:#f87171;">🚨 Emergencias Críticas</p>
         </div>
-        <div id="emergenciasList"><div class="loading-spinner" style="margin:1.5rem auto;"></div></div>
+        <div id="md-emergenciasList"><div class="loading-spinner" style="margin:1.5rem auto;"></div></div>
       </div>
 
       <!-- Consultas médicas -->
@@ -76,7 +76,7 @@ export function renderDashboardMedico(container) {
         <div class="ds-card-header">
           <p class="ds-card-title" style="color:#818cf8;">📋 Consultas y Pedidos</p>
         </div>
-        <div id="solicitudesList"><div class="loading-spinner" style="margin:1.5rem auto;"></div></div>
+        <div id="md-solicitudesList"><div class="loading-spinner" style="margin:1.5rem auto;"></div></div>
       </div>
     </div>
 
@@ -397,8 +397,8 @@ async function loadEmergenciasMedicas() {
   try {
     const response = await fetch(`${window.API_URL}/emergencias/activas`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
     const emergencias = await response.json();
-    const container = document.getElementById('emergenciasList');
-    const count = document.getElementById('emergenciasCount');
+    const container = document.getElementById('md-emergenciasList');
+    const count = document.getElementById('md-emergenciasCount');
     if (!container) return;
     const medicas = Array.isArray(emergencias) ? emergencias.filter(e => e.tipo === 'medica') : [];
     if (count) count.textContent = medicas.length;
@@ -428,8 +428,8 @@ async function loadSolicitudesMedicas() {
   try {
     const response = await fetch(`${window.API_URL}/solicitudes?tipo=medica`, { headers: { 'Authorization': `Bearer ${window.appState.token}` } });
     const solicitudes = await response.json();
-    const container = document.getElementById('solicitudesList');
-    const count = document.getElementById('solicitudesCount');
+    const container = document.getElementById('md-solicitudesList');
+    const count = document.getElementById('md-solicitudesCount');
     if (!container) return;
     const pendientes = Array.isArray(solicitudes) ? solicitudes.filter(s => s.estado === 'pendiente' || s.estado === 'en_proceso') : [];
     if (count) count.textContent = pendientes.length;

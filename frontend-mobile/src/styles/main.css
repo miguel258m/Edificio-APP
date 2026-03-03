@@ -938,12 +938,51 @@ body::before {
 .ds-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
+}
+
+.ds-header-refresh {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--sb-border);
+  color: var(--sb-text);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.1rem;
+}
+
+.ds-header-refresh:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--sb-muted);
+}
+
+.ds-header-refresh:active {
+  transform: scale(0.92);
+}
+
+.ds-header-refresh.spinning .refresh-icon {
+  animation: ds-spin 0.6s linear infinite;
+}
+
+@keyframes ds-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ds-header-time {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--sb-muted);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
