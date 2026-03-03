@@ -73,6 +73,11 @@ export function renderDashboardGerente(container) {
           <p class="ds-action-title">Delivery</p>
           <p class="ds-action-desc">Nombres y Números</p>
         </div>
+        <div class="ds-action-card" onclick="window.contactarVigilante()">
+          <div class="ds-action-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">👮</div>
+          <p class="ds-action-title">Vigilancia</p>
+          <p class="ds-action-desc">Chat con seguridad</p>
+        </div>
         <div class="ds-action-card" onclick="window.navigateTo('/perfil')">
           <div class="ds-action-icon">⚙️</div>
           <p class="ds-action-title">Mi Perfil</p>

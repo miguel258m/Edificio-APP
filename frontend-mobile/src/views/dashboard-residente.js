@@ -48,6 +48,20 @@ export function renderDashboardResidente(container) {
       <div id="announcementsWidget"></div>
     </div>
 
+    <!-- SEGURIDAD POR DEFECTO -->
+    <div class="ds-card" style="margin-bottom:16px; border-left: 3px solid #3b82f6; background: linear-gradient(90deg, rgba(59,130,246,0.05) 0%, transparent 100%);">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size:1.5rem; background:rgba(59,130,246,0.1); width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; color: #3b82f6;">👮</div>
+          <div>
+            <p style="font-size:0.85rem; font-weight:700; color:white; margin:0;">Seguridad y Vigilancia</p>
+            <p style="font-size:0.7rem; color:var(--sb-muted); margin:2px 0 0;">Chat directo con el vigilante de turno</p>
+          </div>
+        </div>
+        <button onclick="window.openChatVigilante()" style="background:#1f6feb; border:none; color:white; border-radius:8px; padding:8px 16px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:inherit; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Abrir Chat</button>
+      </div>
+    </div>
+
     <!-- ACCIONES RÁPIDAS -->
     <div class="ds-card" style="margin-bottom:16px;">
       <div class="ds-card-header"><p class="ds-card-title">Acciones Rápidas</p></div>
